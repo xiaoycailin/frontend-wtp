@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { SiteConfig } from "../../../../app.js";
+  import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
   const { data } = $props();
 
   const fallbackConfig: any = {
@@ -238,21 +239,19 @@
     </h2>
     <div class="grid md:grid-cols-2 gap-4 text-xs">
       <div>
-        <label class="text-white/60 text-xs mb-1 block">Logo URL</label>
-        <input
-          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+        <ImageUrlField
+          label="Logo URL"
           bind:value={config.logoUrl}
-          onblur={(e) => onBlurText("logoUrl", e)}
+          placeholder="https://asset.../logo.png"
+          help="Upload/pilih gambar lalu klik di luar field untuk auto-save."
         />
       </div>
       <div>
-        <label class="text-white/60 text-xs mb-1 block">Favicon URL</label>
-        <input
-          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+        <ImageUrlField
+          label="Favicon URL"
           bind:value={config.faviconUrl}
-          onblur={(e) => onBlurText("faviconUrl", e)}
+          placeholder="https://asset.../favicon.png"
+          help="Upload/pilih gambar lalu klik di luar field untuk auto-save."
         />
       </div>
     </div>

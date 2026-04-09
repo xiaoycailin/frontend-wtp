@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
 
   type SubCategory = {
     id: string;
@@ -172,14 +173,12 @@
       </div>
     </div>
 
-    <div class="space-y-1.5">
-      <label class="text-xs text-white/70">URL Thumbnail</label>
-      <input
-        class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70"
-        bind:value={thumbnails}
-      />
-    </div>
+    <ImageUrlField
+      label="URL Thumbnail"
+      bind:value={thumbnails}
+      placeholder="https://asset.weebin.site/uploads/...jpg"
+      help="Bisa paste manual atau pilih dari image manager."
+    />
 
     <div class="space-y-1.5">
       <label class="text-xs text-white/70">Catatan Kondisi</label>
