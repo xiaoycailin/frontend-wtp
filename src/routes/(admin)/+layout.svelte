@@ -12,6 +12,7 @@
     ProductHunt,
     Receipt,
     User,
+    Bolt,
   } from "@boxicons/svelte";
   import type { SiteConfig } from "../../app.js";
   import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
@@ -25,8 +26,10 @@
     { label: "Dashboard", href: "/admin", icon: Dashboard },
     { label: "Transaksi", href: "/admin/transactions", icon: Receipt },
     { label: "Produk", href: "/admin/products", icon: ProductHunt },
+    { label: "Flash Sale", href: "/admin/flash-sale", icon: Bolt },
     { label: "Kategori", href: "/admin/category", icon: Categories },
     { label: "Pembayaran", href: "/admin/payments", icon: CardViewLarge },
+    { label: "Activity Log", href: "/admin/activity-log", icon: Receipt },
     { label: "Pengguna", href: "/admin/users", icon: User },
     { label: "Site Config", href: "/admin/site-config", icon: Gear },
   ];

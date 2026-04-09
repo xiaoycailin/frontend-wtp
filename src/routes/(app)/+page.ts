@@ -5,11 +5,22 @@ import type { PageLoad } from "./$types";
 // it so that it gets served as a static asset in production
 export const prerender = true;
 
-export const load: PageLoad = async ({ params, fetch }) => {
-  const category = await fetch("/api/v1/category");
-  const result = await category.json();
+export const load: PageLoad = async ({ fetch }) => {
+  try {
+    const category = await fetch("/api/v1/category");
+    if (!category.ok) {
+      return { category: [] };
+    }
 
-  return {
-    category: result.data,
-  };
+    const raw = await category.text();
+    const result = JSON.parse(raw);
+
+    return {
+      category: result?.data ?? [],
+    };
+  } catch {
+    return {
+      category: [],
+    };
+  }
 };
