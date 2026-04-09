@@ -360,12 +360,11 @@
 
     <div class="grid md:grid-cols-2 gap-4 text-xs">
       <div>
-        <label class="text-white/60 text-xs mb-1 block">OG Image URL</label>
-        <input
-          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+        <ImageUrlField
+          label="OG Image URL"
           bind:value={config.ogImage}
-          onblur={(e) => onBlurText("ogImage", e)}
+          placeholder="https://..."
+          help="Bisa paste manual atau pilih dari image manager."
         />
         {#if fieldErrors.ogImage}
           <p class="mt-1 text-[11px] text-red-300">
@@ -374,13 +373,11 @@
         {/if}
       </div>
       <div>
-        <label class="text-white/60 text-xs mb-1 block">Twitter Image URL</label
-        >
-        <input
-          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+        <ImageUrlField
+          label="Twitter Image URL"
           bind:value={config.twitterImage}
-          onblur={(e) => onBlurText("twitterImage", e)}
+          placeholder="https://..."
+          help="Bisa paste manual atau pilih dari image manager."
         />
         {#if fieldErrors.twitterImage}
           <p class="mt-1 text-[11px] text-red-300">
