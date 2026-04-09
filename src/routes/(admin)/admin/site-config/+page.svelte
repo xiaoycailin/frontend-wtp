@@ -276,21 +276,37 @@
       </div>
       <div>
         <label class="text-white/60 text-xs mb-1 block">Secondary Color</label>
-        <input
-          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
-          bind:value={config.secondaryColor}
-          onblur={(e) => onBlurText("secondaryColor", e)}
-        />
+        <div class="flex items-center gap-2">
+          <input
+            type="color"
+            class="w-10 h-10 rounded border border-white/10 bg-transparent"
+            bind:value={config.secondaryColor}
+            onchange={(e) => onBlurText("secondaryColor", e)}
+          />
+          <input
+            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                   focus:outline-none focus:border-[#f5c518]/70"
+            bind:value={config.secondaryColor}
+            onblur={(e) => onBlurText("secondaryColor", e)}
+          />
+        </div>
       </div>
       <div>
         <label class="text-white/60 text-xs mb-1 block">Accent Color</label>
-        <input
-          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
-          bind:value={config.accentColor}
-          onblur={(e) => onBlurText("accentColor", e)}
-        />
+        <div class="flex items-center gap-2">
+          <input
+            type="color"
+            class="w-10 h-10 rounded border border-white/10 bg-transparent"
+            bind:value={config.accentColor}
+            onchange={(e) => onBlurText("accentColor", e)}
+          />
+          <input
+            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                   focus:outline-none focus:border-[#f5c518]/70"
+            bind:value={config.accentColor}
+            onblur={(e) => onBlurText("accentColor", e)}
+          />
+        </div>
       </div>
     </div>
   </section>
