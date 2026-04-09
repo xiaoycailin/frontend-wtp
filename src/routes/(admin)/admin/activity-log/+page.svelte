@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   type ActivityLog = {
     id: string;
     actorName?: string | null;
@@ -91,7 +91,7 @@
 <section class="space-y-6">
   <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-      <p class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em] mb-1">Activity Log</p>
+      <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">Activity Log</p>
       <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">Riwayat Aktivitas Admin</h1>
       <p class="text-xs md:text-sm text-white/50 mt-1 max-w-xl">Pantau aksi penting admin seperti update transaksi, retry order, dan perubahan flash sale.</p>
     </div>
@@ -99,8 +99,8 @@
 
   <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-4 space-y-4">
     <div class="grid gap-3 md:grid-cols-4 text-xs">
-      <input bind:value={search} placeholder="Cari actor / deskripsi / entity" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]" />
-      <select bind:value={action} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]">
+      <input bind:value={search} placeholder="Cari actor / deskripsi / entity" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]" />
+      <select bind:value={action} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
         <option value="">Semua Action</option>
         <option value="flashsale.create">flashsale.create</option>
         <option value="flashsale.update">flashsale.update</option>
@@ -108,13 +108,13 @@
         <option value="transaction.admin_update">transaction.admin_update</option>
         <option value="transaction.retry_order">transaction.retry_order</option>
       </select>
-      <select bind:value={entityType} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]">
+      <select bind:value={entityType} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
         <option value="">Semua Entity</option>
         <option value="flash_sale">flash_sale</option>
         <option value="transaction">transaction</option>
       </select>
       <div class="flex gap-2">
-        <button type="button" onclick={applyFilter} class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]">Filter</button>
+        <button type="button" onclick={applyFilter} class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]">Filter</button>
         <button type="button" onclick={resetFilter} class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white border border-white/10 hover:bg-white/10">Reset</button>
       </div>
     </div>
@@ -140,7 +140,7 @@
             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
               <div>
                 <p class="text-sm font-semibold text-white">{log.description ?? log.action}</p>
-                <p class="text-[11px] text-white/45">{log.action} · {log.entityType} · {log.entityLabel ?? log.entityId ?? "-"}</p>
+                <p class="text-[11px] text-white/45">{log.action} Â· {log.entityType} Â· {log.entityLabel ?? log.entityId ?? "-"}</p>
               </div>
               <p class="text-[11px] text-white/45 shrink-0">{formatDate(log.createdAt)}</p>
             </div>
@@ -168,3 +168,4 @@
     </div>
   </div>
 </section>
+

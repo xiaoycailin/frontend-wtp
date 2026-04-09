@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   type SystemLog = {
     id: string;
     type: string;
@@ -107,7 +107,7 @@
 <section class="space-y-6">
   <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-      <p class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em] mb-1">System Log</p>
+      <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">System Log</p>
       <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">Log Sistem Backend</h1>
       <p class="text-xs md:text-sm text-white/50 mt-1 max-w-xl">Pantau error backend, callback provider, dan kegagalan request third-party.</p>
     </div>
@@ -115,8 +115,8 @@
 
   <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-4 space-y-4">
     <div class="grid gap-3 md:grid-cols-5 text-xs">
-      <input bind:value={search} placeholder="Cari message / source / url" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]" />
-      <select bind:value={type} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]">
+      <input bind:value={search} placeholder="Cari message / source / url" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]" />
+      <select bind:value={type} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
         <option value="">Semua Type</option>
         <option value="app_error">app_error</option>
         <option value="app_warning">app_warning</option>
@@ -124,14 +124,14 @@
         <option value="digiflazz_callback">digiflazz_callback</option>
         <option value="duitku_callback">duitku_callback</option>
       </select>
-      <select bind:value={provider} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]">
+      <select bind:value={provider} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
         <option value="">Semua Provider</option>
         <option value="digiflazz">digiflazz</option>
         <option value="duitku">duitku</option>
       </select>
-      <input bind:value={trxId} placeholder="Filter trxId" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]" />
+      <input bind:value={trxId} placeholder="Filter trxId" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]" />
       <div class="flex gap-2">
-        <button type="button" onclick={applyFilter} class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]">Filter</button>
+        <button type="button" onclick={applyFilter} class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]">Filter</button>
         <button type="button" onclick={resetFilter} class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white border border-white/10 hover:bg-white/10">Reset</button>
       </div>
     </div>
@@ -157,7 +157,7 @@
             <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
               <div>
                 <p class="text-sm font-semibold text-white">{log.message}</p>
-                <p class="text-[11px] text-white/45">{log.type} · {log.source} · {log.provider ?? "-"}</p>
+                <p class="text-[11px] text-white/45">{log.type} Â· {log.source} Â· {log.provider ?? "-"}</p>
               </div>
               <p class="text-[11px] text-white/45 shrink-0">{formatDate(log.createdAt)}</p>
             </div>
@@ -205,3 +205,4 @@
     </div>
   </div>
 </section>
+

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { goto } from "$app/navigation";
 
   const { data } = $props();
@@ -196,7 +196,7 @@
   >
     <div>
       <p
-        class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em] mb-1"
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
       >
         Manajemen Produk
       </p>
@@ -212,7 +212,7 @@
     <div class="flex items-center gap-3">
       <button
         type="button"
-        class="px-3 py-2 rounded-lg text-xs font-semibold bg-[#f5c518] text-black
+        class="px-3 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black
                hover:bg-[#ffd740] transition-colors duration-150"
         onclick={() => goto("/admin/products/new")}
       >
@@ -241,7 +241,7 @@
             bind:value={q}
             placeholder="Cari judul produk..."
             class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px]
-                   placeholder:text-white/30 text-white focus:outline-none focus:border-[#f5c518]/60"
+                   placeholder:text-white/30 text-white focus:outline-none focus:border-[var(--color-primary)]/60"
           />
           <button
             type="submit"
@@ -255,7 +255,7 @@
         <select
           bind:value={filterCategory}
           onchange={handleFilterChange}
-          class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-white focus:outline-none focus:border-[#f5c518]/60"
+          class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-white focus:outline-none focus:border-[var(--color-primary)]/60"
         >
           <option value="">Semua Kategori</option>
           {#each categories as cat}
@@ -266,7 +266,7 @@
         <select
           bind:value={filterStatus}
           onchange={handleFilterChange}
-          class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-white focus:outline-none focus:border-[#f5c518]/60"
+          class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-white focus:outline-none focus:border-[var(--color-primary)]/60"
         >
           <option value="">Semua Status</option>
           <option value="DRAFT">Draft</option>
@@ -280,7 +280,7 @@
         <select
           bind:value={sort}
           onchange={handleFilterChange}
-          class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-white focus:outline-none focus:border-[#f5c518]/60"
+          class="px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-[11px] text-white focus:outline-none focus:border-[var(--color-primary)]/60"
         >
           <option value="latest">Terbaru</option>
           <option value="oldest">Terlama</option>
@@ -383,7 +383,7 @@
                       min="0"
                       value={p.price}
                       class="w-24 px-2 py-1 rounded bg-black/40 border border-white/20 text-[11px] text-white
-                             focus:outline-none focus:border-[#f5c518]/70"
+                             focus:outline-none focus:border-[var(--color-primary)]/70"
                       onblur={(e) =>
                         handlePriceBlur(
                           p.id,
@@ -405,7 +405,7 @@
                       class="flex flex-col text-left"
                       onclick={() => (editingPriceId = p.id)}
                     >
-                      <span class="text-xs font-semibold text-[#f5c518]">
+                      <span class="text-xs font-semibold text-[var(--color-primary)]">
                         {fmtRp(p.price)}
                       </span>
                       <span
@@ -425,7 +425,7 @@
                       min="0"
                       value={p.stock}
                       class="w-16 px-2 py-1 rounded bg-black/40 border border-white/20 text-[11px] text-white
-                             text-right focus:outline-none focus:border-[#f5c518]/70"
+                             text-right focus:outline-none focus:border-[var(--color-primary)]/70"
                       onblur={(e) =>
                         handleStockBlur(
                           p.id,
@@ -457,7 +457,7 @@
                   <div class="flex flex-col gap-1">
                     <select
                       class="px-2 py-1 rounded bg-black/40 border border-white/20 text-[11px] text-white
-                             focus:outline-none focus:border-[#f5c518]/70"
+                             focus:outline-none focus:border-[var(--color-primary)]/70"
                       bind:value={p.status}
                       disabled={updatingStatusId === p.id}
                       onchange={(e) =>
@@ -482,7 +482,7 @@
                   <div class="flex items-center gap-2">
                     <div
                       class="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center
-                             text-[10px] font-bold text-[#f5c518]"
+                             text-[10px] font-bold text-[var(--color-primary)]"
                     >
                       {p.sellerUser?.displayName?.charAt(0) ?? "?"}
                     </div>
@@ -554,3 +554,4 @@
     </div>
   </div>
 </section>
+

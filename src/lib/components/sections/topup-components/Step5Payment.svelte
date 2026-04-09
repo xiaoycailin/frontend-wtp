@@ -1,10 +1,10 @@
-<script lang="ts">
+﻿<script lang="ts">
   import type { Product, PaymentMethod } from "./types";
   import { directMethods } from "./paymentConstants";
   import { fmt } from "./utils";
   import { onMount } from "svelte";
 
-  // ── Props (hanya yang benar-benar dari parent) ──────────────────
+  // â”€â”€ Props (hanya yang benar-benar dari parent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let {
     selectedPay = $bindable(null),
     basePrice,
@@ -15,7 +15,7 @@
     selected: Product | null;
   } = $props();
 
-  // ── Local state (HARUS $state agar reaktif) ─────────────────────
+  // â”€â”€ Local state (HARUS $state agar reaktif) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let paymentQris = $state<PaymentMethod[]>([]);
   let paymentEwallet = $state<PaymentMethod[]>([]);
   let paymentVa = $state<PaymentMethod[]>([]);
@@ -26,7 +26,7 @@
   let vaOpen = $state(false);
   let getPricesLoading = $state(false);
 
-  // ── Fetch payment methods saat mount ───────────────────────────
+  // â”€â”€ Fetch payment methods saat mount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   onMount(async () => {
     try {
       const res = await fetch("/api/v1/payments/available");
@@ -59,7 +59,7 @@
     }
   });
 
-  // ── Fetch harga tiap kali selected berubah ──────────────────────
+  // â”€â”€ Fetch harga tiap kali selected berubah â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // FIX: pakai AbortController supaya tidak race condition
   $effect(() => {
     if (!selected) {
@@ -100,7 +100,7 @@
       if (!res.ok) return;
 
       const data = await res.json();
-      // FIX: backend reply.send(prices) → response langsung array
+      // FIX: backend reply.send(prices) â†’ response langsung array
       // Kalau backend kamu wrap dengan { data: [...] }, ganti ke data.data
       prices = Array.isArray(data) ? data : (data.data ?? []);
     } catch (err: any) {
@@ -112,14 +112,14 @@
     }
   }
 
-  // ── Helper ambil harga per metode pembayaran ────────────────────
+  // â”€â”€ Helper ambil harga per metode pembayaran â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function methodPrice(m: PaymentMethod): number {
     const found = prices?.find((p) => p.id === m.id);
     return found?.total_price ?? basePrice;
   }
 </script>
 
-<!-- ── Template (tidak berubah banyak, + loading state) ─────────── -->
+<!-- â”€â”€ Template (tidak berubah banyak, + loading state) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <div class="step-card">
   <div class="step-accent"></div>
   <div class="px-5 py-4">
@@ -161,7 +161,7 @@
             background:   {isSelected
             ? 'rgba(245,197,24,0.07)'
             : 'rgba(255,255,255,0.03)'};
-            border-color: {isSelected ? '#f5c518' : 'rgba(255,255,255,0.08)'};
+            border-color: {isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)'};
             box-shadow:   {isSelected
             ? '0 0 20px rgba(245,197,24,0.15)'
             : 'none'};
@@ -170,11 +170,11 @@
           <div
             class="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all duration-200"
             style="border-color:{isSelected
-              ? '#f5c518'
+              ? 'var(--color-primary)'
               : 'rgba(255,255,255,0.2)'};"
           >
             {#if isSelected}<div
-                class="w-2 h-2 rounded-full bg-[#f5c518]"
+                class="w-2 h-2 rounded-full bg-[var(--color-primary)]"
               ></div>{/if}
           </div>
           {#if m.logo}
@@ -198,7 +198,7 @@
             <div class="absolute top-0 right-0 overflow-hidden w-16 h-16">
               <div
                 class="absolute top-3 right-[-18px] w-20 py-0.5 text-center rotate-45 text-[8px] font-black"
-                style="background:#f5c518;color:#000;"
+                style="background:var(--color-primary);color:#000;"
               >
                 {m.tag}
               </div>
@@ -252,7 +252,7 @@
                 ? 'rgba(245,197,24,0.07)'
                 : 'rgba(255,255,255,0.03)'};
                 border-color: {isSelected
-                ? '#f5c518'
+                ? 'var(--color-primary)'
                 : 'rgba(255,255,255,0.07)'};
                 box-shadow:   {isSelected
                 ? '0 0 14px rgba(245,197,24,0.15)'
@@ -286,7 +286,7 @@
               </div>
               {#if isSelected}
                 <div
-                  class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#f5c518] flex items-center justify-center"
+                  class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center"
                 >
                   <svg
                     class="w-2.5 h-2.5 text-black"
@@ -316,7 +316,7 @@
         class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
       >
         <div class="flex items-center gap-2">
-          <span>📱</span>
+          <span>ðŸ“±</span>
           <span class="text-sm font-bold text-white">E-Wallet</span>
           <span
             class="text-[10px] text-white/30 px-2 py-0.5 rounded-full bg-white/[0.05]"
@@ -354,7 +354,7 @@
                 ? 'rgba(245,197,24,0.07)'
                 : 'rgba(255,255,255,0.03)'};
                 border-color: {isSelected
-                ? '#f5c518'
+                ? 'var(--color-primary)'
                 : 'rgba(255,255,255,0.07)'};
                 box-shadow:   {isSelected
                 ? '0 0 14px rgba(245,197,24,0.15)'
@@ -388,7 +388,7 @@
               </div>
               {#if isSelected}
                 <div
-                  class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#f5c518] flex items-center justify-center"
+                  class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center"
                 >
                   <svg
                     class="w-2.5 h-2.5 text-black"
@@ -455,18 +455,18 @@
                 ? 'rgba(245,197,24,0.07)'
                 : 'rgba(255,255,255,0.03)'};
                 border-color: {isSelected
-                ? '#f5c518'
+                ? 'var(--color-primary)'
                 : 'rgba(255,255,255,0.07)'};
               "
             >
               <div
                 class="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
                 style="border-color:{isSelected
-                  ? '#f5c518'
+                  ? 'var(--color-primary)'
                   : 'rgba(255,255,255,0.2)'};"
               >
                 {#if isSelected}<div
-                    class="w-2 h-2 rounded-full bg-[#f5c518]"
+                    class="w-2 h-2 rounded-full bg-[var(--color-primary)]"
                   ></div>{/if}
               </div>
               {#if m.logo}
@@ -512,7 +512,7 @@
     width: 3px;
     background: linear-gradient(
       to bottom,
-      #f5c518,
+      var(--color-primary),
       rgba(245, 197, 24, 0.3),
       transparent
     );
@@ -527,7 +527,7 @@
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 0.5rem;
-    background: #f5c518;
+    background: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -544,3 +544,4 @@
     flex: 1;
   }
 </style>
+

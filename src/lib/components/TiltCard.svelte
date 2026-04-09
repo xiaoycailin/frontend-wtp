@@ -1,17 +1,17 @@
-<!--
+﻿<!--
   TiltCard.svelte
-  ───────────────────────────────────────────────────────────────
+  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Komponen wrapper reusable untuk efek:
-    • 3D perspective tilt mengikuti mouse
-    • Glow border kuning saat hover
-    • Bottom glow line
-    • Shine sweep overlay
+    â€¢ 3D perspective tilt mengikuti mouse
+    â€¢ Glow border kuning saat hover
+    â€¢ Bottom glow line
+    â€¢ Shine sweep overlay
 
   PROPS:
-    glowColor   — warna glow & border (default: #f5c518)
-    maxTilt     — maksimum derajat tilt (default: 8)
-    scale       — scale saat hover (default: 1.03)
-    class       — tambahan class Tailwind dari parent
+    glowColor   â€” warna glow & border (default: var(--color-primary))
+    maxTilt     â€” maksimum derajat tilt (default: 8)
+    scale       â€” scale saat hover (default: 1.03)
+    class       â€” tambahan class Tailwind dari parent
 
   USAGE:
     <TiltCard>
@@ -19,7 +19,7 @@
       <p>konten bebas</p>
     </TiltCard>
 
-  ───────────────────────────────────────────────────────────────
+  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 -->
 
 <script lang="ts">
@@ -34,20 +34,20 @@
   }
 
   let {
-    glowColor = "#f5c518",
+    glowColor = "var(--color-primary)",
     maxTilt = 8,
     scale = 1.03,
     class: extraClass = "",
     children,
   }: Props = $props();
 
-  // ── State ──────────────────────────────────────────────────
+  // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let hovered = $state(false);
   let rx = $state(0);
   let ry = $state(0);
   let cardEl: HTMLDivElement;
 
-  // ── Handlers ───────────────────────────────────────────────
+  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function onMouseMove(e: MouseEvent) {
     const rect = cardEl.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
@@ -62,7 +62,7 @@
     ry = 0;
   }
 
-  // ── Derived transform string ────────────────────────────────
+  // â”€â”€ Derived transform string â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let transform = $derived(
     `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) scale3d(${hovered ? scale : 1},${hovered ? scale : 1},1)`,
   );
@@ -114,3 +114,4 @@
     aria-hidden="true"
   ></div>
 </div>
+

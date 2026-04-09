@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { goto } from "$app/navigation";
   import { auth } from "$lib/auth.svelte";
   import { onMount } from "svelte";
@@ -66,7 +66,7 @@
 </script>
 
 <svelte:head>
-  <title>Masuk — WTPANJAY</title>
+  <title>Masuk â€” WTPANJAY</title>
 </svelte:head>
 
 <div class="auth-root">
@@ -80,13 +80,13 @@
       <svg class="logo-icon" viewBox="0 0 40 40" fill="none" aria-hidden="true">
         <polygon
           points="20,2 38,11 38,29 20,38 2,29 2,11"
-          fill="#f5c518"
+          fill="var(--color-primary)"
           opacity="0.15"
         />
         <polygon
           points="20,2 38,11 38,29 20,38 2,29 2,11"
           fill="none"
-          stroke="#f5c518"
+          stroke="var(--color-primary)"
           stroke-width="1.5"
         />
         <text
@@ -96,7 +96,7 @@
           font-family="'Rajdhani',sans-serif"
           font-weight="700"
           font-size="14"
-          fill="#f5c518">W</text
+          fill="var(--color-primary)">W</text
         >
       </svg>
       <span class="logo-text">WTPANJAY</span>
@@ -326,3 +326,4 @@
     </p>
   </main>
 </div>
+

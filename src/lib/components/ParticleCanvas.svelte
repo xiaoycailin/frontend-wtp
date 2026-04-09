@@ -1,8 +1,8 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
 
-  // ── Props ─────────────────────────────────────────────────────
+  // â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   interface Props {
     maxParticles?: number;
     colors?: string[];
@@ -17,8 +17,8 @@
 
   let {
     maxParticles = 75,
-    colors = ["#f5c518cc", "#ffffffaa", "#00e5ff88", "#ff6b3588", "#a855f788"],
-    lineColor = "#f5c518",
+    colors = ["var(--color-primary)cc", "#ffffffaa", "#00e5ff88", "#ff6b3588", "#a855f788"],
+    lineColor = "var(--color-primary)",
     lineDistance = 90,
     speed = 1,
     opacity = 0.65,
@@ -27,13 +27,13 @@
     class: className = "",
   }: Props = $props();
 
-  // ── Internal ──────────────────────────────────────────────────
+  // â”€â”€ Internal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let canvas: HTMLCanvasElement;
   let animFrame: number;
   let ro: ResizeObserver | null = null;
   let hidden = false; // Page Visibility state
 
-  // ── Device tier detection ─────────────────────────────────────
+  // â”€â”€ Device tier detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [CHANGE 1] Deteksi mobile/low-end satu kali di awal.
   // Ini menentukan semua parameter rendering setelahnya.
   const isMobile =
@@ -75,10 +75,10 @@
     },
   }[tier];
 
-  // [CHANGE 3] Pre-compute lineDistance² untuk menghindari Math.sqrt() di inner loop.
+  // [CHANGE 3] Pre-compute lineDistanceÂ² untuk menghindari Math.sqrt() di inner loop.
   const lineDistSq = lineDistance * lineDistance;
 
-  // [CHANGE 4] Frame throttle — hitung interval target dalam ms.
+  // [CHANGE 4] Frame throttle â€” hitung interval target dalam ms.
   const frameInterval = 1000 / cfg.fps;
   let lastFrameTime = 0;
 
@@ -112,7 +112,7 @@
       size: 1.5 + Math.random() * 3.5,
       alpha: 0,
       color,
-      // [CHANGE 5] Cache solid color saat spawn — tidak perlu slice() setiap frame.
+      // [CHANGE 5] Cache solid color saat spawn â€” tidak perlu slice() setiap frame.
       solidColor: color.length > 7 ? color.slice(0, 7) : color,
       type,
       angle: Math.random() * Math.PI * 2,
@@ -152,14 +152,14 @@
   // [CHANGE 6] drawParticle sekarang punya dua path:
   // - "high": 3-layer dengan shadowBlur (desktop seperti semula)
   // - "mid/low": 1-layer tanpa shadow sama sekali (mobile-safe)
-  // shadowBlur adalah operasi GPU paling berat di canvas — ini penghematan terbesar.
+  // shadowBlur adalah operasi GPU paling berat di canvas â€” ini penghematan terbesar.
   function drawParticle(ctx: CanvasRenderingContext2D, p: Particle) {
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(p.angle);
 
     if (cfg.shadows) {
-      // ── Desktop: 3 layer glow (behavior asli) ──
+      // â”€â”€ Desktop: 3 layer glow (behavior asli) â”€â”€
       ctx.shadowColor = p.solidColor;
       ctx.shadowBlur = p.size * 10;
       ctx.fillStyle = p.color;
@@ -180,7 +180,7 @@
       ctx.globalAlpha = p.alpha * 0.95;
       drawShape(ctx, p.type, p.size * 0.3);
     } else {
-      // ── Mobile: 1 layer flat, NO shadowBlur ──
+      // â”€â”€ Mobile: 1 layer flat, NO shadowBlur â”€â”€
       // [CHANGE 7] ctx.save/restore hanya 1x, bukan 3x.
       // shadowBlur = 0 secara eksplisit supaya tidak ada state tersisa.
       ctx.shadowBlur = 0;
@@ -197,7 +197,7 @@
   function init() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d", {
-      // [CHANGE 8] willReadFrequently: false — hint ke browser bahwa kita
+      // [CHANGE 8] willReadFrequently: false â€” hint ke browser bahwa kita
       // hanya write, tidak pernah readback. Memungkinkan GPU-accelerated path.
       willReadFrequently: false,
     })!;
@@ -226,7 +226,7 @@
     });
     ro.observe(canvas);
 
-    // [CHANGE 10] Page Visibility API — hentikan loop saat tab tidak aktif.
+    // [CHANGE 10] Page Visibility API â€” hentikan loop saat tab tidak aktif.
     // Ini gratis: zero CPU saat user pindah tab.
     const onVisibilityChange = () => {
       hidden = document.hidden;
@@ -236,11 +236,11 @@
     function tick(now: number) {
       animFrame = requestAnimationFrame(tick);
 
-      // [CHANGE 11] Frame throttle — lewati frame jika belum waktunya.
+      // [CHANGE 11] Frame throttle â€” lewati frame jika belum waktunya.
       if (now - lastFrameTime < frameInterval) return;
       lastFrameTime = now;
 
-      // [CHANGE 12] Pause saat tab hidden — tidak perlu render.
+      // [CHANGE 12] Pause saat tab hidden â€” tidak perlu render.
       if (hidden) return;
 
       ctx.clearRect(0, 0, w, h);
@@ -272,7 +272,7 @@
             const pj = particles[j];
             const dx = pi.x - pj.x;
             const dy = pi.y - pj.y;
-            // [CHANGE 14] Squared distance — tidak butuh Math.sqrt().
+            // [CHANGE 14] Squared distance â€” tidak butuh Math.sqrt().
             const dSq = dx * dx + dy * dy;
             if (dSq < lineDistSq) {
               ctx.save();
@@ -305,7 +305,7 @@
   onDestroy(() => {
     if (!browser) return;
     cancelAnimationFrame(animFrame);
-    // [CHANGE 15] Disconnect ResizeObserver — cegah memory leak.
+    // [CHANGE 15] Disconnect ResizeObserver â€” cegah memory leak.
     ro?.disconnect();
     cleanupVis?.();
     particles = [];
@@ -317,3 +317,4 @@
   class="absolute inset-0 w-full h-full pointer-events-none {className}"
   style="mix-blend-mode: {blendMode};"
 ></canvas>
+

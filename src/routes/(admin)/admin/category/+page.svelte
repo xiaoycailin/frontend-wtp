@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { teleport } from "$lib/utils";
   import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
   import MultiImageUrlField from "$lib/components/admin/MultiImageUrlField.svelte";
@@ -288,7 +288,7 @@
   >
     <div>
       <p
-        class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em] mb-1"
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
       >
         Kategori & Sub Kategori
       </p>
@@ -302,7 +302,7 @@
     <div class="flex items-center gap-2 text-xs">
       <button
         type="button"
-        class="px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
+        class="px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
         on:click={openCreateCategory}
       >
         + Tambah Kategori
@@ -497,7 +497,7 @@
           class="text-xs text-white/50 hover:text-white"
           on:click={() => (showCategoryModal = false)}
         >
-          ✕
+          âœ•
         </button>
       </div>
 
@@ -505,7 +505,7 @@
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Nama kategori</span>
           <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[#f5c518]"
+            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
             bind:value={catForm.title}
             placeholder="Contoh: Topup Games"
           />
@@ -521,7 +521,7 @@
           Batal
         </button>
         <button
-          class="px-3 py-1.5 rounded-lg bg-[#f5c518] text-black font-semibold hover:bg-[#ffd740]"
+          class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
           type="button"
           on:click={submitCategory}
           disabled={loading}
@@ -556,7 +556,7 @@
           class="text-xs text-white/50 hover:text-white"
           on:click={() => (showSubModal = false)}
         >
-          ✕
+          âœ•
         </button>
       </div>
 
@@ -564,7 +564,7 @@
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Nama sub kategori</span>
           <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[#f5c518]"
+            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
             bind:value={subForm.title}
             placeholder="Contoh: Voucher Google Play"
           />
@@ -580,7 +580,7 @@
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Brand</span>
           <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[#f5c518]"
+            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
             bind:value={subForm.brand}
             placeholder="Contoh: Google, Moonton"
           />
@@ -589,7 +589,7 @@
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Deskripsi</span>
           <textarea
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[#f5c518] min-h-[80px] resize-y"
+            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)] min-h-[80px] resize-y"
             bind:value={subForm.description}
             placeholder="Deskripsi singkat sub kategori"
           />
@@ -612,7 +612,7 @@
           Batal
         </button>
         <button
-          class="px-3 py-1.5 rounded-lg bg-[#f5c518] text-black font-semibold hover:bg-[#ffd740]"
+          class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
           type="button"
           on:click={submitSub}
           disabled={loading}
@@ -623,3 +623,4 @@
     </div>
   </div>
 {/if}
+

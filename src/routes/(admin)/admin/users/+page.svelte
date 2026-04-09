@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   const { data } = $props();
 
   type UserItem = {
@@ -55,7 +55,7 @@
 <section class="space-y-6">
   <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
     <div>
-      <p class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em] mb-1">
+      <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">
         Pengguna
       </p>
       <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
@@ -76,13 +76,13 @@
         bind:value={q}
         type="text"
         placeholder="Cari email, nama, atau id user"
-        class="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm outline-none focus:border-[#f5c518]"
+        class="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm outline-none focus:border-[var(--color-primary)]"
         onkeydown={(e) => e.key === "Enter" && submitFilter()}
       />
 
       <select
         bind:value={role}
-        class="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm outline-none focus:border-[#f5c518]"
+        class="px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white text-sm outline-none focus:border-[var(--color-primary)]"
       >
         <option value="">Semua role</option>
         <option value="admin">Admin</option>
@@ -91,7 +91,7 @@
 
       <button
         type="button"
-        class="px-4 py-2 rounded-xl bg-[#f5c518] text-black text-sm font-semibold hover:bg-[#ffd740]"
+        class="px-4 py-2 rounded-xl bg-[var(--color-primary)] text-black text-sm font-semibold hover:bg-[#ffd740]"
         onclick={submitFilter}
       >
         Filter
@@ -190,3 +190,4 @@
     </div>
   </div>
 </section>
+

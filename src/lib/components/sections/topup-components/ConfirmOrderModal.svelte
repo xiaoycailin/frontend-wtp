@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { teleport } from "$lib/utils";
   import type { Product } from "./types";
   import { fmt } from "./utils";
@@ -140,7 +140,7 @@
                   {/if}
                 </div>
                 {#if displayIsFlashSale}
-                  <span class="flash-badge">⚡ Flash Sale</span>
+                  <span class="flash-badge">âš¡ Flash Sale</span>
                 {/if}
               </div>
             </section>
@@ -198,13 +198,13 @@
               {#if quantity > 1}
                 <div class="modal-price-row">
                   <span>Jumlah</span>
-                  <span>×{quantity}</span>
+                  <span>Ã—{quantity}</span>
                 </div>
               {/if}
               {#if displayIsFlashSale && displayFlashDiscount > 0}
                 <div class="modal-price-row discount">
                   <span class="flex items-center gap-1.5">
-                    <span class="flash-badge-sm">⚡ FLASH</span>
+                    <span class="flash-badge-sm">âš¡ FLASH</span>
                     {displayDiscountLabel ?? "Diskon Flash Sale"}
                   </span>
                   <span>-{fmt(displayFlashDiscount)}</span>
@@ -366,7 +366,7 @@
   .modal-icon {
     width: 2.25rem;
     height: 2.25rem;
-    background: #f5c518;
+    background: var(--color-primary);
     border-radius: 0.625rem;
     display: flex;
     align-items: center;
@@ -509,7 +509,7 @@
   .modal-total-amount {
     font-size: 1rem;
     font-weight: 900;
-    color: #f5c518;
+    color: var(--color-primary);
   }
   .flash-badge {
     font-size: 0.625rem;
@@ -578,7 +578,7 @@
     border-radius: 0.75rem;
     font-size: 0.8125rem;
     font-weight: 800;
-    background: #f5c518;
+    background: var(--color-primary);
     color: #000;
     box-shadow: 0 0 20px rgba(245, 197, 24, 0.35);
     transition: all 180ms;
@@ -622,3 +622,4 @@
     }
   }
 </style>
+

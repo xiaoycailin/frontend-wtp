@@ -1,14 +1,14 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { browser } from "$app/environment";
   import ParticleCanvas from "../ParticleCanvas.svelte";
   import TiltCard from "../TiltCard.svelte";
 
-  // ── Slides — ganti src dengan path gambar banner asli ─────────
+  // â”€â”€ Slides â€” ganti src dengan path gambar banner asli â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const slides = [
     {
       src: "https://img.lapakgaming.com/?src=https%3A%2F%2Fwww.lapakgaming.com%2Fstatic%2Fbanner%2Flapakgaming%2F202604%2F1448x520-HB-MLBB-x-Naruto-ID-2+%281%29.png&w=1920&q=75&f=webp&onerror=redirect",
-      alt: "Februari Starlight – Hilda Guardian Battalion",
+      alt: "Februari Starlight â€“ Hilda Guardian Battalion",
     },
     {
       src: "https://api.duniagames.co.id/api/content/upload/images/DG_266582.png",
@@ -20,11 +20,11 @@
     },
   ];
 
-  // ── Slider state ──────────────────────────────────────────────
+  // â”€â”€ Slider state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let currentSlide = $state(0);
   let autoplayTimer: ReturnType<typeof setInterval>;
 
-  // ── Drag state ────────────────────────────────────────────────
+  // â”€â”€ Drag state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let isDragging = $state(false);
   let dragStartX = 0;
   let dragCurrentX = $state(0);
@@ -76,7 +76,7 @@
     resetTimer();
   }
 
-  // ── Navigation ────────────────────────────────────────────────
+  // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function nextSlide() {
     currentSlide = (currentSlide + 1) % slides.length;
   }
@@ -101,15 +101,15 @@
   });
 </script>
 
-<!-- ═══════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      BANNER SECTION
-═══════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <TiltCard maxTilt={0.5}>
   <section
     class="relative w-full overflow-hidden rounded-2xl bg-[#0a0a0a]"
     style="aspect-ratio: 16/5; min-height: 160px; max-height: 420px;"
   >
-    <!-- ── Image Slider Track ── -->
+    <!-- â”€â”€ Image Slider Track â”€â”€ -->
     <div
       class="absolute inset-0 flex will-change-transform"
       style="
@@ -154,7 +154,7 @@
       {/each}
     </div>
 
-    <!-- ── Corner decorations ── -->
+    <!-- â”€â”€ Corner decorations â”€â”€ -->
     <div
       class="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-white/20 rounded-tl pointer-events-none"
       style="z-index:12;"
@@ -168,7 +168,7 @@
       style="z-index:12;"
     ></div>
 
-    <!-- ── Left Arrow ── -->
+    <!-- â”€â”€ Left Arrow â”€â”€ -->
     <button
       onclick={() => {
         prevSlide();
@@ -197,7 +197,7 @@
       </svg>
     </button>
 
-    <!-- ── Right Arrow ── -->
+    <!-- â”€â”€ Right Arrow â”€â”€ -->
     <button
       onclick={() => {
         nextSlide();
@@ -226,7 +226,7 @@
       </svg>
     </button>
 
-    <!-- ── Takapedia vertical label ── -->
+    <!-- â”€â”€ Takapedia vertical label â”€â”€ -->
     <div
       class="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center
              border-l border-white/10 bg-black/30 backdrop-blur-sm pointer-events-none"
@@ -237,7 +237,7 @@
       >
     </div>
 
-    <!-- ── Dot indicators ── -->
+    <!-- â”€â”€ Dot indicators â”€â”€ -->
     <div
       class="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5"
       style="z-index: 20;"
@@ -250,14 +250,15 @@
             width: {i === currentSlide ? '22px' : '6px'};
             height: 6px;
             background: {i === currentSlide
-            ? '#f5c518'
+            ? 'var(--color-primary)'
             : 'rgba(255,255,255,0.3)'};
           "
           aria-label="Slide {i + 1}"
         ></button>
       {/each}
     </div>
-    <!-- ── Particle Canvas ── -->
+    <!-- â”€â”€ Particle Canvas â”€â”€ -->
     <ParticleCanvas maxParticles={20} />
   </section>
 </TiltCard>
+

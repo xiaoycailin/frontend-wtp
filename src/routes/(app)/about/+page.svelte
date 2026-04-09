@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import {
     TrophyStar,
     Shield,
@@ -68,14 +68,14 @@
 </script>
 
 <svelte:head>
-  <title>Tentang Kami — WTPANJAY</title>
+  <title>Tentang Kami â€” WTPANJAY</title>
   <meta
     name="description"
     content="Kenalan dengan WTPANJAY, platform top-up game terpercaya di Indonesia."
   />
 </svelte:head>
 
-<!-- ═══════════════ HERO ═══════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• HERO â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section style="position:relative; padding:5rem 0 7rem; overflow:hidden;">
   <div
     style="position:absolute; top:-8rem; right:-8rem; width:500px; height:500px;
@@ -97,7 +97,7 @@
       style="display:inline-flex; align-items:center; gap:0.5rem;
                 padding:0.375rem 1rem; border-radius:9999px;
                 background:rgba(245,197,24,0.10); border:1px solid rgba(245,197,24,0.25);
-                color:#f5c518; font-size:0.75rem; font-weight:600; margin-bottom:1.5rem;"
+                color:var(--color-primary); font-size:0.75rem; font-weight:600; margin-bottom:1.5rem;"
     >
       <svg
         style="width:14px;height:14px;"
@@ -115,7 +115,7 @@
                letter-spacing:-0.02em; line-height:1.2; margin-bottom:1.25rem;"
     >
       Kami hadir untuk bikin<br />
-      <span style="color:#f5c518;">gaming kamu lebih mudah</span>
+      <span style="color:var(--color-primary);">gaming kamu lebih mudah</span>
     </h1>
 
     <p
@@ -128,7 +128,7 @@
   </div>
 </section>
 
-<!-- ═══════════════ STATS ═══════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• STATS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section
   style="border-top:1px solid rgba(255,255,255,0.07); border-bottom:1px solid rgba(255,255,255,0.07); padding:2.5rem 0;"
 >
@@ -143,7 +143,7 @@
                   padding:2rem 1rem; text-align:center;"
       >
         <span
-          style="font-size:2.25rem; font-weight:900; color:#f5c518; line-height:1;"
+          style="font-size:2.25rem; font-weight:900; color:var(--color-primary); line-height:1;"
           >{stat.value}</span
         >
         <span
@@ -155,7 +155,7 @@
   </div>
 </section>
 
-<!-- ═══════════════ CERITA KAMI ═══════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CERITA KAMI â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section style="padding:4rem 0;">
   <div
     style="display:grid; grid-template-columns:1fr; gap:2.5rem; align-items:center;"
@@ -163,7 +163,7 @@
     <!-- Text -->
     <div>
       <p
-        style="font-size:0.7rem; font-weight:700; color:#f5c518;
+        style="font-size:0.7rem; font-weight:700; color:var(--color-primary);
                 text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.75rem;"
       >
         Cerita Kami
@@ -204,7 +204,7 @@
                   justify-content:center; gap:1rem; padding:1.5rem;"
       >
         <div
-          style="width:4rem; height:4rem; border-radius:0.875rem; background:#f5c518;
+          style="width:4rem; height:4rem; border-radius:0.875rem; background:var(--color-primary);
                     display:flex; align-items:center; justify-content:center;
                     box-shadow:0 10px 30px rgba(245,197,24,0.30);"
         >
@@ -217,13 +217,13 @@
           </svg>
         </div>
         <div style="text-align:center;">
-          <p style="font-size:1.25rem; font-weight:900; color:#f5c518;">
+          <p style="font-size:1.25rem; font-weight:900; color:var(--color-primary);">
             WTPANJAY
           </p>
           <p
             style="font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:0.25rem;"
           >
-            Est. 2023 · Indonesia
+            Est. 2023 Â· Indonesia
           </p>
         </div>
         <div
@@ -232,7 +232,7 @@
         >
           {#each cardHighlights as [k, v]}
             <div>
-              <p style="font-size:0.625rem; color:#f5c518; font-weight:700;">
+              <p style="font-size:0.625rem; color:var(--color-primary); font-weight:700;">
                 {k}
               </p>
               <p
@@ -248,11 +248,11 @@
   </div>
 </section>
 
-<!-- ═══════════════ NILAI-NILAI ═══════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• NILAI-NILAI â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section style="padding:4rem 0;">
   <div style="text-align:center; margin-bottom:3rem;">
     <p
-      style="font-size:0.7rem; font-weight:700; color:#f5c518;
+      style="font-size:0.7rem; font-weight:700; color:var(--color-primary);
               text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.5rem;"
     >
       Nilai Kami
@@ -276,8 +276,8 @@
           style="width:2.5rem; height:2.5rem; border-radius:0.625rem;
                     display:flex; align-items:center; justify-content:center; margin-bottom:1rem;
                     {item.accent
-            ? 'background:#f5c518; color:#000;'
-            : 'background:rgba(255,255,255,0.07); color:#f5c518;'}"
+            ? 'background:var(--color-primary); color:#000;'
+            : 'background:rgba(255,255,255,0.07); color:var(--color-primary);'}"
         >
           <svelte:component this={item.icon} size="sm" />
         </div>
@@ -296,7 +296,7 @@
   </div>
 </section>
 
-<!-- ═══════════════ MISI & VISI ═══════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MISI & VISI â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section style="padding:4rem 0;">
   <div style="display:grid; grid-template-columns:1fr; gap:1rem;">
     <!-- Misi -->
@@ -307,7 +307,7 @@
       <div
         style="width:2.5rem; height:2.5rem; border-radius:0.625rem; margin-bottom:1.25rem;
                   background:rgba(245,197,24,0.10); border:1px solid rgba(245,197,24,0.22);
-                  display:flex; align-items:center; justify-content:center; color:#f5c518;"
+                  display:flex; align-items:center; justify-content:center; color:var(--color-primary);"
       >
         <svg
           style="width:1.25rem;height:1.25rem;"
@@ -342,7 +342,7 @@
     >
       <div
         style="width:2.5rem; height:2.5rem; border-radius:0.625rem; margin-bottom:1.25rem;
-                  background:#f5c518; display:flex; align-items:center; justify-content:center;
+                  background:var(--color-primary); display:flex; align-items:center; justify-content:center;
                   box-shadow:0 8px 20px rgba(245,197,24,0.25);"
       >
         <svg
@@ -368,14 +368,14 @@
         style="font-size:0.875rem; color:rgba(255,255,255,0.5); line-height:1.8;"
       >
         Menjadi platform top-up game nomor satu di Asia Tenggara yang
-        menghubungkan gamer dengan ekosistem gaming secara menyeluruh — dari
+        menghubungkan gamer dengan ekosistem gaming secara menyeluruh â€” dari
         top-up hingga komunitas.
       </p>
     </div>
   </div>
 </section>
 
-<!-- ═══════════════ CTA ═══════════════ -->
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• CTA â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section style="padding:4rem 0 2rem;">
   <div
     style="position:relative; overflow:hidden; border-radius:1.25rem; padding:3rem 2rem;
@@ -412,14 +412,14 @@
         <a
           href="/daftar"
           style="display:inline-flex; align-items:center; padding:0.65rem 1.5rem;
-                  border-radius:0.625rem; background:#f5c518; color:#000;
+                  border-radius:0.625rem; background:var(--color-primary); color:#000;
                   font-size:0.875rem; font-weight:700; text-decoration:none;
                   box-shadow:0 8px 20px rgba(245,197,24,0.28);
                   transition:transform 150ms ease, background 150ms ease;"
           onmouseenter={(e) =>
             ((e.currentTarget as HTMLElement).style.background = "#ffd740")}
           onmouseleave={(e) =>
-            ((e.currentTarget as HTMLElement).style.background = "#f5c518")}
+            ((e.currentTarget as HTMLElement).style.background = "var(--color-primary)")}
         >
           Daftar Gratis
         </a>
@@ -443,3 +443,4 @@
     </div>
   </div>
 </section>
+

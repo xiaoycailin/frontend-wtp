@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import ImageManagerModal from "./ImageManagerModal.svelte";
 
   let {
@@ -24,13 +24,13 @@
   <div class="flex gap-2">
     <textarea
       class="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-             focus:outline-none focus:border-[#f5c518]/70 min-h-[80px] resize-y"
+             focus:outline-none focus:border-[var(--color-primary)]/70 min-h-[80px] resize-y"
       bind:value
       {placeholder}
     />
     <button
       type="button"
-      class="shrink-0 px-3 py-2 rounded-lg text-xs font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
+      class="shrink-0 px-3 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
       onclick={() => (open = true)}
     >
       Pick Images
@@ -56,3 +56,4 @@
 </div>
 
 <ImageManagerModal bind:open onClose={() => (open = false)} onSelect={handleSelect} multiple={true} />
+

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { goto } from "$app/navigation";
   import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
 
@@ -86,7 +86,7 @@
 
 <section class="space-y-6 max-w-2xl">
   <header class="space-y-1">
-    <p class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em]">
+    <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em]">
       Produk Baru
     </p>
     <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
@@ -111,7 +111,7 @@
         <label class="text-xs text-white/70">Judul Produk</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           placeholder="Weekly Diamond Pass"
           bind:value={title}
           required
@@ -121,7 +121,7 @@
         <label class="text-xs text-white/70">Sub Kategori</label>
         <select
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={subCategoryId}
           required
         >
@@ -138,7 +138,7 @@
       <textarea
         rows="3"
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70 resize-y"
+               focus:outline-none focus:border-[var(--color-primary)]/70 resize-y"
         placeholder="877 dm ml cepat fast"
         bind:value={description}
       />
@@ -151,7 +151,7 @@
           type="number"
           min="0"
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           placeholder="45000"
           bind:value={price}
           required
@@ -161,7 +161,7 @@
         <label class="text-xs text-white/70">Mata Uang</label>
         <select
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={currency}
         >
           <option value="IDR">IDR</option>
@@ -173,7 +173,7 @@
           type="number"
           min="0"
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           placeholder="999"
           bind:value={stock}
         />
@@ -192,7 +192,7 @@
       <textarea
         rows="2"
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70 resize-y"
+               focus:outline-none focus:border-[var(--color-primary)]/70 resize-y"
         bind:value={conditionNotes}
       />
     </div>
@@ -211,7 +211,7 @@
     <div class="flex items-center gap-2 pt-2">
       <button
         type="submit"
-        class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#f5c518] text-black
+        class="px-4 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black
                hover:bg-[#ffd740] disabled:opacity-50"
         disabled={!canSubmit}
       >
@@ -228,3 +228,4 @@
     </div>
   </form>
 </section>
+

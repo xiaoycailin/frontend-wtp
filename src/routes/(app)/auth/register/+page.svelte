@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { goto } from "$app/navigation";
   import { auth } from "$lib/auth.svelte";
   import { onMount } from "svelte";
@@ -116,7 +116,7 @@
 
   const barColor = $derived(
     passwordScore === 4
-      ? "bg-[#f5c518]"
+      ? "bg-[var(--color-primary)]"
       : passwordScore === 3
         ? "bg-green-500"
         : passwordScore === 2
@@ -126,7 +126,7 @@
 
   const labelColor = $derived(
     passwordScore === 4
-      ? "text-[#f5c518]"
+      ? "text-[var(--color-primary)]"
       : passwordScore === 3
         ? "text-green-400"
         : passwordScore === 2
@@ -136,7 +136,7 @@
 </script>
 
 <svelte:head>
-  <title>Daftar — WTPANJAY</title>
+  <title>Daftar â€” WTPANJAY</title>
 </svelte:head>
 
 <div class="auth-root">
@@ -149,13 +149,13 @@
       <svg class="logo-icon" viewBox="0 0 40 40" fill="none" aria-hidden="true">
         <polygon
           points="20,2 38,11 38,29 20,38 2,29 2,11"
-          fill="#f5c518"
+          fill="var(--color-primary)"
           opacity="0.15"
         />
         <polygon
           points="20,2 38,11 38,29 20,38 2,29 2,11"
           fill="none"
-          stroke="#f5c518"
+          stroke="var(--color-primary)"
           stroke-width="1.5"
         />
         <text
@@ -165,7 +165,7 @@
           font-family="'Rajdhani',sans-serif"
           font-weight="700"
           font-size="14"
-          fill="#f5c518">W</text
+          fill="var(--color-primary)">W</text
         >
       </svg>
       <span class="logo-text">WTPANJAY</span>
@@ -182,7 +182,7 @@
               height="32"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#f5c518"
+              stroke="var(--color-primary)"
               stroke-width="2.5"
               aria-hidden="true"
             >
@@ -563,3 +563,4 @@
     </p>
   </main>
 </div>
+

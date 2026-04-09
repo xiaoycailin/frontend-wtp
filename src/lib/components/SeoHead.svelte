@@ -1,4 +1,4 @@
-<!-- src/lib/components/SeoHead.svelte -->
+﻿<!-- src/lib/components/SeoHead.svelte -->
 <script lang="ts">
   import type { Props } from "../../app";
 
@@ -14,13 +14,13 @@
 
   console.log(siteConfig);
 
-  // ── Resolvers (page override > siteConfig > fallback) ─────────
+  // â”€â”€ Resolvers (page override > siteConfig > fallback) â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const siteName = siteConfig?.siteName ?? "WTPANJAY";
   const siteUrl = siteConfig?.siteUrl ?? "";
   const faviconUrl = siteConfig?.faviconUrl ?? "/favicon.ico";
 
   const title = pageTitle
-    ? `${pageTitle} — ${siteName}`
+    ? `${pageTitle} â€” ${siteName}`
     : (siteConfig?.metaTitle ?? siteName);
 
   const description =
@@ -106,7 +106,7 @@
 </script>
 
 <svelte:head>
-  <!-- ── Basic ───────────────────────────────────────── -->
+  <!-- â”€â”€ Basic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <title>{title}</title>
   <meta name="description" content={description} />
   {#if siteConfig?.metaKeywords}
@@ -120,7 +120,7 @@
   <link rel="shortcut icon" href={faviconUrl} />
   <link rel="apple-touch-icon" href={faviconUrl} />
 
-  <!-- ── Open Graph ──────────────────────────────────── -->
+  <!-- â”€â”€ Open Graph â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <meta property="og:site_name" content={siteName} />
   <meta property="og:type" content={ogType} />
   <meta property="og:url" content={canonical} />
@@ -137,7 +137,7 @@
     <meta property="fb:app_id" content={siteConfig.fbAppId} />
   {/if}
 
-  <!-- ── Twitter / X Card ────────────────────────────── -->
+  <!-- â”€â”€ Twitter / X Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <meta name="twitter:card" content={twCard} />
   <meta name="twitter:title" content={twTitle} />
   <meta name="twitter:description" content={twDescription} />
@@ -152,7 +152,7 @@
     <meta name="twitter:image:alt" content={ogImageAlt} />
   {/if}
 
-  <!-- ── Search Engine Verification ─────────────────── -->
+  <!-- â”€â”€ Search Engine Verification â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   {#if siteConfig?.googleSiteVerification}
     <meta
       name="google-site-verification"
@@ -163,13 +163,13 @@
     <meta name="msvalidate.01" content={siteConfig.bingSiteVerification} />
   {/if}
 
-  <!-- ── Mobile & Theme ──────────────────────────────── -->
-  <meta name="theme-color" content="#f5c518" />
+  <!-- â”€â”€ Mobile & Theme â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <meta name="theme-color" content="var(--color-primary)" />
   <meta name="application-name" content={siteName} />
   <meta name="apple-mobile-web-app-title" content={siteName} />
   <meta name="format-detection" content="telephone=no" />
 
-  <!-- ── Google Analytics (GA4) ──────────────────────── -->
+  <!-- â”€â”€ Google Analytics (GA4) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   {#if gtmId}
     <!-- svelte-ignore -->
     {@html `<script async src="https://www.googletagmanager.com/gtag/js?id=${gtmId}"></script>
@@ -181,7 +181,7 @@
     </script>`}
   {/if}
 
-  <!-- ── Google Tag Manager ──────────────────────────── -->
+  <!-- â”€â”€ Google Tag Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   {#if gtmContainerId}
     <!-- svelte-ignore -->
     {@html `<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -191,7 +191,7 @@
     })(window,document,'script','dataLayer','${gtmContainerId}');</script>`}
   {/if}
 
-  <!-- ── Facebook Pixel ──────────────────────────────── -->
+  <!-- â”€â”€ Facebook Pixel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   {#if siteConfig?.facebookPixelId}
     <!-- svelte-ignore -->
     {@html `<script>
@@ -205,7 +205,7 @@
     </script>`}
   {/if}
 
-  <!-- ── TikTok Pixel ─────────────────────────────────── -->
+  <!-- â”€â”€ TikTok Pixel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   {#if siteConfig?.tiktokPixelId}
     <!-- svelte-ignore -->
     {@html `<script>
@@ -225,7 +225,8 @@
     </script>`}
   {/if}
 
-  <!-- ── Schema.org JSON-LD ──────────────────────────── -->
+  <!-- â”€â”€ Schema.org JSON-LD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <!-- svelte-ignore -->
   {@html `<script type="application/ld+json">${schemaOrgJson}</script>`}
 </svelte:head>
+

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   type ImageItem = {
     url: string;
     filename: string;
@@ -137,11 +137,11 @@
               type="file"
               accept="image/png,image/jpeg,image/webp"
               onchange={handleFileChange}
-              class="block text-xs text-white/70 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[#f5c518] file:text-black file:font-semibold"
+              class="block text-xs text-white/70 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border-0 file:bg-[var(--color-primary)] file:text-black file:font-semibold"
               disabled={uploading}
             />
             {#if uploading}
-              <span class="text-xs text-[#f5c518]">Uploading...</span>
+              <span class="text-xs text-[var(--color-primary)]">Uploading...</span>
             {/if}
           </div>
           <div class="flex items-center gap-2">
@@ -149,7 +149,7 @@
               <button
                 type="button"
                 onclick={insertSelected}
-                class="px-3 py-2 rounded-lg text-xs font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
+                class="px-3 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
               >
                 Insert Selected ({selectedUrls.length})
               </button>
@@ -173,7 +173,7 @@
             {#each images as image}
               <button
                 type="button"
-                class={`group text-left rounded-2xl overflow-hidden border transition ${multiple && selectedUrls.includes(image.url) ? "border-[#f5c518] bg-[#f5c518]/10" : selectedUrl === image.url ? "border-[#f5c518] bg-[#f5c518]/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}
+                class={`group text-left rounded-2xl overflow-hidden border transition ${multiple && selectedUrls.includes(image.url) ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10" : selectedUrl === image.url ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}
                 onclick={() => chooseExisting(image.url)}
               >
                 <div class="relative">
@@ -183,7 +183,7 @@
                   {#if multiple}
                     <div class="absolute top-2 right-2 w-5 h-5 rounded-full border border-white/30 bg-black/70 flex items-center justify-center">
                       {#if selectedUrls.includes(image.url)}
-                        <div class="w-3 h-3 rounded-full bg-[#f5c518]"></div>
+                        <div class="w-3 h-3 rounded-full bg-[var(--color-primary)]"></div>
                       {/if}
                     </div>
                   {/if}
@@ -200,3 +200,4 @@
     </div>
   </div>
 {/if}
+

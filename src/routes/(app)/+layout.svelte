@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { onMount, setContext } from "svelte";
   import "../layout.css";
 
@@ -18,6 +18,9 @@
   let { children, data } = $props();
 
   const siteConfig = data?.siteConfig ?? {};
+  const primaryColor = siteConfig?.primaryColor ?? '#f5c518';
+  const secondaryColor = siteConfig?.secondaryColor ?? '#0e0e0e';
+  const accentColor = siteConfig?.accentColor ?? '#ffffff';
 
   let mobileMenuOpen = $state(false);
   let searchQuery = $state("");
@@ -68,8 +71,8 @@
 
 <SeoHead {siteConfig} />
 
-<div class="min-h-screen bg-[#1a1a1a] text-white font-sans flex flex-col">
-  <!-- ═══════════════ NAVBAR ═══════════════ -->
+<div style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};" class="min-h-screen bg-[#1a1a1a] text-white font-sans flex flex-col">
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• NAVBAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <header
     class="sticky top-0 z-50 bg-[#111111]/80 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/40"
   >
@@ -80,7 +83,7 @@
       <!-- Logo -->
       <a href="/" class="shrink-0 flex items-center gap-2 mr-2">
         <!-- <div
-          class="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-[#f5c518] flex items-center justify-center shadow-md shadow-yellow-500/30"
+          class="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-[var(--color-primary)] flex items-center justify-center shadow-md shadow-yellow-500/30"
         >
           <svg viewBox="0 0 24 24" class="w-5 h-5 text-black fill-current">
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -89,10 +92,10 @@
         {#if siteConfig?.logoUrl}
           <img src={siteConfig.logoUrl} width="50" alt="" />
         {:else}
-          <div class="w-10 h-10 rounded-lg bg-[#f5c518] flex items-center justify-center text-black font-black">W</div>
+          <div class="w-10 h-10 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-black font-black">W</div>
         {/if}
         <!-- <span
-          class="hidden sm:block text-base font-black tracking-tight text-[#f5c518]"
+          class="hidden sm:block text-base font-black tracking-tight text-[var(--color-primary)]"
         >
           WTP<span class="text-white">ANJAY</span>
         </span> -->
@@ -123,7 +126,7 @@
           placeholder="Cari Game atau Voucher"
           class="w-full bg-white/8 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm
 					 text-white placeholder-white/30 outline-none
-					 focus:border-[#f5c518]/60 focus:bg-white/10 transition-all duration-200"
+					 focus:border-[var(--color-primary)]/60 focus:bg-white/10 transition-all duration-200"
         />
       </div>
 
@@ -134,7 +137,7 @@
             {#if auth.isAdmin}
               <span
                 onclick={async () => await goto("/admin")}
-                class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#f5c518]/15 text-[#f5c518] border border-[#f5c518]/25"
+                class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/25"
               >
                 Admin
               </span>
@@ -160,7 +163,7 @@
           </a>
           <a
             href="/auth/register"
-            class="px-4 py-1.5 rounded-lg text-sm font-bold bg-[#f5c518] text-black
+            class="px-4 py-1.5 rounded-lg text-sm font-bold bg-[var(--color-primary)] text-black
              hover:bg-[#ffd740] shadow-md shadow-yellow-500/20
              transition-all duration-200 hover:shadow-yellow-500/40"
           >
@@ -204,7 +207,7 @@
             href={item.href}
             class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200
                {active
-              ? 'text-[#f5c518] bg-[#f5c518]/10 border border-[#f5c518]/20'
+              ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20'
               : 'text-white/60 hover:text-white hover:bg-white/5'}"
           >
             <svelte:component this={item.icon} size="xs" />
@@ -225,7 +228,7 @@
             href={item.href}
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
                {active
-              ? 'text-[#f5c518] bg-[#f5c518]/10'
+              ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10'
               : 'text-white/70 hover:text-white hover:bg-white/5'}"
             onclick={() => (mobileMenuOpen = false)}
           >
@@ -240,8 +243,8 @@
             class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5"
           >
             <div
-              class="w-8 h-8 rounded-full bg-[#f5c518]/20 border border-[#f5c518]/30
-                flex items-center justify-center text-[#f5c518] text-xs font-bold shrink-0"
+              class="w-8 h-8 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30
+                flex items-center justify-center text-[var(--color-primary)] text-xs font-bold shrink-0"
             >
               {auth.user?.displayName?.charAt(0).toUpperCase() ?? "?"}
             </div>
@@ -254,7 +257,7 @@
             {#if auth.isAdmin}
               <span
                 class="px-1.5 py-0.5 rounded text-[10px] font-bold
-                   bg-[#f5c518]/15 text-[#f5c518] border border-[#f5c518]/25 shrink-0"
+                   bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/25 shrink-0"
               >
                 Admin
               </span>
@@ -296,7 +299,7 @@
             href="/auth/register"
             onclick={() => (mobileMenuOpen = false)}
             class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold
-           bg-[#f5c518] text-black hover:bg-[#ffd740]
+           bg-[var(--color-primary)] text-black hover:bg-[#ffd740]
            shadow-md shadow-yellow-500/20 transition-all duration-200"
           >
             Daftar Gratis
@@ -306,13 +309,13 @@
     {/if}
   </header>
 
-  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN CONTENT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <main class="flex-1 max-w-[1400px] mx-auto w-full px-5 md:px-8 py-6">
     <div class="bg-pattern" aria-hidden="true"></div>
     {@render children()}
   </main>
 
-  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FOOTER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <footer
     class="bg-[#0d0d0d]/80 backdrop-blur-xl border-t border-white/5 mt-auto"
   >
@@ -323,7 +326,7 @@
         <div class="col-span-2 md:col-span-1">
           <div class="flex items-center gap-2 mb-4">
             <!-- <div
-              class="w-8 h-8 rounded-lg bg-[#f5c518] flex items-center justify-center"
+              class="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center"
             >
               <svg viewBox="0 0 24 24" class="w-4 h-4 text-black fill-current">
                 <path
@@ -332,7 +335,7 @@
               </svg>
             </div> -->
             <img src={siteConfig.logoUrl} width="50" alt="" />
-            <span class="font-black text-[#f5c518]">{siteConfig.siteName}</span>
+            <span class="font-black text-[var(--color-primary)]">{siteConfig.siteName}</span>
           </div>
           <p class="text-xs text-white/40 leading-relaxed max-w-[200px]">
             {siteConfig.tagline ??
@@ -353,7 +356,7 @@
                 <li>
                   <a
                     href={link.href}
-                    class="text-sm text-white/50 hover:text-[#f5c518] transition-colors duration-200"
+                    class="text-sm text-white/50 hover:text-[var(--color-primary)] transition-colors duration-200"
                   >
                     {link.label}
                   </a>
@@ -369,7 +372,7 @@
         class="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3"
       >
         <p class="text-xs text-white/30">
-          © 2026 {siteConfig.siteName}. All rights reserved.
+          Â© 2026 {siteConfig.siteName}. All rights reserved.
         </p>
         <div class="flex items-center gap-4">
           <a
@@ -387,10 +390,10 @@
     </div>
   </footer>
 
-  <!-- ═══════════════ FLOATING CUSTOMER SERVICE ═══════════════ -->
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FLOATING CUSTOMER SERVICE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
   <button
     class="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full
-           bg-[#f5c518] text-black text-sm font-bold shadow-xl shadow-yellow-500/30
+           bg-[var(--color-primary)] text-black text-sm font-bold shadow-xl shadow-yellow-500/30
            hover:bg-[#ffd740] hover:shadow-yellow-500/50 hover:scale-105
            transition-all duration-200 active:scale-95"
     aria-label="Customer Service"
@@ -409,3 +412,4 @@
     <span class="hidden sm:inline">Customer Service</span>
   </button>
 </div>
+

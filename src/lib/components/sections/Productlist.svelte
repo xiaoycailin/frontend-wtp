@@ -1,7 +1,7 @@
-<script lang="ts">
+﻿<script lang="ts">
   import TiltCard from "../TiltCard.svelte";
 
-  // ── Types ──────────────────────────────────────────────────────
+  // â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   interface Game {
     slug: string;
     name: string;
@@ -13,12 +13,12 @@
     priceFrom: string;
   }
 
-  // ── State ──────────────────────────────────────────────────────
+  // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let activeCategory = $state("all");
   let { searchQuery, data } = $props();
   // console.log(data.category);
 
-  // ── Data ───────────────────────────────────────────────────────
+  // â”€â”€ Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const categories = [{ title: "Semua", id: "all" }, ...data.category];
 
   const sc: any[] = [];
@@ -38,14 +38,14 @@
       slug: g.slug,
       // TODO: jangan di harcode
       priceFrom: "Rp 10.000",
-      badge: { label: "🔥 POPULER", color: "#f5c518" },
+      badge: { label: "ðŸ”¥ POPULER", color: "var(--color-primary)" },
       popular: true,
     };
   });
 
   let hoveredId = $state<string | null>(null);
 
-  // ── Derived filtered list ──────────────────────────────────────
+  // â”€â”€ Derived filtered list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let filtered = $derived(
     games.filter((g) => {
       const matchCat =
@@ -60,20 +60,20 @@
   // }
 </script>
 
-<!-- ═══════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      GAME PRODUCT LIST SECTION
-═══════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <section class="w-full mt-6">
-  <!-- ── Section Header ── -->
+  <!-- â”€â”€ Section Header â”€â”€ -->
   <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-5">
     <div class="flex items-center gap-3 flex-1">
       <!-- Accent bar -->
       <div
-        class="w-1 h-7 rounded-full bg-[#f5c518] shadow-sm shadow-yellow-400/50"
+        class="w-1 h-7 rounded-full bg-[var(--color-primary)] shadow-sm shadow-yellow-400/50"
       ></div>
       <div>
         <p
-          class="text-[10px] font-bold uppercase tracking-widest text-[#f5c518]/70 leading-none mb-0.5"
+          class="text-[10px] font-bold uppercase tracking-widest text-[var(--color-primary)]/70 leading-none mb-0.5"
         >
           Top Up Sekarang
         </p>
@@ -84,7 +84,7 @@
     </div>
   </div>
 
-  <!-- ── Category Tabs ── -->
+  <!-- â”€â”€ Category Tabs â”€â”€ -->
   <div
     class="sticky top-[55px] md:top-[114px] z-40 backdrop-blur-xl p-2 pb-3 bg-[#1a1a1a]/60"
   >
@@ -96,11 +96,11 @@
                transition-all duration-200 whitespace-nowrap border"
           style="
           background: {activeCategory === cat.id
-            ? '#f5c518'
+            ? 'var(--color-primary)'
             : 'rgba(255,255,255,0.05)'};
           color: {activeCategory === cat.id ? '#000' : 'rgba(255,255,255,0.5)'};
           border-color: {activeCategory === cat.id
-            ? '#f5c518'
+            ? 'var(--color-primary)'
             : 'rgba(255,255,255,0.08)'};
         "
         >
@@ -116,7 +116,7 @@
     </div>
   </div>
 
-  <!-- ── Game Grid ── -->
+  <!-- â”€â”€ Game Grid â”€â”€ -->
   {#if filtered.length === 0}
     <div class="flex flex-col items-center justify-center py-20 text-white/20">
       <svg
@@ -139,7 +139,7 @@
       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 mt-2"
     >
       {#each filtered as game (game.slug)}
-        <!-- ── Game Card ── -->
+        <!-- â”€â”€ Game Card â”€â”€ -->
         <TiltCard maxTilt={25}>
           <a
             href="/{game.slug}"
@@ -198,9 +198,9 @@
               >
                 <span
                   class="text-[10px] font-bold px-3 py-1.5 rounded-lg text-black"
-                  style="background: #f5c518; box-shadow: 0 0 12px rgba(245,197,24,0.5);"
+                  style="background: var(--color-primary); box-shadow: 0 0 12px rgba(245,197,24,0.5);"
                 >
-                  Top Up →
+                  Top Up â†’
                 </span>
               </div>
             </div>
@@ -208,7 +208,7 @@
             <!-- Info -->
             <div class="p-2.5">
               <h3
-                class="text-xs font-bold text-white leading-tight line-clamp-1 mb-0.5 group-hover:text-[#f5c518] transition-colors duration-200"
+                class="text-xs font-bold text-white leading-tight line-clamp-1 mb-0.5 group-hover:text-[var(--color-primary)] transition-colors duration-200"
               >
                 {game.name}
               </h3>
@@ -223,7 +223,7 @@
                     Mulai dari
                   </p>
                   <p
-                    class="text-[12px] font-black text-[#f5c518] leading-tight"
+                    class="text-[12px] font-black text-[var(--color-primary)] leading-tight"
                   >
                     {game.priceFrom}
                   </p>
@@ -233,7 +233,7 @@
                   class="w-6 h-6 rounded-lg flex items-center justify-center transition-all duration-200"
                   style="
                     background: {hoveredId === game.slug
-                    ? '#f5c518'
+                    ? 'var(--color-primary)'
                     : 'rgba(255,255,255,0.05)'};
                     color: {hoveredId === game.slug
                     ? '#000'
@@ -262,8 +262,8 @@
               class="absolute bottom-0 left-0 right-0 h-[2px] transition-opacity duration-300"
               style="
                 opacity: {hoveredId === game.slug ? 1 : 0};
-                background: linear-gradient(to right, transparent, #f5c518, transparent);
-                box-shadow: 0 0 8px #f5c518;
+                background: linear-gradient(to right, transparent, var(--color-primary), transparent);
+                box-shadow: 0 0 8px var(--color-primary);
               "
             ></div>
           </a>
@@ -272,13 +272,13 @@
     </div>
   {/if}
 
-  <!-- ── Load More ── -->
+  <!-- â”€â”€ Load More â”€â”€ -->
   {#if filtered.length >= 6}
     <div class="flex justify-center mt-8">
       <button
         class="group flex items-center gap-2 px-6 py-2.5 rounded-xl
                bg-white/5 border border-white/10 text-sm font-semibold text-white/50
-               hover:bg-[#f5c518]/10 hover:border-[#f5c518]/30 hover:text-[#f5c518]
+               hover:bg-[var(--color-primary)]/10 hover:border-[var(--color-primary)]/30 hover:text-[var(--color-primary)]
                transition-all duration-200"
       >
         <span>Lihat Semua Game</span>
@@ -315,3 +315,4 @@
     -webkit-box-orient: vertical;
   }
 </style>
+

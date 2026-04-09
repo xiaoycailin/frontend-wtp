@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import ConfirmOrderModal from "./ConfirmOrderModal.svelte";
   import type { Product, PromoApplied } from "./types";
   import { goto } from "$app/navigation";
@@ -35,14 +35,14 @@
     email?: string;
   } = $props();
 
-  // ── FIX 1: State untuk menyimpan hasil review dari server ────────
+  // â”€â”€ FIX 1: State untuk menyimpan hasil review dari server â”€â”€â”€â”€â”€â”€â”€â”€
   let reviewData = $state<any>(null);
   let purchaseData = $state<any>(null);
   let reviewLoading = $state(false);
   let purchaseLoading = $state(false);
   let showConfirmModal = $state(false);
 
-  // ── FIX 2: Derived — pakai data server kalau ada, fallback ke props
+  // â”€â”€ FIX 2: Derived â€” pakai data server kalau ada, fallback ke props
   const displayBasePrice = $derived(reviewData?.price ?? basePrice);
   const displayFlashDiscount = $derived(reviewData?.discount ?? 0);
   const displayDiscountLabel = $derived(reviewData?.discountLabel ?? null);
@@ -50,7 +50,7 @@
   const displayFee = $derived(reviewData?.fee ?? surcharge ?? 0);
   const displayTotal = $derived(reviewData?.total ?? totalPrice);
 
-  // ── FIX 3: $effect dengan guard + AbortController ────────────────
+  // â”€â”€ FIX 3: $effect dengan guard + AbortController â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   $effect(() => {
     // Guard: jangan fetch kalau data belum lengkap
     if (!selected || !selectedPay?.id) {
@@ -91,7 +91,7 @@
       });
 
       if (!res.ok) {
-        // ── Tampilkan error review langsung (misal flash sale qty > 1) ─
+        // â”€â”€ Tampilkan error review langsung (misal flash sale qty > 1) â”€
         const errJson = await res.json().catch(() => null);
         const errMsg =
           errJson?.data?.message ??
@@ -115,7 +115,7 @@
     }
   }
 
-  // ── Toast ────────────────────────────────────────────────────────
+  // â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   type ToastType = "error" | "success" | "info";
   let toast = $state<{ message: string; type: ToastType } | null>(null);
   let toastTimer: ReturnType<typeof setTimeout>;
@@ -127,7 +127,7 @@
   }
 
   const purchaseItem = async () => {
-    // ── Guard: jangan lanjut kalau purchaseData belum ada ──────────
+    // â”€â”€ Guard: jangan lanjut kalau purchaseData belum ada â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (!purchaseData) {
       showToast("Data pesanan belum siap, tunggu sebentar.", "info");
       return;
@@ -153,7 +153,7 @@
           errJson?.error ??
           `Terjadi kesalahan (${res.status})`;
 
-        // ── FIX: tutup modal DULU biar toast tidak tertutup backdrop ─
+        // â”€â”€ FIX: tutup modal DULU biar toast tidak tertutup backdrop â”€
         showConfirmModal = false;
         purchaseLoading = false;
 
@@ -217,7 +217,7 @@
   onCancel={() => (showConfirmModal = false)}
 />
 
-<!-- ── Toast ──────────────────────────────────────────────────── -->
+<!-- â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 {#if toast}
   <div
     use:teleport
@@ -313,7 +313,7 @@
     <div class="flex gap-0.5 pb-1.5">
       {#each Array(5) as _}
         <svg
-          class="w-5 h-5 text-[#f5c518]"
+          class="w-5 h-5 text-[var(--color-primary)]"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -334,9 +334,9 @@
   class="rounded-2xl border border-white/[0.07] bg-[#111111] p-4 flex items-center gap-3"
 >
   <div
-    class="w-9 h-9 rounded-xl bg-[#f5c518]/10 border border-[#f5c518]/20 flex items-center justify-center flex-shrink-0"
+    class="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 flex items-center justify-center flex-shrink-0"
   >
-    <span class="text-lg">🎧</span>
+    <span class="text-lg">ðŸŽ§</span>
   </div>
   <div>
     <p class="text-xs font-bold text-white">Butuh Bantuan?</p>
@@ -345,7 +345,7 @@
   <button
     class="ml-auto flex-shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold
            bg-white/5 border border-white/10 text-white/60
-           hover:border-[#f5c518]/40 hover:text-[#f5c518] transition-all duration-200"
+           hover:border-[var(--color-primary)]/40 hover:text-[var(--color-primary)] transition-all duration-200"
   >
     Chat
   </button>
@@ -377,7 +377,7 @@
         <div
           class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3 text-2xl"
         >
-          🛒
+          ðŸ›’
         </div>
         <p class="text-xs text-white/30 font-medium">
           Belum ada item yang dipilih
@@ -434,7 +434,7 @@
         {#if quantity > 1}
           <div class="flex justify-between">
             <span class="text-white/40">Jumlah</span>
-            <span class="text-white font-medium">×{quantity}</span>
+            <span class="text-white font-medium">Ã—{quantity}</span>
           </div>
         {/if}
 
@@ -445,7 +445,7 @@
               <span
                 class="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-red-500/20 text-red-400"
               >
-                ⚡ FLASH
+                âš¡ FLASH
               </span>
               {displayDiscountLabel ?? "Diskon Flash Sale"}
             </span>
@@ -494,7 +494,7 @@
         {#if reviewLoading}
           <div class="h-6 w-28 rounded bg-white/10 animate-pulse"></div>
         {:else}
-          <span class="text-lg font-black text-[#f5c518]"
+          <span class="text-lg font-black text-[var(--color-primary)]"
             >{fmt(displayTotal)}</span
           >
         {/if}
@@ -510,7 +510,7 @@
              text-sm font-black tracking-wide transition-all duration-300 overflow-hidden"
       style="
         background: {canOrder && !reviewLoading
-        ? '#f5c518'
+        ? 'var(--color-primary)'
         : 'rgba(255,255,255,0.05)'};
         color:      {canOrder && !reviewLoading
         ? '#000'
@@ -564,7 +564,7 @@
         <div class="flex items-center gap-2">
           <div
             class="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
-            style="background:{item.ok ? '#f5c518' : 'rgba(255,255,255,0.08)'};"
+            style="background:{item.ok ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)'};"
           >
             {#if item.ok}
               <svg
@@ -596,10 +596,10 @@
   </div>
 </div>
 
-<!-- ── Mobile Fixed Bottom Bar ─────────────────────────────────── -->
+<!-- â”€â”€ Mobile Fixed Bottom Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 {#if selected}
   <div class="mobile-order-bar md:hidden">
-    <!-- ── Discount Strip (muncul kalau ada diskon) ── -->
+    <!-- â”€â”€ Discount Strip (muncul kalau ada diskon) â”€â”€ -->
     {#if (displayIsFlashSale && displayFlashDiscount > 0) || discountAmount > 0}
       <div class="discount-strip">
         <div class="discount-strip-inner">
@@ -636,7 +636,7 @@
 
           <!-- Total penghematan kalau dua-duanya ada -->
           {#if displayIsFlashSale && displayFlashDiscount > 0 && discountAmount > 0}
-            <span class="ds-divider">·</span>
+            <span class="ds-divider">Â·</span>
             <span class="ds-total-save">
               Total hemat {fmt(displayFlashDiscount + discountAmount)}
             </span>
@@ -741,9 +741,9 @@
 
 <!-- Payment hints -->
 <div class="flex flex-wrap items-center justify-center gap-2 px-2">
-  {#each ["💳 Transfer", "📱 QRIS", "🏧 ATM", "💰 COD"] as m, i}
+  {#each ["ðŸ’³ Transfer", "ðŸ“± QRIS", "ðŸ§ ATM", "ðŸ’° COD"] as m, i}
     <span class="text-[10px] text-white/25 font-medium">{m}</span>
-    {#if i < 3}<span class="text-white/10">·</span>{/if}
+    {#if i < 3}<span class="text-white/10">Â·</span>{/if}
   {/each}
 </div>
 
@@ -760,11 +760,11 @@
     }
   }
 
-  /* ── Toast ───────────────────────────────────────────────────────── */
+  /* â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .toast {
     position: fixed;
-    top: 1.25rem; /* ← ganti bottom ke top */
-    bottom: unset; /* ← reset bottom kalau masih ada */
+    top: 1.25rem; /* â† ganti bottom ke top */
+    bottom: unset; /* â† reset bottom kalau masih ada */
     left: 50%;
     transform: translateX(-50%);
     z-index: 99999;
@@ -797,7 +797,7 @@
   .toast-info {
     background: rgba(245, 197, 24, 0.1);
     border-color: rgba(245, 197, 24, 0.25);
-    color: #f5c518;
+    color: var(--color-primary);
   }
 
   .toast-icon {
@@ -827,7 +827,7 @@
   @keyframes toastIn {
     from {
       opacity: 0;
-      transform: translateX(-50%) translateY(-0.75rem); /* ← negatif = dari atas */
+      transform: translateX(-50%) translateY(-0.75rem); /* â† negatif = dari atas */
     }
     to {
       opacity: 1;
@@ -835,7 +835,7 @@
     }
   }
 
-  /* ── Mobile Fixed Bottom Bar ───────────────────────────────────── */
+  /* â”€â”€ Mobile Fixed Bottom Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .mobile-order-bar {
     position: fixed;
     bottom: 0;
@@ -894,7 +894,7 @@
     align-items: center;
     gap: 0.875rem;
     position: relative;
-    padding-top: 0.625rem; /* ← tambahkan ini agar jarak dari border sama dengan strip */
+    padding-top: 0.625rem; /* â† tambahkan ini agar jarak dari border sama dengan strip */
   }
   /* Info kiri */
   .bar-info {
@@ -907,7 +907,7 @@
   .bar-price {
     font-size: 1.125rem;
     font-weight: 900;
-    color: #f5c518;
+    color: var(--color-primary);
     letter-spacing: -0.02em;
     line-height: 1;
     /* Glow teks */
@@ -952,7 +952,7 @@
     white-space: nowrap;
   }
   .bar-btn-active {
-    background: #f5c518;
+    background: var(--color-primary);
     color: #000;
     cursor: pointer;
     box-shadow:
@@ -999,11 +999,11 @@
     }
   }
 
-  /* ── Discount Strip ──────────────────────────────────────────────── */
+  /* â”€â”€ Discount Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   .discount-strip {
-    padding: 0.625rem 0; /* ← sama atas & bawah, hapus nilai berbeda */
+    padding: 0.625rem 0; /* â† sama atas & bawah, hapus nilai berbeda */
     padding-top: 0;
-    margin-bottom: 0; /* ← hapus margin-bottom, border sudah jadi pemisah */
+    margin-bottom: 0; /* â† hapus margin-bottom, border sudah jadi pemisah */
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
   /* .discount-strip::before {
@@ -1098,3 +1098,4 @@
     color: rgba(255, 255, 255, 0.2);
   }
 </style>
+

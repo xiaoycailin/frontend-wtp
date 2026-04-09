@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED" | "REFUND" | "";
   type OrderStatus = "PENDING" | "SUCCESS" | "FAILED" | "WAIT_PAYMENT" | "";
 
@@ -204,7 +204,7 @@
   >
     <div>
       <p
-        class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em] mb-1"
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
       >
         Transaksi
       </p>
@@ -216,7 +216,7 @@
       </p>
     </div>
     {#if lastUpdated}
-      <p class="text-[11px] text-white/40">auto refresh 10 detik · update terakhir {lastUpdated}</p>
+      <p class="text-[11px] text-white/40">auto refresh 10 detik Â· update terakhir {lastUpdated}</p>
     {/if}
   </header>
 
@@ -228,7 +228,7 @@
       <label class="flex flex-col gap-1">
         <span class="text-white/60">Trx ID</span>
         <input
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={qTrxId}
           placeholder="M-XXXX"
         />
@@ -237,7 +237,7 @@
       <label class="flex flex-col gap-1">
         <span class="text-white/60">Payment Status</span>
         <select
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={qPaymentStatus}
         >
           <option value="">Semua</option>
@@ -251,7 +251,7 @@
       <label class="flex flex-col gap-1">
         <span class="text-white/60">Order Status</span>
         <select
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={qOrderStatus}
         >
           <option value="">Semua</option>
@@ -265,7 +265,7 @@
       <label class="flex flex-col gap-1">
         <span class="text-white/60">User ID</span>
         <input
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={qUserId}
           placeholder="userId"
         />
@@ -274,7 +274,7 @@
       <label class="flex flex-col gap-1">
         <span class="text-white/60">Urutkan Tanggal</span>
         <select
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={qSort}
         >
           <option value="desc">Terbaru dulu</option>
@@ -289,7 +289,7 @@
           Search (ID game / server / phone / email)
         </span>
         <input
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={qSearch}
           placeholder="0878..., server_id, email, dll"
         />
@@ -304,7 +304,7 @@
         </button>
         <button
           type="button"
-          class="w-full px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740] text-[11px]"
+          class="w-full px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740] text-[11px]"
           onclick={applyFilters}
           disabled={loading}
         >
@@ -323,14 +323,14 @@
     class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-[11px] text-white/60"
   >
     <p>
-      Total transaksi: {meta.total} · Halaman {meta.page} dari
+      Total transaksi: {meta.total} Â· Halaman {meta.page} dari
       {" "}
       {meta.totalPages}
     </p>
     <div class="flex items-center gap-2">
       <span>Per halaman</span>
       <select
-        class="px-2 py-1 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-[#f5c518]"
+        class="px-2 py-1 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-[var(--color-primary)]"
         bind:value={limit}
         onchange={(e) =>
           changeLimit(Number((e.target as HTMLSelectElement).value))}
@@ -456,7 +456,7 @@
                           {trx.paymentMethod.paymentName}
                         </p>
                         <p class="text-[10px] text-white/40">
-                          {trx.paymentMethod.methodCode} · {trx.paymentMethod
+                          {trx.paymentMethod.methodCode} Â· {trx.paymentMethod
                             .source}
                         </p>
                       </div>
@@ -473,7 +473,7 @@
                       {formatCurrency(trx.totalPrice)}
                     </p>
                     <p class="text-[10px] text-white/40">
-                      Harga: {formatCurrency(trx.price)} · Fee:
+                      Harga: {formatCurrency(trx.price)} Â· Fee:
                       {" "}
                       {formatCurrency(trx.fee)}
                     </p>
@@ -532,7 +532,7 @@
       Menampilkan
       {" "}
       {meta.total === 0 ? 0 : (meta.page - 1) * meta.limit + 1}
-      {"–"}
+      {"â€“"}
       {Math.min(meta.page * meta.limit, meta.total)}
       {" "}
       dari {meta.total} transaksi
@@ -545,7 +545,7 @@
         onclick={() => goToPage(page - 1)}
         disabled={page <= 1 || loading}
       >
-        ‹ Prev
+        â€¹ Prev
       </button>
       <span>
         Hal {page} / {meta.totalPages || 1}
@@ -556,7 +556,7 @@
         onclick={() => goToPage(page + 1)}
         disabled={page >= (meta.totalPages || 1) || loading}
       >
-        Next ›
+        Next â€º
       </button>
     </div>
   </div>
@@ -566,3 +566,4 @@
     </div>
   {/if}
 </section>
+

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import type { PromoApplied } from "./types";
   import { availablePromos } from "./paymentConstants";
 
@@ -41,14 +41,14 @@
       <div class="step-badge">4</div>
       <h3 class="step-title">Kode Promo</h3>
       {#if promoApplied}
-        <span class="ml-auto text-[10px] font-bold text-emerald-400">✓ {promoApplied.code} aktif</span>
+        <span class="ml-auto text-[10px] font-bold text-emerald-400">âœ“ {promoApplied.code} aktif</span>
       {/if}
     </div>
 
     {#if promoApplied}
       <!-- Applied state -->
       <div class="flex items-center gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 mb-3">
-        <span class="text-lg">🎟️</span>
+        <span class="text-lg">ðŸŽŸï¸</span>
         <div class="flex-1">
           <p class="text-xs font-bold text-emerald-400">{promoApplied.code}</p>
           <p class="text-[10px] text-emerald-400/60">{promoApplied.desc}</p>
@@ -65,7 +65,7 @@
       <!-- Input state -->
       <div class="flex gap-2 mb-3">
         <div class="relative flex-1">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none">🏷️</span>
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none">ðŸ·ï¸</span>
           <input
             type="text"
             bind:value={promoCode}
@@ -83,7 +83,7 @@
           disabled={!promoCode.trim()}
           class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex-shrink-0"
           style="
-            background: {promoCode.trim() ? '#f5c518' : 'rgba(255,255,255,0.05)'};
+            background: {promoCode.trim() ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'};
             color:      {promoCode.trim() ? '#000' : 'rgba(255,255,255,0.2)'};
             box-shadow: {promoCode.trim() ? '0 0 16px rgba(245,197,24,0.3)' : 'none'};
             cursor:     {promoCode.trim() ? 'pointer' : 'not-allowed'};
@@ -111,10 +111,10 @@
       style="
         background:   {showPromos ? 'rgba(245,197,24,0.1)' : 'rgba(255,255,255,0.03)'};
         border-color: {showPromos ? 'rgba(245,197,24,0.3)' : 'rgba(255,255,255,0.08)'};
-        color:        {showPromos ? '#f5c518' : 'rgba(255,255,255,0.5)'};
+        color:        {showPromos ? 'var(--color-primary)' : 'rgba(255,255,255,0.5)'};
       "
     >
-      <span>🎁</span> Pakai Promo Yang Tersedia
+      <span>ðŸŽ</span> Pakai Promo Yang Tersedia
       <svg
         class="w-3 h-3 ml-auto transition-transform duration-200 {showPromos ? 'rotate-180' : ''}"
         fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -129,25 +129,25 @@
           <button
             onclick={() => usePromo(promo.code)}
             class="flex items-center gap-3 p-3 rounded-xl border border-white/[0.07]
-                   bg-white/[0.03] hover:border-[#f5c518]/30 hover:bg-[#f5c518]/5
+                   bg-white/[0.03] hover:border-[var(--color-primary)]/30 hover:bg-[var(--color-primary)]/5
                    text-left transition-all duration-200 group"
           >
-            <div class="w-8 h-8 rounded-lg bg-[#f5c518]/10 flex items-center justify-center flex-shrink-0">
-              🎟️
+            <div class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
+              ðŸŽŸï¸
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-2">
-                <p class="text-xs font-bold text-white group-hover:text-[#f5c518] transition-colors">
+                <p class="text-xs font-bold text-white group-hover:text-[var(--color-primary)] transition-colors">
                   {promo.label}
                 </p>
-                <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-[#f5c518]/15 text-[#f5c518]">
+                <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-[var(--color-primary)]/15 text-[var(--color-primary)]">
                   {promo.code}
                 </span>
               </div>
               <p class="text-[10px] text-white/35 mt-0.5">{promo.desc}</p>
             </div>
-            <span class="text-[10px] text-[#f5c518] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-              Pakai →
+            <span class="text-[10px] text-[var(--color-primary)] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+              Pakai â†’
             </span>
           </button>
         {/each}
@@ -163,13 +163,13 @@
   }
   .step-accent {
     position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-    background: linear-gradient(to bottom, #f5c518, rgba(245, 197, 24, 0.3), transparent);
+    background: linear-gradient(to bottom, var(--color-primary), rgba(245, 197, 24, 0.3), transparent);
   }
   .step-header {
     display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;
   }
   .step-badge {
-    width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; background: #f5c518;
+    width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; background: var(--color-primary);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; font-size: 0.75rem; font-weight: 900; color: #000;
   }
@@ -178,3 +178,4 @@
     color: #fff; letter-spacing: 0.025em; flex: 1;
   }
 </style>
+

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import "./page.css";
 
   const lastUpdated = "1 April 2026";
@@ -13,7 +13,7 @@
           items: [
             "Nama tampilan (display name) saat mendaftar.",
             "Alamat email yang digunakan untuk membuat akun.",
-            "Password yang disimpan dalam bentuk terenkripsi (hashed) — kami tidak pernah menyimpan password dalam bentuk teks biasa.",
+            "Password yang disimpan dalam bentuk terenkripsi (hashed) â€” kami tidak pernah menyimpan password dalam bentuk teks biasa.",
             "ID game dan server yang kamu masukkan saat melakukan top-up.",
             "Informasi yang kamu berikan saat menghubungi layanan pelanggan.",
           ],
@@ -77,11 +77,11 @@
       id: "hak",
       title: "6. Hak-hak Kamu sebagai Pengguna",
       items: [
-        "Hak Akses — Kamu berhak meminta salinan data pribadi yang kami simpan tentangmu kapan saja.",
-        "Hak Koreksi — Kamu dapat memperbarui informasi akunmu yang tidak akurat langsung melalui halaman pengaturan akun.",
-        "Hak Penghapusan — Kamu dapat meminta penghapusan data pribadimu. Permintaan akan diproses dalam 30 hari kerja, kecuali data tersebut diperlukan untuk keperluan hukum.",
-        "Hak Portabilitas — Kamu berhak mendapatkan data pribadimu dalam format yang dapat dibaca mesin untuk dipindahkan ke layanan lain.",
-        "Hak Keberatan — Kamu dapat mengajukan keberatan atas pemrosesan data untuk keperluan tertentu, seperti pemasaran langsung.",
+        "Hak Akses â€” Kamu berhak meminta salinan data pribadi yang kami simpan tentangmu kapan saja.",
+        "Hak Koreksi â€” Kamu dapat memperbarui informasi akunmu yang tidak akurat langsung melalui halaman pengaturan akun.",
+        "Hak Penghapusan â€” Kamu dapat meminta penghapusan data pribadimu. Permintaan akan diproses dalam 30 hari kerja, kecuali data tersebut diperlukan untuk keperluan hukum.",
+        "Hak Portabilitas â€” Kamu berhak mendapatkan data pribadimu dalam format yang dapat dibaca mesin untuk dipindahkan ke layanan lain.",
+        "Hak Keberatan â€” Kamu dapat mengajukan keberatan atas pemrosesan data untuk keperluan tertentu, seperti pemasaran langsung.",
         "Untuk menggunakan hak-hak di atas, kirimkan permintaan ke privacy@wtpanjay.com beserta verifikasi identitasmu.",
       ],
     },
@@ -90,7 +90,7 @@
       title: "7. Perlindungan Data Anak",
       items: [
         "Layanan WTPANJAY tidak ditujukan untuk anak-anak di bawah usia 13 tahun. Kami tidak dengan sengaja mengumpulkan data dari anak-anak di bawah usia tersebut.",
-        "Bagi pengguna berusia 13–17 tahun, penggunaan layanan harus dengan sepengetahuan dan pengawasan orang tua atau wali.",
+        "Bagi pengguna berusia 13â€“17 tahun, penggunaan layanan harus dengan sepengetahuan dan pengawasan orang tua atau wali.",
         "Jika kami mengetahui bahwa data dari anak di bawah 13 tahun telah dikumpulkan tanpa persetujuan orang tua, kami akan segera menghapus data tersebut.",
         "Orang tua atau wali yang memiliki kekhawatiran terkait data anak dapat menghubungi kami di privacy@wtpanjay.com.",
       ],
@@ -121,7 +121,7 @@
         "Untuk pertanyaan, permintaan, atau keluhan terkait privasi dan perlindungan data pribadimu, hubungi kami melalui:",
         "Email Privasi: privacy@wtpanjay.com",
         "Email Dukungan Umum: support@wtpanjay.com",
-        "Jam Operasional: Senin – Minggu, 08.00 – 22.00 WIB",
+        "Jam Operasional: Senin â€“ Minggu, 08.00 â€“ 22.00 WIB",
         "Kami berkomitmen merespons setiap permintaan terkait privasi dalam waktu 3 hari kerja.",
       ],
     },
@@ -138,7 +138,7 @@
 </script>
 
 <svelte:head>
-  <title>Kebijakan Privasi — WTPANJAY</title>
+  <title>Kebijakan Privasi â€” WTPANJAY</title>
   <meta
     name="description"
     content="Pelajari bagaimana WTPANJAY mengumpulkan, menggunakan, dan melindungi data pribadimu."
@@ -162,13 +162,13 @@
         >
           <polygon
             points="20,2 38,11 38,29 20,38 2,29 2,11"
-            fill="#f5c518"
+            fill="var(--color-primary)"
             opacity="0.15"
           />
           <polygon
             points="20,2 38,11 38,29 20,38 2,29 2,11"
             fill="none"
-            stroke="#f5c518"
+            stroke="var(--color-primary)"
             stroke-width="1.5"
           />
           <text
@@ -178,7 +178,7 @@
             font-family="'Rajdhani',sans-serif"
             font-weight="700"
             font-size="14"
-            fill="#f5c518">W</text
+            fill="var(--color-primary)">W</text
           >
         </svg>
         <span class="logo-text">WTPANJAY</span>
@@ -261,7 +261,7 @@
             height="20"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#f5c518"
+            stroke="var(--color-primary)"
             stroke-width="2"
             aria-hidden="true"
           >
@@ -278,7 +278,7 @@
             height="20"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#f5c518"
+            stroke="var(--color-primary)"
             stroke-width="2"
             aria-hidden="true"
           >
@@ -296,7 +296,7 @@
             height="20"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#f5c518"
+            stroke="var(--color-primary)"
             stroke-width="2"
             aria-hidden="true"
           >
@@ -354,7 +354,7 @@
           height="20"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#f5c518"
+          stroke="var(--color-primary)"
           stroke-width="2"
           aria-hidden="true"
         >
@@ -376,3 +376,4 @@
     </main>
   </div>
 </div>
+

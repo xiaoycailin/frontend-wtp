@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import "./tos.css";
 
   const lastUpdated = "1 April 2026";
@@ -32,7 +32,7 @@
         "WTPANJAY menyediakan layanan top-up untuk berbagai game seperti Mobile Legends: Bang Bang, Free Fire, PUBG Mobile, Genshin Impact, Honkai: Star Rail, dan game populer lainnya.",
         "Semua item yang dibeli melalui Platform (diamond, kredit, voucher, UC, dll.) akan dikirimkan langsung ke akun game yang kamu daftarkan. Pastikan ID game dan server yang kamu masukkan sudah benar sebelum melakukan pembayaran.",
         "WTPANJAY tidak bertanggung jawab atas kerugian akibat kesalahan penginputan ID game atau server yang dilakukan oleh pengguna.",
-        "Waktu pengiriman item bergantung pada provider game masing-masing, namun WTPANJAY berupaya memproses setiap transaksi dalam waktu 1×24 jam.",
+        "Waktu pengiriman item bergantung pada provider game masing-masing, namun WTPANJAY berupaya memproses setiap transaksi dalam waktu 1Ã—24 jam.",
         "Harga yang tertera pada Platform sudah termasuk biaya layanan dan dapat berubah sewaktu-waktu tanpa pemberitahuan terlebih dahulu.",
       ],
     },
@@ -43,7 +43,7 @@
         "WTPANJAY menerima berbagai metode pembayaran termasuk transfer bank, dompet digital (GoPay, OVO, DANA, ShopeePay), dan QRIS.",
         "Seluruh transaksi pembayaran diproses melalui sistem pembayaran yang aman dan terenkripsi. WTPANJAY tidak menyimpan informasi kartu kredit atau debit pengguna.",
         "Transaksi yang telah berhasil diproses dan item telah dikirimkan ke akun game tidak dapat dibatalkan.",
-        "Jika pembayaran berhasil namun item belum diterima dalam waktu 1×24 jam, pengguna dapat mengajukan klaim melalui halaman Riwayat Transaksi atau menghubungi layanan pelanggan kami.",
+        "Jika pembayaran berhasil namun item belum diterima dalam waktu 1Ã—24 jam, pengguna dapat mengajukan klaim melalui halaman Riwayat Transaksi atau menghubungi layanan pelanggan kami.",
         "WTPANJAY berhak membatalkan transaksi yang dicurigai sebagai tindakan penipuan atau penyalahgunaan metode pembayaran.",
       ],
     },
@@ -51,10 +51,10 @@
       id: "refund",
       title: "5. Kebijakan Pengembalian Dana",
       content: [
-        "Pengembalian dana (refund) hanya dapat diproses apabila item yang dibeli belum terkirim ke akun game dalam waktu 1×24 jam setelah pembayaran berhasil dikonfirmasi.",
+        "Pengembalian dana (refund) hanya dapat diproses apabila item yang dibeli belum terkirim ke akun game dalam waktu 1Ã—24 jam setelah pembayaran berhasil dikonfirmasi.",
         "Permintaan refund tidak akan diproses jika item telah berhasil dikirimkan ke akun game yang didaftarkan, terlepas dari alasan apapun.",
         "Untuk mengajukan refund, pengguna wajib menyertakan bukti pembayaran, ID transaksi, dan tangkapan layar yang menunjukkan item belum diterima.",
-        "Proses verifikasi refund membutuhkan waktu 3–7 hari kerja. Dana akan dikembalikan melalui metode pembayaran yang sama dengan saat transaksi dilakukan.",
+        "Proses verifikasi refund membutuhkan waktu 3â€“7 hari kerja. Dana akan dikembalikan melalui metode pembayaran yang sama dengan saat transaksi dilakukan.",
         "WTPANJAY berhak menolak permintaan refund yang tidak memenuhi persyaratan di atas atau yang terindikasi diajukan dengan itikad tidak baik.",
       ],
     },
@@ -113,8 +113,8 @@
       content: [
         "Jika kamu memiliki pertanyaan, keluhan, atau saran terkait syarat dan ketentuan ini maupun layanan kami, jangan ragu untuk menghubungi tim WTPANJAY.",
         "Email Dukungan: support@wtpanjay.com",
-        "Jam Operasional: Senin – Minggu, 08.00 – 22.00 WIB",
-        "Kami berkomitmen untuk merespons setiap pertanyaan dalam waktu 1×24 jam pada hari kerja.",
+        "Jam Operasional: Senin â€“ Minggu, 08.00 â€“ 22.00 WIB",
+        "Kami berkomitmen untuk merespons setiap pertanyaan dalam waktu 1Ã—24 jam pada hari kerja.",
       ],
     },
   ];
@@ -131,7 +131,7 @@
 </script>
 
 <svelte:head>
-  <title>Syarat &amp; Ketentuan — WTPANJAY</title>
+  <title>Syarat &amp; Ketentuan â€” WTPANJAY</title>
   <meta
     name="description"
     content="Baca syarat dan ketentuan penggunaan layanan top-up game WTPANJAY."
@@ -155,13 +155,13 @@
         >
           <polygon
             points="20,2 38,11 38,29 20,38 2,29 2,11"
-            fill="#f5c518"
+            fill="var(--color-primary)"
             opacity="0.15"
           />
           <polygon
             points="20,2 38,11 38,29 20,38 2,29 2,11"
             fill="none"
-            stroke="#f5c518"
+            stroke="var(--color-primary)"
             stroke-width="1.5"
           />
           <text
@@ -171,7 +171,7 @@
             font-family="'Rajdhani',sans-serif"
             font-weight="700"
             font-size="14"
-            fill="#f5c518">W</text
+            fill="var(--color-primary)">W</text
           >
         </svg>
         <span class="logo-text">WTPANJAY</span>
@@ -270,3 +270,4 @@
     </main>
   </div>
 </div>
+

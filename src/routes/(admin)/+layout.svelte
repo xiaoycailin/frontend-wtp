@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/stores";
   import { auth } from "$lib/auth.svelte";
@@ -20,6 +20,9 @@
   let { data, children } = $props();
 
   const siteConfig: SiteConfig = data.siteConfig;
+  const primaryColor = siteConfig?.primaryColor ?? '#f5c518';
+  const secondaryColor = siteConfig?.secondaryColor ?? '#0e0e0e';
+  const accentColor = siteConfig?.accentColor ?? '#ffffff';
   let user: any = data.user;
 
   const sidebarItems = [
@@ -55,7 +58,7 @@
   <title>Admin Dashboard - {siteConfig.siteName}</title>
 </svelte:head>
 
-<div class="min-h-screen bg-[#050505] text-white flex">
+<div style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};" class="min-h-screen bg-[#050505] text-white flex">
   <!-- Sidebar -->
   <aside
     class="hidden md:flex md:flex-col w-64 bg-[#0b0b0b] border-r border-white/5
@@ -64,7 +67,7 @@
     <!-- Brand -->
     <div class="h-14 flex items-center gap-2 px-5 border-b border-white/5">
       <div
-        class="w-9 h-9 rounded-xl bg-[#f5c518] flex items-center justify-center"
+        class="w-9 h-9 rounded-xl bg-[var(--color-primary)] flex items-center justify-center"
       >
         <svg viewBox="0 0 24 24" class="w-5 h-5 text-black fill-current">
           <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
@@ -72,7 +75,7 @@
       </div>
       <div class="flex flex-col leading-tight">
         <span class="text-xs text-white/40 font-semibold">Admin Panel</span>
-        <span class="text-sm font-bold text-[#f5c518]"
+        <span class="text-sm font-bold text-[var(--color-primary)]"
           >{siteConfig.siteName}</span
         >
       </div>
@@ -87,7 +90,7 @@
           class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
                  transition-colors duration-150
                  {active
-            ? 'bg-[#f5c518]/15 text-[#f5c518] border border-[#f5c518]/40'
+            ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/40'
             : 'text-white/60 hover:text-white hover:bg-white/5'}"
         >
           <svelte:component this={item.icon} size="sm" />
@@ -99,8 +102,8 @@
     <!-- User + Logout -->
     <div class="border-t border-white/5 px-4 py-3 flex items-center gap-3">
       <div
-        class="w-9 h-9 rounded-full bg-[#f5c518]/15 border border-[#f5c518]/30
-                  flex items-center justify-center text-[#f5c518] text-xs font-bold"
+        class="w-9 h-9 rounded-full bg-[var(--color-primary)]/15 border border-[var(--color-primary)]/30
+                  flex items-center justify-center text-[var(--color-primary)] text-xs font-bold"
       >
         {user?.displayName?.charAt(0) ?? "A"}
       </div>
@@ -149,8 +152,8 @@
           {user?.displayName ?? "Admin"}
         </span>
         <div
-          class="w-8 h-8 rounded-full bg-[#f5c518]/15 border border-[#f5c518]/30
-                    flex items-center justify-center text-[#f5c518] text-xs font-bold"
+          class="w-8 h-8 rounded-full bg-[var(--color-primary)]/15 border border-[var(--color-primary)]/30
+                    flex items-center justify-center text-[var(--color-primary)] text-xs font-bold"
         >
           {user?.displayName?.charAt(0) ?? "A"}
         </div>
@@ -165,3 +168,4 @@
     </main>
   </div>
 </div>
+

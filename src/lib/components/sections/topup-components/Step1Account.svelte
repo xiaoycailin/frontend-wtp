@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   let { userId = $bindable(""), serverId = $bindable("") } = $props();
 </script>
 
@@ -15,7 +15,7 @@
       <div class="field">
         <label class="field-label">User ID</label>
         <div class="input-wrap">
-          <span class="input-icon">👤</span>
+          <span class="input-icon">ðŸ‘¤</span>
           <input
             type="text"
             bind:value={userId}
@@ -28,7 +28,7 @@
       <div class="field">
         <label class="field-label">Server</label>
         <div class="input-wrap">
-          <span class="input-icon">🌐</span>
+          <span class="input-icon">ðŸŒ</span>
           <input
             type="text"
             bind:value={serverId}
@@ -55,7 +55,7 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(to bottom, #f5c518, rgba(245, 197, 24, 0.3), transparent);
+    background: linear-gradient(to bottom, var(--color-primary), rgba(245, 197, 24, 0.3), transparent);
   }
   .step-header {
     display: flex;
@@ -67,7 +67,7 @@
     width: 1.75rem;
     height: 1.75rem;
     border-radius: 0.5rem;
-    background: #f5c518;
+    background: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -126,3 +126,4 @@
     color: rgba(255, 255, 255, 0.2);
   }
 </style>
+

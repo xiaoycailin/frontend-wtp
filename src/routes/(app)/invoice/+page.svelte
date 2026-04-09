@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
   import { onMount } from "svelte";
@@ -14,7 +14,7 @@
     setTimeout(() => (shake = false), 500);
   }
 
-  // ── Toast ────────────────────────────────────────────────────────
+  // â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   type ToastType = "error" | "info";
   let toast = $state<{ message: string; type: ToastType } | null>(null);
   let toastTimer: ReturnType<typeof setTimeout>;
@@ -45,7 +45,7 @@
     }
   });
 
-  // ── Submit: cek API dulu, baru navigate ──────────────────────────
+  // â”€â”€ Submit: cek API dulu, baru navigate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   async function handleSubmit(e: Event) {
     e.preventDefault();
     const trimmed = invId.trim().toUpperCase();
@@ -91,7 +91,7 @@
   <div class="bg-glow"></div>
   <div class="bg-grid"></div>
 
-  <!-- ── Toast ─────────────────────────────────────────────────── -->
+  <!-- â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   {#if toast}
     <div
       class="toast {toast.type === 'error' ? 'toast-error' : 'toast-info'}"
@@ -155,7 +155,7 @@
     <!-- Eyebrow -->
     <div class="eyebrow">
       <span class="eyebrow-dot"></span>
-      <span>WTPANJAY · CEK PESANAN</span>
+      <span>WTPANJAY Â· CEK PESANAN</span>
     </div>
 
     <!-- Headline -->
@@ -231,7 +231,7 @@
             />
             <path
               d="M12 3a9 9 0 019 9"
-              stroke="#f5c518"
+              stroke="var(--color-primary)"
               stroke-width="2.5"
               stroke-linecap="round"
             />
@@ -333,7 +333,7 @@
 
     <!-- Trust badges -->
     <div class="badges">
-      {#each [{ icon: "⚡", label: "Instan" }, { icon: "🔒", label: "Aman" }, { icon: "🕐", label: "24/7" }] as b}
+      {#each [{ icon: "âš¡", label: "Instan" }, { icon: "ðŸ”’", label: "Aman" }, { icon: "ðŸ•", label: "24/7" }] as b}
         <div class="badge-item">
           <span class="badge-icon">{b.icon}</span>
           <span class="badge-label">{b.label}</span>
@@ -412,7 +412,7 @@
     text-align: center;
   }
 
-  /* ── Eyebrow ── */
+  /* â”€â”€ Eyebrow â”€â”€ */
   .eyebrow {
     display: inline-flex;
     align-items: center;
@@ -432,7 +432,7 @@
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: #f5c518;
+    background: var(--color-primary);
     animation: blink 2s ease-in-out infinite;
   }
   @keyframes blink {
@@ -445,7 +445,7 @@
     }
   }
 
-  /* ── Headline ── */
+  /* â”€â”€ Headline â”€â”€ */
   .headline {
     font-size: clamp(2.25rem, 8vw, 3.5rem);
     font-weight: 900;
@@ -455,7 +455,7 @@
     margin-bottom: 1rem;
   }
   .headline-accent {
-    color: #f5c518;
+    color: var(--color-primary);
     position: relative;
     display: inline-block;
   }
@@ -466,7 +466,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #f5c518, rgba(245, 197, 24, 0));
+    background: linear-gradient(90deg, var(--color-primary), rgba(245, 197, 24, 0));
     border-radius: 2px;
   }
 
@@ -485,7 +485,7 @@
     }
   }
 
-  /* ── Card ── */
+  /* â”€â”€ Card â”€â”€ */
   .card {
     position: relative;
     width: 100%;
@@ -549,7 +549,7 @@
     text-align: left;
   }
 
-  /* ── Input ── */
+  /* â”€â”€ Input â”€â”€ */
   .input-wrap {
     display: flex;
     align-items: center;
@@ -588,7 +588,7 @@
   }
   .input-wrap.focused .input-icon,
   .input-wrap.has-value .input-icon {
-    color: #f5c518;
+    color: var(--color-primary);
   }
 
   .input-field {
@@ -651,7 +651,7 @@
     text-align: left;
   }
 
-  /* ── Submit button ── */
+  /* â”€â”€ Submit button â”€â”€ */
   .submit-btn {
     position: relative;
     overflow: hidden;
@@ -672,7 +672,7 @@
     transition: all 220ms;
   }
   .submit-btn.active {
-    background: #f5c518;
+    background: var(--color-primary);
     color: #000;
     cursor: pointer;
     box-shadow:
@@ -690,7 +690,7 @@
     transform: scale(0.98);
   }
   .submit-btn.btn-loading {
-    background: #f5c518;
+    background: var(--color-primary);
     color: #000;
     cursor: wait;
     box-shadow: 0 0 20px rgba(245, 197, 24, 0.25);
@@ -744,7 +744,7 @@
     margin-top: 0.125rem;
   }
 
-  /* ── Trust badges ── */
+  /* â”€â”€ Trust badges â”€â”€ */
   .badges {
     display: flex;
     align-items: center;
@@ -764,7 +764,7 @@
     color: rgba(255, 255, 255, 0.2);
   }
 
-  /* ── Toast ── */
+  /* â”€â”€ Toast â”€â”€ */
   .toast {
     position: fixed;
     top: 1.25rem;
@@ -794,7 +794,7 @@
   .toast-info {
     background: rgba(245, 197, 24, 0.1);
     border-color: rgba(245, 197, 24, 0.25);
-    color: #f5c518;
+    color: var(--color-primary);
   }
   .toast-icon {
     width: 1.125rem;
@@ -830,3 +830,4 @@
     }
   }
 </style>
+

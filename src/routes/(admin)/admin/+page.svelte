@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   type StatusCount = {
     paymentStatus?: string;
     orderStatus?: string;
@@ -266,7 +266,7 @@
   >
     <div>
       <p
-        class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em] mb-1"
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
       >
         Transaksi
       </p>
@@ -280,7 +280,7 @@
     </div>
     <div class="flex flex-col items-start md:items-end gap-2 text-xs">
       {#if lastUpdated}
-        <p class="text-[11px] text-white/40">auto refresh 10 detik · update terakhir {lastUpdated}</p>
+        <p class="text-[11px] text-white/40">auto refresh 10 detik Â· update terakhir {lastUpdated}</p>
       {/if}
       <div class="flex items-center gap-2">
         <button
@@ -292,7 +292,7 @@
         </button>
         <button
           type="button"
-          class="px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
+          class="px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
           onclick={fetchSummary}
         >
           Terapkan
@@ -311,7 +311,7 @@
           {#each paymentStatusOptions as status}
             <button
               type="button"
-              class={`px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition ${paymentStatusFilter === status ? "bg-[#f5c518] text-black border-[#f5c518]" : "bg-white/5 text-white/75 border-white/10 hover:bg-white/10"}`}
+              class={`px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition ${paymentStatusFilter === status ? "bg-[var(--color-primary)] text-black border-[var(--color-primary)]" : "bg-white/5 text-white/75 border-white/10 hover:bg-white/10"}`}
               onclick={() => setPaymentStatusFilter(status)}
             >
               {status}
@@ -326,7 +326,7 @@
           {#each orderStatusOptions as status}
             <button
               type="button"
-              class={`px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition ${orderStatusFilter === status ? "bg-[#f5c518] text-black border-[#f5c518]" : "bg-white/5 text-white/75 border-white/10 hover:bg-white/10"}`}
+              class={`px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition ${orderStatusFilter === status ? "bg-[var(--color-primary)] text-black border-[var(--color-primary)]" : "bg-white/5 text-white/75 border-white/10 hover:bg-white/10"}`}
               onclick={() => setOrderStatusFilter(status)}
             >
               {status}
@@ -341,7 +341,7 @@
         <span class="text-white/60">Dari tanggal</span>
         <input
           type="date"
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={from}
         />
       </label>
@@ -350,7 +350,7 @@
         <span class="text-white/60">Sampai tanggal</span>
         <input
           type="date"
-          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[#f5c518]"
+          class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
           bind:value={to}
         />
       </label>
@@ -365,7 +365,7 @@
         </button>
         <button
           type="button"
-          class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
+          class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
           onclick={fetchSummary}
           disabled={loading}
         >
@@ -431,11 +431,11 @@
           Payment SUCCESS:
           {" "}
           {summary.totalPaymentSuccessCount.toLocaleString("id-ID")}
-          {" · "}
+          {" Â· "}
           PENDING:
           {" "}
           {summary.totalPaymentPendingCount.toLocaleString("id-ID")}
-          {" · "}
+          {" Â· "}
           FAILED:
           {" "}
           {summary.totalPaymentFailedCount.toLocaleString("id-ID")}
@@ -503,7 +503,7 @@
       <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4">
         <div class="flex items-center justify-between mb-3 text-xs">
           <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Recent Transactions</h2>
-          <a href="/admin/transactions" class="text-[10px] text-[#f5c518]">lihat semua</a>
+          <a href="/admin/transactions" class="text-[10px] text-[var(--color-primary)]">lihat semua</a>
         </div>
         <div class="space-y-2">
           {#if !(summary.recentTransactions?.length)}
@@ -513,7 +513,7 @@
               <div class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 flex items-start justify-between gap-3">
                 <div class="min-w-0">
                   <p class="text-xs font-semibold text-white truncate">{trx.product?.title ?? trx.trxId}</p>
-                  <p class="text-[10px] text-white/40 truncate">{trx.trxId} · {trx.paymentMethod?.paymentName ?? "-"}</p>
+                  <p class="text-[10px] text-white/40 truncate">{trx.trxId} Â· {trx.paymentMethod?.paymentName ?? "-"}</p>
                   <p class="text-[10px] text-white/40">{formatDateTime(trx.createdAt)}</p>
                 </div>
                 <div class="text-right shrink-0">
@@ -771,7 +771,7 @@
                 <div class="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] px-3 py-2">
                   <div class="min-w-0">
                     <p class="text-xs font-semibold text-white truncate">#{index + 1} {sub.subCategoryTitle}</p>
-                    <p class="text-[10px] text-white/40 truncate">{sub.categoryTitle ?? "-"} · {sub.totalTransactionsAll.toLocaleString("id-ID")} trx</p>
+                    <p class="text-[10px] text-white/40 truncate">{sub.categoryTitle ?? "-"} Â· {sub.totalTransactionsAll.toLocaleString("id-ID")} trx</p>
                   </div>
                   <p class="text-[11px] font-semibold text-white">{formatCurrency(sub.sumAll)}</p>
                 </div>
@@ -786,12 +786,12 @@
       <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4">
         <div class="flex items-center justify-between mb-3 text-xs">
           <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Tren Transaksi 7 Hari</h2>
-          <p class="text-[10px] text-white/40">jumlah transaksi harian · pay {paymentStatusFilter} · order {orderStatusFilter}</p>
+          <p class="text-[10px] text-white/40">jumlah transaksi harian Â· pay {paymentStatusFilter} Â· order {orderStatusFilter}</p>
         </div>
         <div class="grid grid-cols-7 gap-2 items-end min-h-[180px]">
           {#each summary.trends ?? [] as item}
             <div class="flex flex-col items-center justify-end gap-2">
-              <div class="w-full max-w-[42px] rounded-t-lg bg-[#f5c518]/80 min-h-[8px]" style={`height:${Math.max((item.totalTransactions / maxTrendTransactions()) * 140, 8)}px`}></div>
+              <div class="w-full max-w-[42px] rounded-t-lg bg-[var(--color-primary)]/80 min-h-[8px]" style={`height:${Math.max((item.totalTransactions / maxTrendTransactions()) * 140, 8)}px`}></div>
               <p class="text-[10px] text-white/70">{item.totalTransactions}</p>
               <p class="text-[10px] text-white/40 text-center">{formatShortDate(item.date)}</p>
             </div>
@@ -802,7 +802,7 @@
       <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4">
         <div class="flex items-center justify-between mb-3 text-xs">
           <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Tren Omzet 7 Hari</h2>
-          <p class="text-[10px] text-white/40">nominal harian · pay {paymentStatusFilter} · order {orderStatusFilter}</p>
+          <p class="text-[10px] text-white/40">nominal harian Â· pay {paymentStatusFilter} Â· order {orderStatusFilter}</p>
         </div>
         <div class="grid grid-cols-7 gap-2 items-end min-h-[180px]">
           {#each summary.trends ?? [] as item}
@@ -914,8 +914,9 @@
     </div>
   {/if}
   {#if toastMessage}
-    <div class="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-[#f5c518]/15 border border-[#f5c518]/30 text-[#f5c518] text-xs font-semibold shadow-lg backdrop-blur-sm">
+    <div class="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-[var(--color-primary)]/15 border border-[var(--color-primary)]/30 text-[var(--color-primary)] text-xs font-semibold shadow-lg backdrop-blur-sm">
       {toastMessage}
     </div>
   {/if}
 </section>
+

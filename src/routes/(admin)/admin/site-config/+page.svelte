@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import type { SiteConfig } from "../../../../app.js";
   import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
   const { data } = $props();
@@ -56,7 +56,7 @@
     maintenanceMode: false,
     maintenanceTitle: "",
     maintenanceMessage: "",
-    primaryColor: "#f5c518",
+    primaryColor: "var(--color-primary)",
     secondaryColor: "#0e0e0e",
     accentColor: "#ffffff",
     extras: [],
@@ -154,7 +154,7 @@
 
 <section class="space-y-6 max-w-4xl">
   <header class="space-y-1">
-    <p class="text-xs font-semibold text-[#f5c518] uppercase tracking-[0.18em]">
+    <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em]">
       Site Config
     </p>
     <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
@@ -183,7 +183,7 @@
         <label class="text-white/60 text-xs mb-1 block">Nama Situs</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.siteName}
           onblur={(e) => onBlurText("siteName", e)}
         />
@@ -192,7 +192,7 @@
         <label class="text-white/60 text-xs mb-1 block">Tagline</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.tagline}
           onblur={(e) => onBlurText("tagline", e)}
         />
@@ -204,7 +204,7 @@
       <textarea
         rows="3"
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70 resize-y"
+               focus:outline-none focus:border-[var(--color-primary)]/70 resize-y"
         bind:value={config.description}
         onblur={(e) => onBlurText("description", e)}
       ></textarea>
@@ -215,7 +215,7 @@
         <label class="text-white/60 text-xs mb-1 block">URL Situs</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.siteUrl}
           onblur={(e) => onBlurText("siteUrl", e)}
         />
@@ -224,7 +224,7 @@
         <label class="text-white/60 text-xs mb-1 block">Zona Waktu</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.timezone}
           onblur={(e) => onBlurText("timezone", e)}
         />
@@ -268,7 +268,7 @@
           />
           <input
             class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                   focus:outline-none focus:border-[#f5c518]/70"
+                   focus:outline-none focus:border-[var(--color-primary)]/70"
             bind:value={config.primaryColor}
             onblur={(e) => onBlurText("primaryColor", e)}
           />
@@ -285,7 +285,7 @@
           />
           <input
             class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                   focus:outline-none focus:border-[#f5c518]/70"
+                   focus:outline-none focus:border-[var(--color-primary)]/70"
             bind:value={config.secondaryColor}
             onblur={(e) => onBlurText("secondaryColor", e)}
           />
@@ -302,7 +302,7 @@
           />
           <input
             class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                   focus:outline-none focus:border-[#f5c518]/70"
+                   focus:outline-none focus:border-[var(--color-primary)]/70"
             bind:value={config.accentColor}
             onblur={(e) => onBlurText("accentColor", e)}
           />
@@ -321,7 +321,7 @@
       <label class="text-white/60 text-xs mb-1 block">Meta Title</label>
       <input
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70"
+               focus:outline-none focus:border-[var(--color-primary)]/70"
         bind:value={config.metaTitle}
         onblur={(e) => onBlurText("metaTitle", e)}
       />
@@ -332,7 +332,7 @@
       <textarea
         rows="3"
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70 resize-y"
+               focus:outline-none focus:border-[var(--color-primary)]/70 resize-y"
         bind:value={config.metaDescription}
         onblur={(e) => onBlurText("metaDescription", e)}
       ></textarea>
@@ -342,7 +342,7 @@
       <label class="text-white/60 text-xs mb-1 block">Meta Keywords</label>
       <input
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70"
+               focus:outline-none focus:border-[var(--color-primary)]/70"
         bind:value={config.metaKeywords}
         onblur={(e) => onBlurText("metaKeywords", e)}
       />
@@ -353,7 +353,7 @@
         <label class="text-white/60 text-xs mb-1 block">Meta Robots</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.metaRobots}
           onblur={(e) => onBlurText("metaRobots", e)}
         />
@@ -362,7 +362,7 @@
         <label class="text-white/60 text-xs mb-1 block">Canonical URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.canonicalUrl}
           onblur={(e) => onBlurText("canonicalUrl", e)}
         />
@@ -415,7 +415,7 @@
         <label class="text-white/60 text-xs mb-1 block">Email Utama</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.contactEmail}
           onblur={(e) => onBlurText("contactEmail", e)}
         />
@@ -424,7 +424,7 @@
         <label class="text-white/60 text-xs mb-1 block">Email Support</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.supportEmail}
           onblur={(e) => onBlurText("supportEmail", e)}
         />
@@ -436,7 +436,7 @@
         <label class="text-white/60 text-xs mb-1 block">WhatsApp Support</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.supportWhatsapp}
           onblur={(e) => onBlurText("supportWhatsapp", e)}
         />
@@ -445,7 +445,7 @@
         <label class="text-white/60 text-xs mb-1 block">Facebook URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.facebookUrl}
           onblur={(e) => onBlurText("facebookUrl", e)}
         />
@@ -462,7 +462,7 @@
         <label class="text-white/60 text-xs mb-1 block">Instagram URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.instagramUrl}
           onblur={(e) => onBlurText("instagramUrl", e)}
         />
@@ -476,7 +476,7 @@
         <label class="text-white/60 text-xs mb-1 block">Twitter URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.twitterUrl}
           onblur={(e) => onBlurText("twitterUrl", e)}
         />
@@ -493,7 +493,7 @@
         <label class="text-white/60 text-xs mb-1 block">YouTube URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.youtubeUrl}
           onblur={(e) => onBlurText("youtubeUrl", e)}
         />
@@ -507,7 +507,7 @@
         <label class="text-white/60 text-xs mb-1 block">TikTok URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.tiktokUrl}
           onblur={(e) => onBlurText("tiktokUrl", e)}
         />
@@ -524,7 +524,7 @@
         <label class="text-white/60 text-xs mb-1 block">Discord URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.discordUrl}
           onblur={(e) => onBlurText("discordUrl", e)}
         />
@@ -538,7 +538,7 @@
         <label class="text-white/60 text-xs mb-1 block">Telegram URL</label>
         <input
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-                 focus:outline-none focus:border-[#f5c518]/70"
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
           bind:value={config.telegramUrl}
           onblur={(e) => onBlurText("telegramUrl", e)}
         />
@@ -581,7 +581,7 @@
       <label class="text-white/60 text-xs mb-1 block">Judul Maintenance</label>
       <input
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70"
+               focus:outline-none focus:border-[var(--color-primary)]/70"
         bind:value={config.maintenanceTitle}
         onblur={(e) => onBlurText("maintenanceTitle", e)}
       />
@@ -592,7 +592,7 @@
       <textarea
         rows="2"
         class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
-               focus:outline-none focus:border-[#f5c518]/70 resize-y"
+               focus:outline-none focus:border-[var(--color-primary)]/70 resize-y"
         bind:value={config.maintenanceMessage}
         onblur={(e) => onBlurText("maintenanceMessage", e)}
       ></textarea>
@@ -603,7 +603,7 @@
   <div class="flex justify-end pt-2">
     <button
       type="button"
-      class="px-4 py-2 rounded-lg text-xs font-semibold bg-[#f5c518] text-black
+      class="px-4 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black
              hover:bg-[#ffd740] disabled:opacity-50"
       disabled={savingKey === "ALL"}
       onclick={saveAll}
@@ -612,3 +612,4 @@
     </button>
   </div>
 </section>
+

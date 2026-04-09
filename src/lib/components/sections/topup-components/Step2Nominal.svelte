@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import { onMount } from "svelte";
   import ParticleCanvas from "../../ParticleCanvas.svelte";
   import type { Product, TabKey } from "./types";
@@ -12,9 +12,9 @@
   let specialItems = $state<Product[]>([]);
 
   const tabs: { key: TabKey; label: string }[] = [
-    { key: "flash", label: "⚡ Flash Sale" },
-    { key: "special", label: "🔥 Special Items" },
-    { key: "diamond", label: "💎 Topup Instant" },
+    { key: "flash", label: "âš¡ Flash Sale" },
+    { key: "special", label: "ðŸ”¥ Special Items" },
+    { key: "diamond", label: "ðŸ’Ž Topup Instant" },
   ];
 
   onMount(() => {
@@ -95,7 +95,7 @@
           style="
             background:    {activeTab === tab.key ? 'rgba(245,197,24,0.12)' : 'rgba(255,255,255,0.03)'};
             border-color:  {activeTab === tab.key ? 'rgba(245,197,24,0.5)' : 'rgba(255,255,255,0.07)'};
-            color:         {activeTab === tab.key ? '#f5c518' : 'rgba(255,255,255,0.4)'};
+            color:         {activeTab === tab.key ? 'var(--color-primary)' : 'rgba(255,255,255,0.4)'};
             box-shadow:    {activeTab === tab.key ? '0 0 16px rgba(245,197,24,0.15)' : 'none'};
           "
         >
@@ -104,14 +104,14 @@
       {/each}
     </div>
 
-    <!-- ── Flash Sale ── -->
+    <!-- â”€â”€ Flash Sale â”€â”€ -->
     {#if activeTab === "flash"}
-      <div class="relative rounded-xl overflow-hidden border border-[#f5c518]/30 bg-[#0d0d0d] p-4">
+      <div class="relative rounded-xl overflow-hidden border border-[var(--color-primary)]/30 bg-[#0d0d0d] p-4">
         <div class="absolute inset-0 overflow-hidden rounded-xl">
           <ParticleCanvas
             maxParticles={30}
-            colors={["#f5c518bb", "#ff6b3566", "#ffffff44"]}
-            lineColor="#f5c518"
+            colors={["var(--color-primary)bb", "#ff6b3566", "#ffffff44"]}
+            lineColor="var(--color-primary)"
             lineDistance={70}
             opacity={0.5}
             blendMode="screen"
@@ -119,8 +119,8 @@
         </div>
 
         <div class="relative z-10 flex items-center gap-2 mb-4">
-          <div class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#f5c518] shadow-lg shadow-yellow-500/30">
-            <span class="text-sm">⚡</span>
+          <div class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--color-primary)] shadow-lg shadow-yellow-500/30">
+            <span class="text-sm">âš¡</span>
             <span class="text-black text-xs font-black tracking-widest">FLASH SALE</span>
           </div>
         </div>
@@ -134,7 +134,7 @@
               class="product-card"
               style="
                 background:   {isSelected ? 'rgba(245,197,24,0.1)' : 'rgba(255,255,255,0.03)'};
-                border-color: {isSelected ? '#f5c518' : 'rgba(255,255,255,0.08)'};
+                border-color: {isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)'};
                 box-shadow:   {isSelected ? '0 0 20px rgba(245,197,24,0.2)' : 'none'};
               "
             >
@@ -153,7 +153,7 @@
                     {#if p.sublabel}<p class="text-[9px] text-white/35">{p.sublabel}</p>{/if}
                   </div>
                 </div>
-                <p class="text-base font-black text-[#f5c518]">{fmt(p.price)}</p>
+                <p class="text-base font-black text-[var(--color-primary)]">{fmt(p.price)}</p>
                 {#if p.originalPrice}
                   <p class="text-[9px] text-white/30 line-through">{fmt(p.originalPrice)}</p>
                 {/if}
@@ -163,17 +163,17 @@
                 <div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
                   <div
                     class="h-full rounded-full transition-all duration-500"
-                    style="width:{pct}%; background:{pct > 50 ? '#f5c518' : pct > 20 ? '#ff6b35' : '#ef4444'};"
+                    style="width:{pct}%; background:{pct > 50 ? 'var(--color-primary)' : pct > 20 ? '#ff6b35' : '#ef4444'};"
                   ></div>
                 </div>
                 <p class="text-[9px] text-white/30 mt-1">{p.stock}/{p.maxStock} terjual</p>
               </div>
               <div class="flex items-center gap-1.5 px-3 py-2 border-t border-white/[0.06]">
                 {#if p.tag}
-                  <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-[#f5c518]/20 text-[#f5c518]">{p.tag}</span>
+                  <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-[var(--color-primary)]/20 text-[var(--color-primary)]">{p.tag}</span>
                 {/if}
                 {#if p.instant}
-                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 ml-auto">⚡ Instan</span>
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 ml-auto">âš¡ Instan</span>
                 {/if}
               </div>
             </button>
@@ -181,7 +181,7 @@
         </div>
       </div>
 
-    <!-- ── Special Items ── -->
+    <!-- â”€â”€ Special Items â”€â”€ -->
     {:else if activeTab === "special"}
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {#each specialItems as p}
@@ -191,7 +191,7 @@
             class="group flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200"
             style="
               background:   {isSelected ? 'rgba(245,197,24,0.08)' : 'rgba(255,255,255,0.03)'};
-              border-color: {isSelected ? '#f5c518' : 'rgba(255,255,255,0.07)'};
+              border-color: {isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.07)'};
               box-shadow:   {isSelected ? '0 0 16px rgba(245,197,24,0.15)' : 'none'};
             "
           >
@@ -202,10 +202,10 @@
               <img src={p.icon} width="25" alt="" />
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-xs font-bold text-white truncate group-hover:text-[#f5c518] transition-colors">
+              <p class="text-xs font-bold text-white truncate group-hover:text-[var(--color-primary)] transition-colors">
                 {p.label}
               </p>
-              <p class="text-sm font-black text-[#f5c518] mt-0.5">{fmt(p.price)}</p>
+              <p class="text-sm font-black text-[var(--color-primary)] mt-0.5">{fmt(p.price)}</p>
             </div>
             {#if isSelected}
               <div class="check-badge-sm">
@@ -218,7 +218,7 @@
         {/each}
       </div>
 
-    <!-- ── Diamonds ── -->
+    <!-- â”€â”€ Diamonds â”€â”€ -->
     {:else}
       <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
         {#each diamonds as p}
@@ -229,7 +229,7 @@
                    transition-all duration-200 text-center"
             style="
               background:   {isSelected ? 'rgba(245,197,24,0.08)' : 'rgba(255,255,255,0.03)'};
-              border-color: {isSelected ? '#f5c518' : 'rgba(255,255,255,0.07)'};
+              border-color: {isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.07)'};
               box-shadow:   {isSelected ? '0 0 16px rgba(245,197,24,0.15)' : 'none'};
             "
           >
@@ -245,7 +245,7 @@
             {#if p.sublabel}
               <p class="text-[9px] text-emerald-400/80">{p.sublabel}</p>
             {/if}
-            <p class="text-xs font-black text-[#f5c518] mt-0.5">{fmt(p.price)}</p>
+            <p class="text-xs font-black text-[var(--color-primary)] mt-0.5">{fmt(p.price)}</p>
           </button>
         {/each}
       </div>
@@ -265,7 +265,7 @@
     position: absolute;
     left: 0; top: 0; bottom: 0;
     width: 3px;
-    background: linear-gradient(to bottom, #f5c518, rgba(245, 197, 24, 0.3), transparent);
+    background: linear-gradient(to bottom, var(--color-primary), rgba(245, 197, 24, 0.3), transparent);
   }
   .step-header {
     display: flex;
@@ -276,7 +276,7 @@
   .step-badge {
     width: 1.75rem; height: 1.75rem;
     border-radius: 0.5rem;
-    background: #f5c518;
+    background: var(--color-primary);
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-size: 0.75rem; font-weight: 900; color: #000;
@@ -294,14 +294,15 @@
   .check-badge {
     position: absolute; top: 0.5rem; right: 0.5rem; z-index: 10;
     width: 1rem; height: 1rem; border-radius: 9999px;
-    background: #f5c518;
+    background: var(--color-primary);
     display: flex; align-items: center; justify-content: center;
   }
   .check-badge-sm {
     width: 1.25rem; height: 1.25rem; border-radius: 9999px;
-    background: #f5c518;
+    background: var(--color-primary);
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
 </style>
+
