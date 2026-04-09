@@ -1,7 +1,16 @@
 // src/routes/admin/categories/+page.server.ts
 import type { PageServerLoad } from "./$types";
+import { building } from "$app/environment";
 
 export const load: PageServerLoad = async ({ fetch }) => {
+  // Skip fetch during prerender/building to avoid 404 errors
+  if (building) {
+    return {
+      categories: [],
+      error: null,
+    };
+  }
+
   try {
     const res = await fetch("/api/v1/category");
     const json = await res.json();

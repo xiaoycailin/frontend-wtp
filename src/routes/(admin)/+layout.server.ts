@@ -1,24 +1,46 @@
 import { redirect } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
+import { building } from "$app/environment";
 
 export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
-  const res = await fetch("/api/v1/site-config");
-  const json = await res.json();
-  const res1 = await fetch("/api/v1/users/self", {
-    headers: {
-      Authorization: "Bearer " + cookies.get("wtpanjay_token"),
-    },
-  });
-  const json1 = await res1.json();
-  console.log(json1);
-
-  if (res1.status !== 200 || json1.data.role === "buyer") {
-    redirect(302, "/");
+  // Skip fetch during prerender/building to avoid 404 errors
+  if (building) {
+    return {
+      siteConfig: null,
+      user: null,
+      token: null,
+    };
   }
 
-  return {
-    siteConfig: json?.data ?? null,
-    user: json1.data,
-    token: cookies.get("wtpanjay_token"),
-  };
+  try {
+    const [siteRes, userRes] = await Promise.all([
+      fetch("/api/v1/site-config").catch(() => ({ ok: false })),
+      fetch("/api/v1/users/self", {
+        headers: {
+          Authorization: "Bearer " + cookies.get("wtpanjay_token"),
+        },
+      }).catch(() => ({ ok: false })),
+    ]);
+
+    const siteJson = siteRes.ok ? await siteRes.json().catch(() => ({})) : {};
+    const userJson = userRes.ok ? await userRes.json().catch(() => ({})) : {};
+
+    // If user is not admin, redirect
+    if (!userRes.ok || userJson?.data?.role === "buyer") {
+      redirect(302, "/");
+    }
+
+    return {
+      siteConfig: siteJson?.data ?? null,
+      user: userJson.data ?? null,
+      token: cookies.get("wtpanjay_token"),
+    };
+  } catch (error) {
+    // If any error, still return safe fallback (no redirect during build)
+    return {
+      siteConfig: null,
+      user: null,
+      token: null,
+    };
+  }
 };
