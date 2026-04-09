@@ -1,4 +1,6 @@
 <script lang="ts">
+  import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
+
   type Payment = {
     id: number;
     paymentName: string;
@@ -370,14 +372,12 @@
           />
         </label>
 
-        <label class="flex flex-col gap-1">
-          <span class="text-white/70">Thumbnail URL</span>
-          <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[#f5c518]"
-            bind:value={paymentForm.thumbnail}
-            placeholder="https://images.duitku.com/..."
-          />
-        </label>
+        <ImageUrlField
+          label="Thumbnail URL"
+          bind:value={paymentForm.thumbnail}
+          placeholder="https://images.duitku.com/..."
+          help="Bisa paste manual atau pilih dari image manager."
+        />
 
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Method code</span>
