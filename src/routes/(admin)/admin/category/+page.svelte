@@ -1,6 +1,7 @@
 <script lang="ts">
   import { teleport } from "$lib/utils";
   import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
+  import MultiImageUrlField from "$lib/components/admin/MultiImageUrlField.svelte";
 
   type SubCategory = {
     id: string;
@@ -594,16 +595,12 @@
           />
         </label>
 
-        <label class="flex flex-col gap-1">
-          <span class="text-white/70">
-            Banner URLs <span class="text-white/40">(satu URL per baris)</span>
-          </span>
-          <textarea
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[#f5c518] min-h-[80px] resize-y"
-            bind:value={subForm.banners}
-            placeholder={"https://...\nhttps://..."}
-          />
-        </label>
+        <MultiImageUrlField
+          label="Banner URLs (satu URL per baris)"
+          bind:value={subForm.banners}
+          placeholder="https://...\nhttps://..."
+          help="Pilih beberapa gambar sekaligus, atau paste manual."
+        />
       </div>
 
       <div class="flex justify-end gap-2 pt-2 text-xs">

@@ -11,6 +11,7 @@
     open = false,
     onClose = () => {},
     onSelect = (_url: string) => {},
+    multiple = false,
   } = $props();
 
   let images = $state<ImageItem[]>([]);
@@ -18,6 +19,7 @@
   let uploading = $state(false);
   let error = $state<string | null>(null);
   let selectedUrl = $state("");
+  let selectedUrls = $state<string[]>([]);
   let fileInput = $state<HTMLInputElement | null>(null);
 
   async function loadImages() {
@@ -64,10 +66,15 @@
         throw new Error("URL gambar tidak ditemukan setelah upload");
       }
 
-      onSelect(url);
-      onClose();
-      selectedUrl = "";
-      if (fileInput) fileInput.value = "";
+      if (multiple) {
+        selectedUrls = [...selectedUrls, url];
+        if (fileInput) fileInput.value = "";
+      } else {
+        onSelect(url);
+        onClose();
+        selectedUrl = "";
+        if (fileInput) fileInput.value = "";
+      }
     } catch (e: any) {
       error = e?.message ?? "Upload gambar gagal";
     } finally {
@@ -76,15 +83,31 @@
   }
 
   function chooseExisting(url: string) {
-    selectedUrl = url;
-    onSelect(url);
-    onClose();
+    if (multiple) {
+      if (selectedUrls.includes(url)) {
+        selectedUrls = selectedUrls.filter((u) => u !== url);
+      } else {
+        selectedUrls = [...selectedUrls, url];
+      }
+    } else {
+      selectedUrl = url;
+      onSelect(url);
+      onClose();
+    }
   }
 
   function handleClose() {
     error = null;
     selectedUrl = "";
+    selectedUrls = [];
     if (fileInput) fileInput.value = "";
+    onClose();
+  }
+
+  function insertSelected() {
+    if (selectedUrls.length === 0) return;
+    const joined = selectedUrls.join("\n");
+    onSelect(joined);
     onClose();
   }
 
@@ -121,9 +144,20 @@
               <span class="text-xs text-[#f5c518]">Uploading...</span>
             {/if}
           </div>
-          <button type="button" onclick={loadImages} class="px-3 py-2 rounded-lg text-xs font-semibold bg-white/5 text-white border border-white/10 hover:bg-white/10" disabled={loading}>
-            Refresh
-          </button>
+          <div class="flex items-center gap-2">
+            {#if multiple && selectedUrls.length > 0}
+              <button
+                type="button"
+                onclick={insertSelected}
+                class="px-3 py-2 rounded-lg text-xs font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
+              >
+                Insert Selected ({selectedUrls.length})
+              </button>
+            {/if}
+            <button type="button" onclick={loadImages} class="px-3 py-2 rounded-lg text-xs font-semibold bg-white/5 text-white border border-white/10 hover:bg-white/10" disabled={loading}>
+              Refresh
+            </button>
+          </div>
         </div>
 
         {#if error}
@@ -139,11 +173,20 @@
             {#each images as image}
               <button
                 type="button"
-                class={`group text-left rounded-2xl overflow-hidden border transition ${selectedUrl === image.url ? "border-[#f5c518] bg-[#f5c518]/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}
+                class={`group text-left rounded-2xl overflow-hidden border transition ${multiple && selectedUrls.includes(image.url) ? "border-[#f5c518] bg-[#f5c518]/10" : selectedUrl === image.url ? "border-[#f5c518] bg-[#f5c518]/10" : "border-white/10 bg-white/[0.02] hover:border-white/20"}`}
                 onclick={() => chooseExisting(image.url)}
               >
-                <div class="aspect-square bg-black/30 overflow-hidden">
-                  <img src={image.url} alt={image.filename} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                <div class="relative">
+                  <div class="aspect-square bg-black/30 overflow-hidden">
+                    <img src={image.url} alt={image.filename} class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                  </div>
+                  {#if multiple}
+                    <div class="absolute top-2 right-2 w-5 h-5 rounded-full border border-white/30 bg-black/70 flex items-center justify-center">
+                      {#if selectedUrls.includes(image.url)}
+                        <div class="w-3 h-3 rounded-full bg-[#f5c518]"></div>
+                      {/if}
+                    </div>
+                  {/if}
                 </div>
                 <div class="p-3 space-y-1">
                   <p class="text-[11px] text-white/80 line-clamp-2 break-all">{image.filename}</p>
