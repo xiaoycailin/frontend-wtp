@@ -32,8 +32,57 @@
     sumFullySuccess: number;
   };
 
+  type PeriodStat = {
+    totalTransactions: number;
+    totalRevenue: number;
+  };
+
+  type RecentTransaction = {
+    id: string;
+    trxId: string;
+    totalPrice: number;
+    paymentStatus: string;
+    orderStatus: string;
+    createdAt: string;
+    product?: { title?: string | null } | null;
+    paymentMethod?: { paymentName?: string | null } | null;
+  };
+
+  type QuickAction = {
+    label: string;
+    href: string;
+  };
+
+  type TopProduct = {
+    productId: string;
+    title: string;
+    thumbnail: string | null;
+    count: number;
+    sum: number;
+  };
+
+  type AlertItem = {
+    type: string;
+    level: "info" | "warning" | "danger";
+    message: string;
+  };
+
+  type Funnel = {
+    totalCreated: number;
+    paymentSuccess: number;
+    orderSuccess: number;
+    paymentFailed: number;
+    orderFailed: number;
+    waitPayment: number;
+  };
+
+  type TrendItem = {
+    date: string;
+    totalTransactions: number;
+    totalRevenue: number;
+  };
+
   type Summary = {
-    // field-field yang sudah ada (totalCount, grossFullySuccess, dll) ...
     totalCount: number;
     totalPaymentSuccessCount: number;
     totalPaymentFailedCount: number;
@@ -56,6 +105,17 @@
     perOrderStatus: StatusCount[];
     perPaymentMethod: MethodSummary[];
     perSubCategory: SubCategorySummary[];
+    periodStats?: {
+      today: PeriodStat;
+      last7Days: PeriodStat;
+    };
+    recentTransactions?: RecentTransaction[];
+    quickActions?: QuickAction[];
+    topProducts?: TopProduct[];
+    topSubCategories?: SubCategorySummary[];
+    alerts?: AlertItem[];
+    funnel?: Funnel;
+    trends?: TrendItem[];
   };
 
   const { data } = $props();
@@ -64,9 +124,17 @@
   let summary = $state<Summary | null>(null);
   let loading = $state(false);
   let error = $state<string | null>(null);
+  let lastUpdated = $state<string | null>(null);
+  let toastMessage = $state<string | null>(null);
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   let from = $state("");
   let to = $state("");
+  let paymentStatusFilter = $state("ALL");
+  let orderStatusFilter = $state("ALL");
+
+  const paymentStatusOptions = ["ALL", "SUCCESS", "PENDING", "FAILED"];
+  const orderStatusOptions = ["ALL", "SUCCESS", "PENDING", "FAILED", "WAIT_PAYMENT"];
 
   function formatCurrency(v: number) {
     if (!v) return "Rp 0";
@@ -77,6 +145,13 @@
     });
   }
 
+  function formatDateTime(value: string) {
+    return new Date(value).toLocaleString("id-ID", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  }
+
   async function fetchSummary() {
     loading = true;
     error = null;
@@ -84,6 +159,8 @@
       const params = new URLSearchParams();
       if (from) params.set("from", new Date(from).toISOString());
       if (to) params.set("to", new Date(to).toISOString());
+      if (paymentStatusFilter !== "ALL") params.set("paymentStatus", paymentStatusFilter);
+      if (orderStatusFilter !== "ALL") params.set("orderStatus", orderStatusFilter);
 
       const res = await fetch(
         `/api/v1/transactions/summary${params.size ? `?${params}` : ""}`,
@@ -97,7 +174,18 @@
       if (!res.ok) {
         throw new Error(json?.data?.message ?? "Gagal memuat summary");
       }
+      const previousTotal = summary?.totalCount ?? 0;
       summary = json.data;
+      lastUpdated = new Date().toLocaleTimeString("id-ID");
+
+      if (summary.totalCount > previousTotal && previousTotal !== 0) {
+        const diff = summary.totalCount - previousTotal;
+        if (toastTimer) clearTimeout(toastTimer);
+        toastMessage = `${diff} transaksi baru terdeteksi`;
+        toastTimer = setTimeout(() => {
+          toastMessage = null;
+        }, 5000);
+      }
     } catch (e: any) {
       error = e?.message ?? "Terjadi kesalahan saat memuat summary";
     } finally {
@@ -107,11 +195,21 @@
 
   $effect(() => {
     fetchSummary();
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchSummary();
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
   });
 
   function resetFilter() {
     from = "";
     to = "";
+    paymentStatusFilter = "ALL";
+    orderStatusFilter = "ALL";
     fetchSummary();
   }
 
@@ -128,6 +226,37 @@
       default:
         return "bg-amber-500/10 text-amber-300 border-amber-500/40";
     }
+  }
+
+  function alertColor(level: AlertItem["level"]) {
+    if (level === "danger") return "border-red-500/30 bg-red-500/10 text-red-200";
+    if (level === "warning") return "border-amber-500/30 bg-amber-500/10 text-amber-200";
+    return "border-sky-500/30 bg-sky-500/10 text-sky-200";
+  }
+
+  function formatShortDate(value: string) {
+    return new Date(value).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+    });
+  }
+
+  function maxTrendTransactions() {
+    return Math.max(...(summary?.trends?.map((item) => item.totalTransactions) ?? [1]), 1);
+  }
+
+  function maxTrendRevenue() {
+    return Math.max(...(summary?.trends?.map((item) => item.totalRevenue) ?? [1]), 1);
+  }
+
+  function setPaymentStatusFilter(status: string) {
+    paymentStatusFilter = status;
+    fetchSummary();
+  }
+
+  function setOrderStatusFilter(status: string) {
+    orderStatusFilter = status;
+    fetchSummary();
   }
 </script>
 
@@ -149,28 +278,64 @@
         tertentu.
       </p>
     </div>
-    <div class="flex items-center gap-2 text-xs">
-      <button
-        type="button"
-        class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
-        onclick={resetFilter}
-      >
-        Reset Tanggal
-      </button>
-      <button
-        type="button"
-        class="px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
-        onclick={fetchSummary}
-      >
-        Terapkan
-      </button>
-    </div>
-  </header>
+    <div class="flex flex-col items-start md:items-end gap-2 text-xs">
+      {#if lastUpdated}
+        <p class="text-[11px] text-white/40">auto refresh 10 detik · update terakhir {lastUpdated}</p>
+      {/if}
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
+          onclick={resetFilter}
+        >
+          Reset Tanggal
+        </button>
+        <button
+          type="button"
+          class="px-3 py-2 rounded-lg font-semibold bg-[#f5c518] text-black hover:bg-[#ffd740]"
+          onclick={fetchSummary}
+        >
+          Terapkan
+        </button>
+      </div>
+    </div>  </header>
 
   <!-- Filter tanggal -->
   <div
     class="bg-[#0c0c0c] border border-white/10 rounded-2xl p-3 md:p-4 space-y-3 text-[11px]"
   >
+    <div class="grid gap-3 md:grid-cols-2">
+      <div class="space-y-2">
+        <p class="text-white/50 text-[10px] uppercase tracking-[0.14em]">Payment Status</p>
+        <div class="flex flex-wrap gap-2">
+          {#each paymentStatusOptions as status}
+            <button
+              type="button"
+              class={`px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition ${paymentStatusFilter === status ? "bg-[#f5c518] text-black border-[#f5c518]" : "bg-white/5 text-white/75 border-white/10 hover:bg-white/10"}`}
+              onclick={() => setPaymentStatusFilter(status)}
+            >
+              {status}
+            </button>
+          {/each}
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <p class="text-white/50 text-[10px] uppercase tracking-[0.14em]">Order Status</p>
+        <div class="flex flex-wrap gap-2">
+          {#each orderStatusOptions as status}
+            <button
+              type="button"
+              class={`px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition ${orderStatusFilter === status ? "bg-[#f5c518] text-black border-[#f5c518]" : "bg-white/5 text-white/75 border-white/10 hover:bg-white/10"}`}
+              onclick={() => setOrderStatusFilter(status)}
+            >
+              {status}
+            </button>
+          {/each}
+        </div>
+      </div>
+    </div>
+
     <div class="grid gap-3 md:grid-cols-3 items-end">
       <label class="flex flex-col gap-1">
         <span class="text-white/60">Dari tanggal</span>
@@ -219,8 +384,40 @@
   {/if}
 
   {#if summary}
-    <!-- Kartu angka utama -->
-    <!-- Kartu angka utama -->
+    <div class="grid gap-4 md:grid-cols-4 text-xs">
+      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 space-y-1">
+        <p class="text-[10px] text-white/40 uppercase tracking-[0.14em]">Hari ini</p>
+        <p class="text-xl font-bold text-white">
+          {summary.periodStats?.today.totalTransactions.toLocaleString("id-ID") ?? "0"}
+        </p>
+        <p class="text-[10px] text-white/50">transaksi masuk hari ini</p>
+        <p class="text-[10px] text-emerald-300">{formatCurrency(summary.periodStats?.today.totalRevenue ?? 0)}</p>
+      </div>
+
+      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 space-y-1">
+        <p class="text-[10px] text-white/40 uppercase tracking-[0.14em]">7 hari terakhir</p>
+        <p class="text-xl font-bold text-white">
+          {summary.periodStats?.last7Days.totalTransactions.toLocaleString("id-ID") ?? "0"}
+        </p>
+        <p class="text-[10px] text-white/50">akumulasi transaksi 7 hari</p>
+        <p class="text-[10px] text-emerald-300">{formatCurrency(summary.periodStats?.last7Days.totalRevenue ?? 0)}</p>
+      </div>
+
+      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 space-y-2 md:col-span-2">
+        <div class="flex items-center justify-between gap-3">
+          <p class="text-[10px] text-white/40 uppercase tracking-[0.14em]">Quick action</p>
+          <p class="text-[10px] text-white/40">shortcut admin</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          {#each summary.quickActions ?? [] as action}
+            <a href={action.href} class="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 text-[11px] font-medium">
+              {action.label}
+            </a>
+          {/each}
+        </div>
+      </div>
+    </div>
+
     <div class="grid gap-4 md:grid-cols-4 text-xs">
       <!-- Total transaksi -->
       <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 space-y-1">
@@ -302,9 +499,38 @@
       </div>
     </div>
 
-    <!-- Distribusi status -->
-    <div class="grid gap-4 md:grid-cols-2">
-      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 space-y-3">
+    <div class="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4">
+        <div class="flex items-center justify-between mb-3 text-xs">
+          <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Recent Transactions</h2>
+          <a href="/admin/transactions" class="text-[10px] text-[#f5c518]">lihat semua</a>
+        </div>
+        <div class="space-y-2">
+          {#if !(summary.recentTransactions?.length)}
+            <p class="text-[11px] text-white/40">Belum ada transaksi terbaru.</p>
+          {:else}
+            {#each summary.recentTransactions ?? [] as trx}
+              <div class="rounded-xl border border-white/5 bg-white/[0.03] px-3 py-2 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-white truncate">{trx.product?.title ?? trx.trxId}</p>
+                  <p class="text-[10px] text-white/40 truncate">{trx.trxId} · {trx.paymentMethod?.paymentName ?? "-"}</p>
+                  <p class="text-[10px] text-white/40">{formatDateTime(trx.createdAt)}</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <p class="text-[11px] font-semibold text-white">{formatCurrency(trx.totalPrice)}</p>
+                  <div class="mt-1 flex flex-col items-end gap-1">
+                    <span class={`inline-flex rounded-full px-2 py-0.5 border text-[10px] ${badgeColor(trx.paymentStatus)}`}>{trx.paymentStatus}</span>
+                    <span class={`inline-flex rounded-full px-2 py-0.5 border text-[10px] ${badgeColor(trx.orderStatus)}`}>{trx.orderStatus}</span>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          {/if}
+        </div>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+        <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 space-y-3">
         <h2
           class="text-xs font-semibold text-white uppercase tracking-[0.16em]"
         >
@@ -362,11 +588,12 @@
             {/each}
           {/if}
         </div>
+        </div>
       </div>
     </div>
 
-    <!-- Per sub kategori -->
-    <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4">
+    <div class="grid gap-4 md:grid-cols-3">
+      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4 md:col-span-2">
       <div class="flex items-center justify-between mb-3 text-xs">
         <h2
           class="text-xs font-semibold text-white uppercase tracking-[0.16em]"
@@ -451,6 +678,141 @@
             {/if}
           </tbody>
         </table>
+      </div>
+    </div>
+
+      <div class="space-y-4">
+        <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3">
+          <div class="flex items-center justify-between mb-3 text-xs">
+            <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Alert Admin</h2>
+            <p class="text-[10px] text-white/40">butuh perhatian</p>
+          </div>
+          <div class="space-y-2">
+            {#if !(summary.alerts?.length)}
+              <p class="text-[11px] text-white/40">belum ada alert penting.</p>
+            {:else}
+              {#each summary.alerts ?? [] as alert}
+                <div class={`rounded-xl border px-3 py-2 text-[11px] ${alertColor(alert.level)}`}>
+                  {alert.message}
+                </div>
+              {/each}
+            {/if}
+          </div>
+        </div>
+
+        <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3">
+          <div class="flex items-center justify-between mb-3 text-xs">
+            <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Conversion Funnel</h2>
+            <p class="text-[10px] text-white/40">alur transaksi</p>
+          </div>
+          <div class="space-y-2 text-[11px]">
+            <div class="flex items-center justify-between rounded-lg bg-white/[0.03] px-3 py-2">
+              <span class="text-white/60">Total dibuat</span>
+              <span class="font-semibold text-white">{summary.funnel?.totalCreated.toLocaleString("id-ID") ?? "0"}</span>
+            </div>
+            <div class="flex items-center justify-between rounded-lg bg-emerald-500/10 px-3 py-2">
+              <span class="text-emerald-200">Payment sukses</span>
+              <span class="font-semibold text-emerald-100">{summary.funnel?.paymentSuccess.toLocaleString("id-ID") ?? "0"}</span>
+            </div>
+            <div class="flex items-center justify-between rounded-lg bg-sky-500/10 px-3 py-2">
+              <span class="text-sky-200">Order sukses</span>
+              <span class="font-semibold text-sky-100">{summary.funnel?.orderSuccess.toLocaleString("id-ID") ?? "0"}</span>
+            </div>
+            <div class="flex items-center justify-between rounded-lg bg-amber-500/10 px-3 py-2">
+              <span class="text-amber-200">Menunggu bayar</span>
+              <span class="font-semibold text-amber-100">{summary.funnel?.waitPayment.toLocaleString("id-ID") ?? "0"}</span>
+            </div>
+            <div class="flex items-center justify-between rounded-lg bg-red-500/10 px-3 py-2">
+              <span class="text-red-200">Payment gagal</span>
+              <span class="font-semibold text-red-100">{summary.funnel?.paymentFailed.toLocaleString("id-ID") ?? "0"}</span>
+            </div>
+            <div class="flex items-center justify-between rounded-lg bg-red-500/10 px-3 py-2">
+              <span class="text-red-200">Order gagal</span>
+              <span class="font-semibold text-red-100">{summary.funnel?.orderFailed.toLocaleString("id-ID") ?? "0"}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3">
+          <div class="flex items-center justify-between mb-3 text-xs">
+            <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Top Products</h2>
+            <p class="text-[10px] text-white/40">berdasarkan omzet</p>
+          </div>
+          <div class="space-y-2">
+            {#if !(summary.topProducts?.length)}
+              <p class="text-[11px] text-white/40">belum ada data produk.</p>
+            {:else}
+              {#each summary.topProducts ?? [] as product, index}
+                <div class="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] px-3 py-2">
+                  <div class="min-w-0 flex items-center gap-3">
+                    <span class="text-[10px] text-white/40 w-4">#{index + 1}</span>
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold text-white truncate">{product.title}</p>
+                      <p class="text-[10px] text-white/40">{product.count.toLocaleString("id-ID")} trx</p>
+                    </div>
+                  </div>
+                  <p class="text-[11px] font-semibold text-white">{formatCurrency(product.sum)}</p>
+                </div>
+              {/each}
+            {/if}
+          </div>
+        </div>
+
+        <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3">
+          <div class="flex items-center justify-between mb-3 text-xs">
+            <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Top Subcategory</h2>
+            <p class="text-[10px] text-white/40">5 teratas</p>
+          </div>
+          <div class="space-y-2">
+            {#if !(summary.topSubCategories?.length)}
+              <p class="text-[11px] text-white/40">belum ada data sub kategori.</p>
+            {:else}
+              {#each summary.topSubCategories ?? [] as sub, index}
+                <div class="flex items-center justify-between gap-3 rounded-xl bg-white/[0.03] px-3 py-2">
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold text-white truncate">#{index + 1} {sub.subCategoryTitle}</p>
+                    <p class="text-[10px] text-white/40 truncate">{sub.categoryTitle ?? "-"} · {sub.totalTransactionsAll.toLocaleString("id-ID")} trx</p>
+                  </div>
+                  <p class="text-[11px] font-semibold text-white">{formatCurrency(sub.sumAll)}</p>
+                </div>
+              {/each}
+            {/if}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-4 xl:grid-cols-2">
+      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4">
+        <div class="flex items-center justify-between mb-3 text-xs">
+          <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Tren Transaksi 7 Hari</h2>
+          <p class="text-[10px] text-white/40">jumlah transaksi harian · pay {paymentStatusFilter} · order {orderStatusFilter}</p>
+        </div>
+        <div class="grid grid-cols-7 gap-2 items-end min-h-[180px]">
+          {#each summary.trends ?? [] as item}
+            <div class="flex flex-col items-center justify-end gap-2">
+              <div class="w-full max-w-[42px] rounded-t-lg bg-[#f5c518]/80 min-h-[8px]" style={`height:${Math.max((item.totalTransactions / maxTrendTransactions()) * 140, 8)}px`}></div>
+              <p class="text-[10px] text-white/70">{item.totalTransactions}</p>
+              <p class="text-[10px] text-white/40 text-center">{formatShortDate(item.date)}</p>
+            </div>
+          {/each}
+        </div>
+      </div>
+
+      <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-3 md:p-4">
+        <div class="flex items-center justify-between mb-3 text-xs">
+          <h2 class="text-xs font-semibold text-white uppercase tracking-[0.16em]">Tren Omzet 7 Hari</h2>
+          <p class="text-[10px] text-white/40">nominal harian · pay {paymentStatusFilter} · order {orderStatusFilter}</p>
+        </div>
+        <div class="grid grid-cols-7 gap-2 items-end min-h-[180px]">
+          {#each summary.trends ?? [] as item}
+            <div class="flex flex-col items-center justify-end gap-2">
+              <div class="w-full max-w-[42px] rounded-t-lg bg-emerald-400/80 min-h-[8px]" style={`height:${Math.max((item.totalRevenue / maxTrendRevenue()) * 140, 8)}px`}></div>
+              <p class="text-[10px] text-white/70 text-center">{formatCurrency(item.totalRevenue)}</p>
+              <p class="text-[10px] text-white/40 text-center">{formatShortDate(item.date)}</p>
+            </div>
+          {/each}
+        </div>
       </div>
     </div>
 
@@ -549,6 +911,11 @@
           </tbody>
         </table>
       </div>
+    </div>
+  {/if}
+  {#if toastMessage}
+    <div class="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-[#f5c518]/15 border border-[#f5c518]/30 text-[#f5c518] text-xs font-semibold shadow-lg backdrop-blur-sm">
+      {toastMessage}
     </div>
   {/if}
 </section>

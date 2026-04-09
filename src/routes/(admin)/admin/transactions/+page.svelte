@@ -38,6 +38,9 @@
   const { data } = $props();
 
   let transactions = $state<Transaction[]>(data.transactions ?? []);
+  let highlightedIds = $state<string[]>([]);
+  let toastMessage = $state<string | null>(null);
+  let toastTimer: ReturnType<typeof setTimeout> | null = null;
   let meta = $state<Meta>(
     data.meta ?? {
       page: 1,
@@ -49,6 +52,7 @@
 
   let loading = $state(false);
   let error = $state<string | null>(null);
+  let lastUpdated = $state<string | null>(null);
 
   const token: string | null = data.token ?? null;
 
@@ -89,13 +93,29 @@
       if (!res.ok) {
         throw new Error(json?.data?.message ?? "Gagal memuat transaksi");
       }
-      transactions = json.data.items ?? [];
+
+      const nextItems = json.data.items ?? [];
+      const previousIds = new Set(transactions.map((item) => item.id));
+      const incoming = nextItems.filter((item: Transaction) => !previousIds.has(item.id));
+
+      transactions = nextItems;
       meta = json.data.meta ?? {
         page,
         limit,
         total: transactions.length,
         totalPages: 1,
       };
+      lastUpdated = new Date().toLocaleTimeString("id-ID");
+
+      if (incoming.length > 0) {
+        highlightedIds = incoming.map((item: Transaction) => item.id);
+        if (toastTimer) clearTimeout(toastTimer);
+        toastMessage = `${incoming.length} transaksi baru masuk`;
+        toastTimer = setTimeout(() => {
+          highlightedIds = [];
+          toastMessage = null;
+        }, 5000);
+      }
     } catch (e: any) {
       error = e?.message ?? "Terjadi kesalahan saat memuat transaksi";
     } finally {
@@ -150,6 +170,18 @@
     });
   }
 
+  $effect(() => {
+    fetchTransactions();
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchTransactions();
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  });
+
   function statusColor(status: string) {
     switch (status) {
       case "SUCCESS":
@@ -183,6 +215,9 @@
         Filter transaksi berdasarkan status, user, kata kunci, dan halaman.
       </p>
     </div>
+    {#if lastUpdated}
+      <p class="text-[11px] text-white/40">auto refresh 10 detik · update terakhir {lastUpdated}</p>
+    {/if}
   </header>
 
   <!-- Filter bar -->
@@ -336,7 +371,7 @@
             </tr>
           {:else}
             {#each transactions as trx}
-              <tr class="border-t border-white/5 hover:bg-white/[0.03]">
+              <tr class={`border-t border-white/5 hover:bg-white/[0.03] ${highlightedIds.includes(trx.id) ? "bg-emerald-500/10" : ""}`}>
                 <!-- Transaksi -->
                 <td class="px-3 py-2 align-top">
                   <div class="space-y-0.5">
@@ -525,4 +560,9 @@
       </button>
     </div>
   </div>
+  {#if toastMessage}
+    <div class="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-xs font-semibold shadow-lg backdrop-blur-sm">
+      {toastMessage}
+    </div>
+  {/if}
 </section>
