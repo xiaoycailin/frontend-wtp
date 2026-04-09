@@ -1,9 +1,21 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
 
+  type SubCategory = {
+    id: string;
+    title: string;
+  };
+
+  type Category = {
+    id: string;
+    title: string;
+    subCategories?: SubCategory[];
+  };
+
   const { data } = $props();
 
   const product = data.product;
+  const categories: Category[] = data?.categories ?? [];
 
   let title = $state(product.title ?? "");
   let description = $state(product.description ?? "");
@@ -17,6 +29,15 @@
 
   let loading = $state(false);
   let error = $state<string | null>(null);
+
+  const availableSubCategories = $derived(
+    categories.flatMap((category) =>
+      (category.subCategories ?? []).map((sub) => ({
+        ...sub,
+        categoryTitle: category.title,
+      })),
+    ),
+  );
 
   const canSubmit = $derived(!loading);
 
@@ -94,12 +115,17 @@
         />
       </div>
       <div class="space-y-1.5">
-        <label class="text-xs text-white/70">Sub Kategori ID</label>
-        <input
+        <label class="text-xs text-white/70">Sub Kategori</label>
+        <select
           class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
                  focus:outline-none focus:border-[#f5c518]/70"
           bind:value={subCategoryId}
-        />
+        >
+          <option value="">Pilih sub kategori</option>
+          {#each availableSubCategories as sub}
+            <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
+          {/each}
+        </select>
       </div>
     </div>
 
