@@ -17,7 +17,7 @@
   // import { goto } from "$app/navigation";
   let { children, data } = $props();
 
-  const { siteConfig } = data;
+  const siteConfig = data?.siteConfig ?? {};
 
   let mobileMenuOpen = $state(false);
   let searchQuery = $state("");
@@ -86,7 +86,11 @@
             <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
           </svg>
         </div> -->
-        <img src={siteConfig.logoUrl} width="50" alt="" />
+        {#if siteConfig?.logoUrl}
+          <img src={siteConfig.logoUrl} width="50" alt="" />
+        {:else}
+          <div class="w-10 h-10 rounded-lg bg-[#f5c518] flex items-center justify-center text-black font-black">W</div>
+        {/if}
         <!-- <span
           class="hidden sm:block text-base font-black tracking-tight text-[#f5c518]"
         >

@@ -39,18 +39,20 @@
     return !actionLoading && trx?.paymentStatus === "SUCCESS" && trx?.orderStatus !== "PENDING";
   }
 
-  function formatDate(iso: string | null) {
+  function formatDate(iso: string | null | undefined) {
     if (!iso) return "-";
     const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "-";
     return d.toLocaleString("id-ID", {
       dateStyle: "short",
       timeStyle: "short",
     });
   }
 
-  function formatCurrency(v: string | number) {
+  function formatCurrency(v: string | number | null | undefined) {
+    if (v === null || v === undefined || v === "") return "-";
     const n = typeof v === "string" ? Number(v) : v;
-    if (Number.isNaN(n)) return "-";
+    if (!Number.isFinite(n)) return "-";
     return n.toLocaleString("id-ID", {
       style: "currency",
       currency: "IDR",

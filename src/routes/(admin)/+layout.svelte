@@ -30,6 +30,7 @@
     { label: "Kategori", href: "/admin/category", icon: Categories },
     { label: "Pembayaran", href: "/admin/payments", icon: CardViewLarge },
     { label: "Activity Log", href: "/admin/activity-log", icon: Receipt },
+    { label: "System Log", href: "/admin/system-log", icon: Receipt },
     { label: "Pengguna", href: "/admin/users", icon: User },
     { label: "Site Config", href: "/admin/site-config", icon: Gear },
   ];
