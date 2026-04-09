@@ -8,6 +8,8 @@
     TrophyStar,
     Newspaper,
     Calculator,
+    User,
+    ShoppingBag,
   } from "@boxicons/svelte";
   import { page } from "$app/stores";
   import { auth } from "$lib/auth.svelte";
@@ -34,28 +36,35 @@
     },
   });
 
-  const navItems = [
-    { label: "Topup", href: "/", icon: Basket, active: true },
-    {
-      label: "Cek Transaksi",
-      href: "/invoice",
-      icon: MenuSearch,
-      active: false,
-    },
-    {
-      label: "Leaderboard",
-      href: "/leaderboard",
-      icon: TrophyStar,
-      active: false,
-    },
-    { label: "Artikel", href: "/article", icon: Newspaper, active: false },
-    // {
-    //   label: "Kalkulator",
-    //   href: "/calculator",
-    //   icon: Calculator,
-    //   active: false,
-    // },
-  ];
+  const navItems = $derived(() => {
+    const items = [
+      { label: "Topup", href: "/", icon: Basket, active: true },
+      { label: "Produk", href: "/products", icon: ShoppingBag, active: false },
+      {
+        label: "Cek Transaksi",
+        href: "/invoice",
+        icon: MenuSearch,
+        active: false,
+      },
+      {
+        label: "Leaderboard",
+        href: "/leaderboard",
+        icon: TrophyStar,
+        active: false,
+      },
+      { label: "Artikel", href: "/article", icon: Newspaper, active: false },
+      // {
+      //   label: "Kalkulator",
+      //   href: "/calculator",
+      //   icon: Calculator,
+      //   active: false,
+      // },
+    ];
+    if (auth.isLoggedIn) {
+      items.push({ label: "Akun Saya", href: "/account", icon: User, active: false });
+    }
+    return items;
+  });
 
   // exact match untuk "/", prefix match untuk yang lain
   function isActive(href: string, pathname: string): boolean {
