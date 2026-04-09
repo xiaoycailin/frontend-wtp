@@ -1,5 +1,6 @@
 <script lang="ts">
   import { teleport } from "$lib/utils";
+  import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
 
   type SubCategory = {
     id: string;
@@ -568,14 +569,12 @@
           />
         </label>
 
-        <label class="flex flex-col gap-1">
-          <span class="text-white/70">Thumbnail URL</span>
-          <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[#f5c518]"
-            bind:value={subForm.thumbnail}
-            placeholder="https://..."
-          />
-        </label>
+        <ImageUrlField
+          label="Thumbnail URL"
+          bind:value={subForm.thumbnail}
+          placeholder="https://..."
+          help="Bisa paste manual atau pilih dari image manager."
+        />
 
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Brand</span>
