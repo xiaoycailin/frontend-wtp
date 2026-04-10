@@ -1,20 +1,17 @@
-import type { LayoutServerLoad } from './$types';
+import type { LayoutServerLoad } from "./$types";
 
-export const load: LayoutServerLoad = async ({ fetch }) => {
+export const load: LayoutServerLoad = async () => {
   try {
-    // During prerender, this fetch will fail because backend is not running.
-    // We'll catch and return null.
-    const res = await fetch('/api/v1/site-config');
+    // Fetch directly from backend (server-side fetch cannot use Vite proxy)
+    const res = await fetch("http://localhost:3000/site-config");
     if (!res.ok) {
-      return { siteConfig: null };
+      console.error("Failed to fetch site-config:", res.status);
+      return { siteConfig: {} };
     }
-    const text = await res.text();
-    if (!text) {
-      return { siteConfig: null };
-    }
-    const json = JSON.parse(text);
-    return { siteConfig: json?.data ?? null };
-  } catch {
-    return { siteConfig: null };
+    const json = await res.json();
+    return { siteConfig: json?.data ?? {} };
+  } catch (err) {
+    console.error("Error fetching site-config:", err);
+    return { siteConfig: {} };
   }
 };

@@ -3,6 +3,12 @@
   import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
   import MultiImageUrlField from "$lib/components/admin/MultiImageUrlField.svelte";
 
+  type Badge = {
+    id: number;
+    label: string;
+    color: string;
+  };
+
   type SubCategory = {
     id: string;
     title: string;
@@ -14,7 +20,8 @@
     brand?: string | null;
     instant?: boolean;
     popular?: boolean;
-    badgeId?: string | null;
+    badgeId?: number | null;
+    badge?: Badge | null;
     createdAt: string;
     updatedAt: string;
   };
@@ -29,6 +36,7 @@
   };
 
   let categories = $state<Category[]>([]);
+  let badges = $state<Badge[]>([]);
   let loading = $state(false);
   let error = $state<string | null>(null);
   let deletingCategoryId = $state<string | null>(null);
@@ -57,6 +65,7 @@
     description: "",
     banners: "", // textarea, 1 url per baris
     brand: "",
+    badgeId: "",
   });
 
   function normalizeConfig(obj: Record<string, unknown>) {
@@ -66,6 +75,19 @@
       copy[k] = v;
     }
     return copy;
+  }
+
+  async function fetchBadges() {
+    try {
+      const res = await fetch("/api/v1/badges");
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json?.data?.message ?? "Gagal memuat badge");
+      }
+      badges = json.data ?? [];
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async function fetchCategories() {
@@ -87,6 +109,7 @@
 
   $effect(() => {
     fetchCategories();
+    fetchBadges();
   });
 
   function openCreateCategory() {
@@ -109,6 +132,7 @@
     subForm.description = "";
     subForm.banners = "";
     subForm.brand = "";
+    subForm.badgeId = "";
     showSubModal = true;
   }
 
@@ -120,6 +144,7 @@
     subForm.description = sub.description ?? "";
     subForm.banners = (sub.banners ?? []).join("\n");
     subForm.brand = sub.brand ?? "";
+    subForm.badgeId = sub.badgeId ? String(sub.badgeId) : "";
     showSubModal = true;
   }
 
@@ -191,6 +216,7 @@
       description: subForm.description.trim(),
       banners,
       brand: subForm.brand.trim(),
+      badgeId: subForm.badgeId,
     });
 
     try {
@@ -237,7 +263,9 @@
 
       const json = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(json?.data?.message ?? json?.message ?? "Gagal menghapus kategori");
+        throw new Error(
+          json?.data?.message ?? json?.message ?? "Gagal menghapus kategori",
+        );
       }
 
       categories = categories.filter((item) => item.id !== cat.id);
@@ -267,12 +295,18 @@
 
       const json = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(json?.data?.message ?? json?.message ?? "Gagal menghapus sub kategori");
+        throw new Error(
+          json?.data?.message ??
+            json?.message ??
+            "Gagal menghapus sub kategori",
+        );
       }
 
       categories = categories.map((cat) => ({
         ...cat,
-        subCategories: (cat.subCategories ?? []).filter((item) => item.id !== sub.id),
+        subCategories: (cat.subCategories ?? []).filter(
+          (item) => item.id !== sub.id,
+        ),
       }));
     } catch (e: any) {
       error = e?.message ?? "Gagal menghapus sub kategori";
@@ -430,7 +464,17 @@
                           </div>
                         </td>
                         <td class="px-3 py-2 align-top text-white/80">
-                          {sub.brand ?? "-"}
+                          <div class="space-y-1">
+                            <div>{sub.brand ?? "-"}</div>
+                            {#if sub.badge}
+                              <span
+                                class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                style={`background:${sub.badge.color}22; color:${sub.badge.color}; border:1px solid ${sub.badge.color}55`}
+                              >
+                                {sub.badge.label}
+                              </span>
+                            {/if}
+                          </div>
                         </td>
                         <td class="px-3 py-2 align-top">
                           <span
@@ -464,7 +508,9 @@
                               disabled={deletingSubId === sub.id}
                               on:click={() => handleDeleteSub(sub)}
                             >
-                              {deletingSubId === sub.id ? "Menghapus..." : "Hapus"}
+                              {deletingSubId === sub.id
+                                ? "Menghapus..."
+                                : "Hapus"}
                             </button>
                           </div>
                         </td>
@@ -497,7 +543,7 @@
           class="text-xs text-white/50 hover:text-white"
           on:click={() => (showCategoryModal = false)}
         >
-          âœ•
+          Tutup
         </button>
       </div>
 
@@ -556,7 +602,7 @@
           class="text-xs text-white/50 hover:text-white"
           on:click={() => (showSubModal = false)}
         >
-          âœ•
+          Tutup
         </button>
       </div>
 
@@ -584,6 +630,19 @@
             bind:value={subForm.brand}
             placeholder="Contoh: Google, Moonton"
           />
+        </label>
+
+        <label class="flex flex-col gap-1">
+          <span class="text-white/70">Badge</span>
+          <select
+            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+            bind:value={subForm.badgeId}
+          >
+            <option value="">Tanpa badge</option>
+            {#each badges as badge}
+              <option value={String(badge.id)}>{badge.label}</option>
+            {/each}
+          </select>
         </label>
 
         <label class="flex flex-col gap-1">
@@ -623,4 +682,3 @@
     </div>
   </div>
 {/if}
-

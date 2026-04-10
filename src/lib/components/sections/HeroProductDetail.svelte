@@ -125,7 +125,7 @@
         </p>
 
         <div class="flex flex-wrap gap-2">
-          {#each [{ icon: productDetail.instant ? "âš¡" : "ðŸ¤š", label: productDetail.instant ? "Instan" : "Di Proses Manual" }, { icon: "ðŸ’¬", label: "CS 24/7" }, { icon: "ðŸ”’", label: "Aman" }, { icon: "ðŸ†", label: "Terpercaya" }] as feat}
+          {#each [{ icon: productDetail.instant ? "⚡" : "🤚", label: productDetail.instant ? "Instan" : "Di Proses Manual" }, { icon: "💬", label: "CS 24/7" }, { icon: "🔒", label: "Aman" }, { icon: "🏆", label: "Terpercaya" }] as feat}
             <span
               class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-md"
               style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); color: #94a3b8;"

@@ -1,6 +1,6 @@
 ﻿<script lang="ts">
   import { goto } from "$app/navigation";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/auth";
   import { onMount } from "svelte";
   import "../style.css";
 
@@ -55,7 +55,7 @@
         auth.setAuth(token, user);
       }
 
-      await goto("/");
+      window.location.href = "/";
     } catch (err) {
       console.error(err);
       error = "Gagal menghubungi server. Periksa koneksi kamu.";
@@ -66,7 +66,7 @@
 </script>
 
 <svelte:head>
-  <title>Masuk â€” WTPANJAY</title>
+  <title>Masuk - WTPANJAY</title>
 </svelte:head>
 
 <div class="auth-root">
@@ -326,4 +326,3 @@
     </p>
   </main>
 </div>
-

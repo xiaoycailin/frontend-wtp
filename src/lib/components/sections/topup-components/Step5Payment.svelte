@@ -100,7 +100,7 @@
       if (!res.ok) return;
 
       const data = await res.json();
-      // FIX: backend reply.send(prices) â†’ response langsung array
+      // FIX: backend reply.send(prices) → response langsung array
       // Kalau backend kamu wrap dengan { data: [...] }, ganti ke data.data
       prices = Array.isArray(data) ? data : (data.data ?? []);
     } catch (err: any) {
@@ -161,7 +161,9 @@
             background:   {isSelected
             ? 'rgba(245,197,24,0.07)'
             : 'rgba(255,255,255,0.03)'};
-            border-color: {isSelected ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)'};
+            border-color: {isSelected
+            ? 'var(--color-primary)'
+            : 'rgba(255,255,255,0.08)'};
             box-shadow:   {isSelected
             ? '0 0 20px rgba(245,197,24,0.15)'
             : 'none'};
@@ -544,4 +546,3 @@
     flex: 1;
   }
 </style>
-

@@ -35,14 +35,14 @@
     email?: string;
   } = $props();
 
-  // â”€â”€ FIX 1: State untuk menyimpan hasil review dari server â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── FIX 1: State untuk menyimpan hasil review dari server ─────────────
   let reviewData = $state<any>(null);
   let purchaseData = $state<any>(null);
   let reviewLoading = $state(false);
   let purchaseLoading = $state(false);
   let showConfirmModal = $state(false);
 
-  // â”€â”€ FIX 2: Derived â€” pakai data server kalau ada, fallback ke props
+  // ── FIX 2: Derived — pakai data server kalau ada, fallback ke props ──
   const displayBasePrice = $derived(reviewData?.price ?? basePrice);
   const displayFlashDiscount = $derived(reviewData?.discount ?? 0);
   const displayDiscountLabel = $derived(reviewData?.discountLabel ?? null);
@@ -50,14 +50,12 @@
   const displayFee = $derived(reviewData?.fee ?? surcharge ?? 0);
   const displayTotal = $derived(reviewData?.total ?? totalPrice);
 
-  // â”€â”€ FIX 3: $effect dengan guard + AbortController â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── FIX 3: $effect dengan guard + AbortController ─────────────────────
   $effect(() => {
-    // Guard: jangan fetch kalau data belum lengkap
     if (!selected || !selectedPay?.id) {
       reviewData = null;
       return;
     }
-    // console.log(selectedPay);
 
     const isFlashSale = selected.productFlashId != null;
     const body = {
@@ -76,7 +74,6 @@
     const controller = new AbortController();
     purchaseReview(body, controller.signal);
 
-    // FIX: cleanup batalkan request lama
     return () => controller.abort();
   });
 
@@ -91,7 +88,6 @@
       });
 
       if (!res.ok) {
-        // â”€â”€ Tampilkan error review langsung (misal flash sale qty > 1) â”€
         const errJson = await res.json().catch(() => null);
         const errMsg =
           errJson?.data?.message ??
@@ -115,7 +111,7 @@
     }
   }
 
-  // â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Toast ──────────────────────────────────────────────────────────────
   type ToastType = "error" | "success" | "info";
   let toast = $state<{ message: string; type: ToastType } | null>(null);
   let toastTimer: ReturnType<typeof setTimeout>;
@@ -127,7 +123,6 @@
   }
 
   const purchaseItem = async () => {
-    // â”€â”€ Guard: jangan lanjut kalau purchaseData belum ada â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (!purchaseData) {
       showToast("Data pesanan belum siap, tunggu sebentar.", "info");
       return;
@@ -153,11 +148,9 @@
           errJson?.error ??
           `Terjadi kesalahan (${res.status})`;
 
-        // â”€â”€ FIX: tutup modal DULU biar toast tidak tertutup backdrop â”€
         showConfirmModal = false;
         purchaseLoading = false;
 
-        // Delay kecil agar modal selesai animasi close sebelum toast muncul
         setTimeout(() => showToast(errMsg, "error"), 150);
         return;
       }
@@ -217,7 +210,7 @@
   onCancel={() => (showConfirmModal = false)}
 />
 
-<!-- â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- Toast -->
 {#if toast}
   <div
     use:teleport
@@ -228,7 +221,6 @@
     role="alert"
     aria-live="assertive"
   >
-    <!-- Icon -->
     {#if toast.type === "error"}
       <svg
         class="toast-icon"
@@ -336,7 +328,7 @@
   <div
     class="w-9 h-9 rounded-xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 flex items-center justify-center flex-shrink-0"
   >
-    <span class="text-lg">ðŸŽ§</span>
+    <span class="text-lg">🎧</span>
   </div>
   <div>
     <p class="text-xs font-bold text-white">Butuh Bantuan?</p>
@@ -377,7 +369,7 @@
         <div
           class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-3 text-2xl"
         >
-          ðŸ›’
+          🧺
         </div>
         <p class="text-xs text-white/30 font-medium">
           Belum ada item yang dipilih
@@ -419,9 +411,8 @@
         </button>
       </div>
 
-      <!-- FIX: Price breakdown pakai data server -->
+      <!-- Price breakdown -->
       <div class="space-y-2 mb-3 text-xs">
-        <!-- Harga satuan -->
         <div class="flex justify-between">
           <span class="text-white/40">Harga satuan</span>
           {#if reviewLoading}
@@ -434,18 +425,17 @@
         {#if quantity > 1}
           <div class="flex justify-between">
             <span class="text-white/40">Jumlah</span>
-            <span class="text-white font-medium">Ã—{quantity}</span>
+            <span class="text-white font-medium">×{quantity}</span>
           </div>
         {/if}
 
-        <!-- FIX: Flash sale discount dari server -->
         {#if displayIsFlashSale && displayFlashDiscount > 0}
           <div class="flex justify-between">
             <span class="text-white/40 flex items-center gap-1">
               <span
                 class="px-1.5 py-0.5 rounded-md text-[9px] font-black bg-red-500/20 text-red-400"
               >
-                âš¡ FLASH
+                ⚡ FLASH
               </span>
               {displayDiscountLabel ?? "Diskon Flash Sale"}
             </span>
@@ -459,7 +449,6 @@
           </div>
         {/if}
 
-        <!-- Promo code discount dari parent -->
         {#if discountAmount > 0}
           <div class="flex justify-between">
             <span class="text-white/40">Diskon ({promoApplied?.code})</span>
@@ -469,7 +458,6 @@
           </div>
         {/if}
 
-        <!-- Fee dari server -->
         {#if displayFee > 0}
           <div class="flex justify-between">
             <span class="text-white/40">Biaya Admin</span>
@@ -502,7 +490,7 @@
     {/if}
   </div>
 
-  <!-- CTA -->
+  <!-- CTA desktop -->
   <div class="hidden md:block px-4 pb-4">
     <button
       disabled={!canOrder}
@@ -522,7 +510,6 @@
       "
       onclick={() => {
         if (canOrder && !reviewLoading) {
-          // purchaseItem();
           showConfirmModal = true;
         }
       }}
@@ -564,7 +551,9 @@
         <div class="flex items-center gap-2">
           <div
             class="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
-            style="background:{item.ok ? 'var(--color-primary)' : 'rgba(255,255,255,0.08)'};"
+            style="background:{item.ok
+              ? 'var(--color-primary)'
+              : 'rgba(255,255,255,0.08)'};"
           >
             {#if item.ok}
               <svg
@@ -596,10 +585,9 @@
   </div>
 </div>
 
-<!-- â”€â”€ Mobile Fixed Bottom Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- Mobile Fixed Bottom Bar -->
 {#if selected}
   <div class="mobile-order-bar md:hidden">
-    <!-- â”€â”€ Discount Strip (muncul kalau ada diskon) â”€â”€ -->
     {#if (displayIsFlashSale && displayFlashDiscount > 0) || discountAmount > 0}
       <div class="discount-strip">
         <div class="discount-strip-inner">
@@ -634,38 +622,19 @@
             <span class="ds-amount ds-promo">{fmt(discountAmount)}</span>
           {/if}
 
-          <!-- Total penghematan kalau dua-duanya ada -->
           {#if displayIsFlashSale && displayFlashDiscount > 0 && discountAmount > 0}
-            <span class="ds-divider">Â·</span>
+            <span class="ds-divider">·</span>
             <span class="ds-total-save">
               Total hemat {fmt(displayFlashDiscount + discountAmount)}
             </span>
           {/if}
-
-          <!-- Arrow kanan -->
-          <!-- <svg
-            class="ds-arrow ml-auto flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2.5"
-              d="M9 5l7 7-7 7"
-            />
-          </svg> -->
         </div>
       </div>
     {/if}
 
-    <!-- Glow line atas -->
     <div class="bar-glow-line"></div>
 
-    <!-- Konten -->
     <div class="bar-inner">
-      <!-- Kiri: info harga -->
       <div class="bar-info">
         {#if reviewLoading}
           <div class="h-5 w-24 rounded-md bg-white/10 animate-pulse mb-1"></div>
@@ -681,7 +650,6 @@
         {/if}
       </div>
 
-      <!-- Kanan: tombol -->
       <button
         disabled={!canOrder || reviewLoading}
         class="bar-btn {canOrder && !reviewLoading
@@ -741,9 +709,9 @@
 
 <!-- Payment hints -->
 <div class="flex flex-wrap items-center justify-center gap-2 px-2">
-  {#each ["ðŸ’³ Transfer", "ðŸ“± QRIS", "ðŸ§ ATM", "ðŸ’° COD"] as m, i}
+  {#each ["💳 Transfer", "📱 QRIS", "🏧 ATM", "💰 COD"] as m, i}
     <span class="text-[10px] text-white/25 font-medium">{m}</span>
-    {#if i < 3}<span class="text-white/10">Â·</span>{/if}
+    {#if i < 3}<span class="text-white/10">·</span>{/if}
   {/each}
 </div>
 
@@ -760,11 +728,10 @@
     }
   }
 
-  /* â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* Toast */
   .toast {
     position: fixed;
-    top: 1.25rem; /* â† ganti bottom ke top */
-    bottom: unset; /* â† reset bottom kalau masih ada */
+    top: 1.25rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 99999;
@@ -777,7 +744,6 @@
     backdrop-filter: blur(12px);
     font-size: 0.8125rem;
     font-weight: 600;
-    white-space: nowrap;
     max-width: calc(100vw - 2rem);
     white-space: normal;
     animation: toastIn 280ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -827,7 +793,7 @@
   @keyframes toastIn {
     from {
       opacity: 0;
-      transform: translateX(-50%) translateY(-0.75rem); /* â† negatif = dari atas */
+      transform: translateX(-50%) translateY(-0.75rem);
     }
     to {
       opacity: 1;
@@ -835,14 +801,13 @@
     }
   }
 
-  /* â”€â”€ Mobile Fixed Bottom Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* Mobile bar */
   .mobile-order-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 9998;
-    /* Frosted glass berlapis */
     background: linear-gradient(
       180deg,
       rgba(10, 10, 10, 0.65) 0%,
@@ -850,12 +815,10 @@
     );
     backdrop-filter: blur(24px) saturate(180%);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
-    /* Safe area iPhone */
     padding: 0.875rem 1rem calc(0.875rem + env(safe-area-inset-bottom));
     border-top: 1px solid rgba(255, 255, 255, 0.07);
   }
 
-  /* Glow line kuning di atas bar */
   .bar-glow-line {
     position: absolute;
     top: -1px;
@@ -873,7 +836,6 @@
     filter: blur(0.5px);
   }
 
-  /* Glow ambient di bawah glow line */
   .mobile-order-bar::before {
     content: "";
     position: absolute;
@@ -894,9 +856,8 @@
     align-items: center;
     gap: 0.875rem;
     position: relative;
-    padding-top: 0.625rem; /* â† tambahkan ini agar jarak dari border sama dengan strip */
+    padding-top: 0.625rem;
   }
-  /* Info kiri */
   .bar-info {
     flex: 1;
     min-width: 0;
@@ -910,7 +871,6 @@
     color: var(--color-primary);
     letter-spacing: -0.02em;
     line-height: 1;
-    /* Glow teks */
     text-shadow: 0 0 20px rgba(245, 197, 24, 0.4);
   }
   .bar-meta {
@@ -921,20 +881,7 @@
     gap: 0.375rem;
     flex-wrap: wrap;
   }
-  .bar-pay-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.125rem 0.5rem;
-    border-radius: 9999px;
-    background: rgba(245, 197, 24, 0.1);
-    border: 1px solid rgba(245, 197, 24, 0.2);
-    color: rgba(245, 197, 24, 0.7);
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
 
-  /* Tombol kanan */
   .bar-btn {
     position: relative;
     overflow: hidden;
@@ -973,7 +920,6 @@
     border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
-  /* Shine sweep di tombol */
   .bar-btn-shine {
     position: absolute;
     inset: 0;
@@ -987,7 +933,6 @@
     pointer-events: none;
   }
 
-  /* Spinner di tombol */
   .bar-spinner {
     width: 1rem;
     height: 1rem;
@@ -999,34 +944,21 @@
     }
   }
 
-  /* â”€â”€ Discount Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* Discount strip */
   .discount-strip {
-    padding: 0.625rem 0; /* â† sama atas & bawah, hapus nilai berbeda */
+    padding: 0.625rem 0;
     padding-top: 0;
-    margin-bottom: 0; /* â† hapus margin-bottom, border sudah jadi pemisah */
+    margin-bottom: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-  /* .discount-strip::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      rgba(245, 197, 24, 0.04) 0%,
-      rgba(239, 68, 68, 0.03) 100%
-    );
-    pointer-events: none;
-  } */
 
   .discount-strip-inner {
     display: flex;
     align-items: center;
     gap: 0.375rem;
     flex-wrap: wrap;
-    /* position: relative; */
   }
 
-  /* Badge FLASH SALE */
   .ds-flash-badge {
     display: inline-flex;
     align-items: center;
@@ -1042,7 +974,6 @@
     text-transform: uppercase;
   }
 
-  /* Badge PROMO CODE */
   .ds-promo-badge {
     display: inline-flex;
     align-items: center;
@@ -1064,7 +995,6 @@
     font-weight: 500;
   }
 
-  /* Nominal diskon */
   .ds-amount {
     font-size: 0.75rem;
     font-weight: 900;
@@ -1083,19 +1013,10 @@
     font-weight: 500;
   }
 
-  /* Total hemat (kalau dua diskon sekaligus) */
   .ds-total-save {
     font-size: 0.625rem;
     font-weight: 700;
     color: rgba(245, 197, 24, 0.6);
     white-space: nowrap;
   }
-
-  /* Arrow kanan */
-  .ds-arrow {
-    width: 0.875rem;
-    height: 0.875rem;
-    color: rgba(255, 255, 255, 0.2);
-  }
 </style>
-

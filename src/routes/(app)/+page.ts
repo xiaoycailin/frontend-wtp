@@ -13,7 +13,7 @@ export const load: PageLoad = async ({ fetch }) => {
   }
 
   try {
-    const category = await fetch("/api/v1/category");
+    const category = await fetch("/api/v1/category?productInclude=true");
     if (!category.ok) {
       return { category: [] };
     }

@@ -19,7 +19,7 @@
                bg-white/[0.04] text-sm text-white/70 flex-shrink-0
                hover:border-white/20 transition-colors duration-200"
       >
-        <span class="text-base">ðŸ‡®ðŸ‡©</span>
+        <span class="text-base">id‡®ðŸ‡©</span>
         <span class="font-medium text-xs">+62</span>
         <svg class="w-3 h-3 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

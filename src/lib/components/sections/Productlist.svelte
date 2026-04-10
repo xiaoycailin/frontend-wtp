@@ -1,5 +1,6 @@
 ﻿<script lang="ts">
   import TiltCard from "../TiltCard.svelte";
+  import { fmt } from "./topup-components/utils";
 
   // â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   interface Game {
@@ -30,6 +31,8 @@
 
   // console.log(sc);
   const games: Game[] = sc.map((g) => {
+    console.log(g);
+
     return {
       category: g.categoryId,
       img: g.thumbnail,
@@ -37,8 +40,8 @@
       provider: g.brand,
       slug: g.slug,
       // TODO: jangan di harcode
-      priceFrom: "Rp 10.000",
-      badge: { label: "ðŸ”¥ POPULER", color: "var(--color-primary)" },
+      priceFrom: fmt(Number(g.priceFrom)) ?? "Rp 0",
+      badge: g.badge,
       popular: true,
     };
   });
@@ -200,7 +203,7 @@
                   class="text-[10px] font-bold px-3 py-1.5 rounded-lg text-black"
                   style="background: var(--color-primary); box-shadow: 0 0 12px rgba(245,197,24,0.5);"
                 >
-                  Top Up â†’
+                  Top Up →
                 </span>
               </div>
             </div>
@@ -315,4 +318,3 @@
     -webkit-box-orient: vertical;
   }
 </style>
-

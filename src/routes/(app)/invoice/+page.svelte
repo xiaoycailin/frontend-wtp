@@ -333,7 +333,7 @@
 
     <!-- Trust badges -->
     <div class="badges">
-      {#each [{ icon: "âš¡", label: "Instan" }, { icon: "ðŸ”’", label: "Aman" }, { icon: "ðŸ•", label: "24/7" }] as b}
+      {#each [{ icon: "⚡", label: "Instan" }, { icon: "🔒", label: "Aman" }, { icon: "🕐", label: "24/7" }] as b}
         <div class="badge-item">
           <span class="badge-icon">{b.icon}</span>
           <span class="badge-label">{b.label}</span>

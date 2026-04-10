@@ -66,10 +66,10 @@ export function getTokenExpiry(token: string): Date | null {
 }
 
 // ── Reactive state (Svelte 5 runes) ───────────────────────────
-let _token = $state<string | null>(null);
-let _user = $state<User | null>(null);
-let _loading = $state<boolean>(false);
-let _initialized = $state<boolean>(false);
+let _token: any = null;
+let _user: any = null;
+let _loading: any = null;
+let _initialized: any = null;
 
 // ── Internal helpers ──────────────────────────────────────────
 function _clearStorage() {
@@ -175,7 +175,7 @@ async function logout(redirectTo = "/auth/login"): Promise<void> {
   _token = null;
   _user = null;
   _clearStorage();
-  goto(redirectTo);
+  window.location.href = redirectTo;
 }
 
 /**

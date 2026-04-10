@@ -1,5 +1,5 @@
 // src/lib/setup/fetch-interceptor.ts
-import { auth } from "$lib/auth.svelte";
+import { auth } from "$lib/auth";
 
 export function setupFetchInterceptor() {
   if (typeof window === "undefined") return;

@@ -1,7 +1,7 @@
 ﻿<script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/stores";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/auth";
   import "../layout.css";
   import {
     CardViewLarge,
@@ -14,15 +14,14 @@
     User,
     Bolt,
   } from "@boxicons/svelte";
-  import type { SiteConfig } from "../../app.js";
   import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
 
   let { data, children } = $props();
 
-  const siteConfig: SiteConfig = data.siteConfig;
-  const primaryColor = siteConfig?.primaryColor ?? '#f5c518';
-  const secondaryColor = siteConfig?.secondaryColor ?? '#0e0e0e';
-  const accentColor = siteConfig?.accentColor ?? '#ffffff';
+  const siteConfig = data.siteConfig;
+  const primaryColor = siteConfig?.primaryColor ?? "#f5c518";
+  const secondaryColor = siteConfig?.secondaryColor ?? "#0e0e0e";
+  const accentColor = siteConfig?.accentColor ?? "#ffffff";
   let user: any = data.user;
 
   const sidebarItems = [
@@ -31,6 +30,7 @@
     { label: "Produk", href: "/admin/products", icon: ProductHunt },
     { label: "Flash Sale", href: "/admin/flash-sale", icon: Bolt },
     { label: "Kategori", href: "/admin/category", icon: Categories },
+    { label: "Badge Library", href: "/admin/badges", icon: CaretDownSquare },
     { label: "Pembayaran", href: "/admin/payments", icon: CardViewLarge },
     { label: "Activity Log", href: "/admin/activity-log", icon: Receipt },
     { label: "System Log", href: "/admin/system-log", icon: Receipt },
@@ -58,7 +58,10 @@
   <title>Admin Dashboard - {siteConfig.siteName}</title>
 </svelte:head>
 
-<div style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};" class="min-h-screen bg-[#050505] text-white flex">
+<div
+  style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};"
+  class="min-h-screen bg-[#050505] text-white flex"
+>
   <!-- Sidebar -->
   <aside
     class="hidden md:flex md:flex-col w-64 bg-[#0b0b0b] border-r border-white/5
@@ -168,4 +171,3 @@
     </main>
   </div>
 </div>
-

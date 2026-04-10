@@ -22,6 +22,7 @@
     total: number;
     totalPages: number;
   };
+  export const { data } = $props();
 
   let logs = $state<SystemLog[]>([]);
   let meta = $state<Meta>({ page: 1, limit: 20, total: 0, totalPages: 1 });
@@ -49,10 +50,16 @@
     loading = true;
     error = null;
     try {
-      const res = await fetch(`/api/v1/system-logs?${buildQuery()}`);
+      const res = await fetch(`/api/v1/system-logs?${buildQuery()}`, {
+        headers: {
+          Authorization: "Bearer " + data.token,
+        },
+      });
       const json = await res.json();
       if (!res.ok) {
-        throw new Error(json?.data?.message ?? json?.message ?? "Gagal memuat system log");
+        throw new Error(
+          json?.data?.message ?? json?.message ?? "Gagal memuat system log",
+        );
       }
       logs = json?.data?.items ?? [];
       meta = json?.data?.meta ?? meta;
@@ -105,18 +112,36 @@
 </script>
 
 <section class="space-y-6">
-  <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+  <header
+    class="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
+  >
     <div>
-      <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">System Log</p>
-      <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">Log Sistem Backend</h1>
-      <p class="text-xs md:text-sm text-white/50 mt-1 max-w-xl">Pantau error backend, callback provider, dan kegagalan request third-party.</p>
+      <p
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
+      >
+        System Log
+      </p>
+      <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
+        Log Sistem Backend
+      </h1>
+      <p class="text-xs md:text-sm text-white/50 mt-1 max-w-xl">
+        Pantau error backend, callback provider, dan kegagalan request
+        third-party.
+      </p>
     </div>
   </header>
 
   <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-4 space-y-4">
     <div class="grid gap-3 md:grid-cols-5 text-xs">
-      <input bind:value={search} placeholder="Cari message / source / url" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]" />
-      <select bind:value={type} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
+      <input
+        bind:value={search}
+        placeholder="Cari message / source / url"
+        class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+      />
+      <select
+        bind:value={type}
+        class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+      >
         <option value="">Semua Type</option>
         <option value="app_error">app_error</option>
         <option value="app_warning">app_warning</option>
@@ -124,15 +149,32 @@
         <option value="digiflazz_callback">digiflazz_callback</option>
         <option value="duitku_callback">duitku_callback</option>
       </select>
-      <select bind:value={provider} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
+      <select
+        bind:value={provider}
+        class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+      >
         <option value="">Semua Provider</option>
         <option value="digiflazz">digiflazz</option>
         <option value="duitku">duitku</option>
       </select>
-      <input bind:value={trxId} placeholder="Filter trxId" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]" />
+      <input
+        bind:value={trxId}
+        placeholder="Filter trxId"
+        class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+      />
       <div class="flex gap-2">
-        <button type="button" onclick={applyFilter} class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]">Filter</button>
-        <button type="button" onclick={resetFilter} class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white border border-white/10 hover:bg-white/10">Reset</button>
+        <button
+          type="button"
+          onclick={applyFilter}
+          class="flex-1 px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
+          >Filter</button
+        >
+        <button
+          type="button"
+          onclick={resetFilter}
+          class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white border border-white/10 hover:bg-white/10"
+          >Reset</button
+        >
       </div>
     </div>
 
@@ -154,41 +196,75 @@
       <div class="divide-y divide-white/5">
         {#each logs as log}
           <div class="p-4 space-y-2">
-            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+            <div
+              class="flex flex-col md:flex-row md:items-start md:justify-between gap-2"
+            >
               <div>
                 <p class="text-sm font-semibold text-white">{log.message}</p>
-                <p class="text-[11px] text-white/45">{log.type} Â· {log.source} Â· {log.provider ?? "-"}</p>
+                <p class="text-[11px] text-white/45">
+                  {log.type} · {log.source} · {log.provider ?? "-"}
+                </p>
               </div>
-              <p class="text-[11px] text-white/45 shrink-0">{formatDate(log.createdAt)}</p>
+              <p class="text-[11px] text-white/45 shrink-0">
+                {formatDate(log.createdAt)}
+              </p>
             </div>
-            <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-white/60">
-              <span class={statusTone(log.statusCode)}>Status: {log.statusCode ?? "-"}</span>
+            <div
+              class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-white/60"
+            >
+              <span class={statusTone(log.statusCode)}
+                >Status: {log.statusCode ?? "-"}</span
+              >
               <span>Method: {log.method ?? "-"}</span>
               <span>Trx ID: {log.trxId ?? "-"}</span>
               <span>URL: {log.url ?? "-"}</span>
             </div>
             {#if log.requestPayload}
               <details class="text-[11px] text-white/55">
-                <summary class="cursor-pointer select-none">Lihat request payload</summary>
-                <pre class="mt-2 p-3 rounded-xl bg-black/30 border border-white/5 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(log.requestPayload, null, 2)}</pre>
+                <summary class="cursor-pointer select-none"
+                  >Lihat request payload</summary
+                >
+                <pre
+                  class="mt-2 p-3 rounded-xl bg-black/30 border border-white/5 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(
+                    log.requestPayload,
+                    null,
+                    2,
+                  )}</pre>
               </details>
             {/if}
             {#if log.responsePayload}
               <details class="text-[11px] text-white/55">
-                <summary class="cursor-pointer select-none">Lihat response payload</summary>
-                <pre class="mt-2 p-3 rounded-xl bg-black/30 border border-white/5 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(log.responsePayload, null, 2)}</pre>
+                <summary class="cursor-pointer select-none"
+                  >Lihat response payload</summary
+                >
+                <pre
+                  class="mt-2 p-3 rounded-xl bg-black/30 border border-white/5 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(
+                    log.responsePayload,
+                    null,
+                    2,
+                  )}</pre>
               </details>
             {/if}
             {#if log.metadata}
               <details class="text-[11px] text-white/55">
-                <summary class="cursor-pointer select-none">Lihat metadata</summary>
-                <pre class="mt-2 p-3 rounded-xl bg-black/30 border border-white/5 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(log.metadata, null, 2)}</pre>
+                <summary class="cursor-pointer select-none"
+                  >Lihat metadata</summary
+                >
+                <pre
+                  class="mt-2 p-3 rounded-xl bg-black/30 border border-white/5 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(
+                    log.metadata,
+                    null,
+                    2,
+                  )}</pre>
               </details>
             {/if}
             {#if log.errorStack}
               <details class="text-[11px] text-red-200/80">
-                <summary class="cursor-pointer select-none">Lihat error stack</summary>
-                <pre class="mt-2 p-3 rounded-xl bg-red-950/30 border border-red-500/20 overflow-x-auto whitespace-pre-wrap">{log.errorStack}</pre>
+                <summary class="cursor-pointer select-none"
+                  >Lihat error stack</summary
+                >
+                <pre
+                  class="mt-2 p-3 rounded-xl bg-red-950/30 border border-red-500/20 overflow-x-auto whitespace-pre-wrap">{log.errorStack}</pre>
               </details>
             {/if}
           </div>
@@ -196,13 +272,26 @@
       </div>
     {/if}
 
-    <div class="px-4 py-3 border-t border-white/5 flex items-center justify-between text-xs text-white/60">
+    <div
+      class="px-4 py-3 border-t border-white/5 flex items-center justify-between text-xs text-white/60"
+    >
       <span>Halaman {meta.page} dari {meta.totalPages}</span>
       <div class="flex items-center gap-2">
-        <button type="button" onclick={() => goToPage(page - 1)} disabled={page <= 1} class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 disabled:opacity-40">Prev</button>
-        <button type="button" onclick={() => goToPage(page + 1)} disabled={page >= meta.totalPages} class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 disabled:opacity-40">Next</button>
+        <button
+          type="button"
+          onclick={() => goToPage(page - 1)}
+          disabled={page <= 1}
+          class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 disabled:opacity-40"
+          >Prev</button
+        >
+        <button
+          type="button"
+          onclick={() => goToPage(page + 1)}
+          disabled={page >= meta.totalPages}
+          class="px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 disabled:opacity-40"
+          >Next</button
+        >
       </div>
     </div>
   </div>
 </section>
-

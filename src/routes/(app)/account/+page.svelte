@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/auth";
+  import { setupFetchInterceptor } from "$lib/setup/interceptor";
 
   let user = $state<any>(null);
   let transactions = $state<any[]>([]);
@@ -13,6 +14,8 @@
   let totalPages = $state(1);
 
   onMount(async () => {
+    setupFetchInterceptor();
+    auth.init();
     if (!auth.isLoggedIn) {
       await goto("/auth/login");
       return;
@@ -95,9 +98,13 @@
   <div class="max-w-6xl mx-auto">
     <!-- Header -->
     <header class="mb-8">
-      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div
+        class="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
+      >
         <div>
-          <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">
+          <p
+            class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
+          >
             Akun Saya
           </p>
           <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
@@ -119,7 +126,9 @@
     </header>
 
     {#if error}
-      <div class="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+      <div
+        class="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm"
+      >
         {error}
       </div>
     {/if}
@@ -127,7 +136,9 @@
     <!-- User Profile Card -->
     {#if user}
       <div class="mb-8 grid md:grid-cols-3 gap-6">
-        <div class="md:col-span-2 bg-[#0c0c0c] border border-white/5 rounded-2xl p-5">
+        <div
+          class="md:col-span-2 bg-[#0c0c0c] border border-white/5 rounded-2xl p-5"
+        >
           <h2 class="text-lg font-bold text-white mb-4">Informasi Akun</h2>
           <div class="grid md:grid-cols-2 gap-4 text-sm">
             <div>
@@ -144,7 +155,9 @@
             </div>
             <div>
               <p class="text-white/50 text-xs mb-1">Bergabung</p>
-              <p class="font-semibold">{new Date(user.createdAt).toLocaleDateString("id-ID")}</p>
+              <p class="font-semibold">
+                {new Date(user.createdAt).toLocaleDateString("id-ID")}
+              </p>
             </div>
           </div>
         </div>
@@ -153,7 +166,9 @@
           <div class="space-y-3">
             <div>
               <p class="text-white/50 text-xs mb-1">Total Transaksi</p>
-              <p class="text-2xl font-black text-[var(--color-primary)]">{total}</p>
+              <p class="text-2xl font-black text-[var(--color-primary)]">
+                {total}
+              </p>
             </div>
             <div>
               <p class="text-white/50 text-xs mb-1">Saldo (jika ada)</p>
@@ -166,7 +181,9 @@
 
     <!-- Transactions Section -->
     <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl overflow-hidden">
-      <div class="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+      <div
+        class="px-5 py-4 border-b border-white/5 flex items-center justify-between"
+      >
         <h2 class="text-lg font-bold text-white">Riwayat Transaksi</h2>
         <div class="text-xs text-white/50">
           Halaman {page} dari {totalPages}
@@ -175,16 +192,31 @@
 
       {#if loading}
         <div class="p-8 text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-primary)] border-t-transparent"></div>
+          <div
+            class="inline-block animate-spin rounded-full h-8 w-8 border-2 border-[var(--color-primary)] border-t-transparent"
+          ></div>
           <p class="text-white/50 mt-2">Memuat riwayat...</p>
         </div>
       {:else if transactions.length === 0}
         <div class="p-8 text-center">
-          <svg class="w-12 h-12 mx-auto text-white/20 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+          <svg
+            class="w-12 h-12 mx-auto text-white/20 mb-3"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M9 5l7 7-7 7"
+            />
           </svg>
           <p class="text-white/50">Belum ada transaksi.</p>
-          <button on:click={() => goto("/")} class="mt-3 px-4 py-2 text-sm bg-[var(--color-primary)] text-black font-semibold rounded-lg">
+          <button
+            on:click={() => goto("/")}
+            class="mt-3 px-4 py-2 text-sm bg-[var(--color-primary)] text-black font-semibold rounded-lg"
+          >
             Mulai Belanja
           </button>
         </div>
@@ -193,13 +225,21 @@
           <table class="min-w-full text-left text-sm">
             <thead class="bg-white/5">
               <tr>
-                <th class="px-4 py-3 font-semibold text-white/60">ID Transaksi</th>
+                <th class="px-4 py-3 font-semibold text-white/60"
+                  >ID Transaksi</th
+                >
                 <th class="px-4 py-3 font-semibold text-white/60">Produk</th>
                 <th class="px-4 py-3 font-semibold text-white/60">Total</th>
-                <th class="px-4 py-3 font-semibold text-white/60">Status Pembayaran</th>
-                <th class="px-4 py-3 font-semibold text-white/60">Status Order</th>
+                <th class="px-4 py-3 font-semibold text-white/60"
+                  >Status Pembayaran</th
+                >
+                <th class="px-4 py-3 font-semibold text-white/60"
+                  >Status Order</th
+                >
                 <th class="px-4 py-3 font-semibold text-white/60">Tanggal</th>
-                <th class="px-4 py-3 font-semibold text-white/60 text-right">Aksi</th>
+                <th class="px-4 py-3 font-semibold text-white/60 text-right"
+                  >Aksi</th
+                >
               </tr>
             </thead>
             <tbody>
@@ -211,10 +251,16 @@
                   <td class="px-4 py-3 align-top">
                     <div class="flex items-center gap-2">
                       {#if tx.product?.thumbnails?.[0]}
-                        <img src={tx.product.thumbnails[0]} alt={tx.product.title} class="w-8 h-8 rounded object-cover" />
+                        <img
+                          src={tx.product.thumbnails[0]}
+                          alt={tx.product.title}
+                          class="w-8 h-8 rounded object-cover"
+                        />
                       {/if}
                       <div>
-                        <p class="font-semibold text-white text-sm">{tx.product?.title || "-"}</p>
+                        <p class="font-semibold text-white text-sm">
+                          {tx.product?.title || "-"}
+                        </p>
                         <p class="text-xs text-white/50">{tx.skuCode || "-"}</p>
                       </div>
                     </div>
@@ -223,12 +269,16 @@
                     {formatCurrency(tx.amount)}
                   </td>
                   <td class="px-4 py-3 align-top">
-                    <span class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(tx.paymentStatus)}`}>
+                    <span
+                      class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(tx.paymentStatus)}`}
+                    >
                       {tx.paymentStatus}
                     </span>
                   </td>
                   <td class="px-4 py-3 align-top">
-                    <span class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(tx.orderStatus)}`}>
+                    <span
+                      class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(tx.orderStatus)}`}
+                    >
                       {tx.orderStatus}
                     </span>
                   </td>
@@ -251,7 +301,9 @@
 
         <!-- Pagination -->
         {#if totalPages > 1}
-          <div class="px-5 py-4 border-t border-white/5 flex items-center justify-between text-sm">
+          <div
+            class="px-5 py-4 border-t border-white/5 flex items-center justify-between text-sm"
+          >
             <div class="text-white/50">
               Menampilkan {transactions.length} dari {total} transaksi
             </div>
@@ -267,7 +319,7 @@
                 {@const p = i + 1}
                 <button
                   on:click={() => loadTransactions(p)}
-                  class={`px-3 py-1.5 rounded-lg border ${p === page ? 'bg-[var(--color-primary)] text-black border-[var(--color-primary)]' : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10'}`}
+                  class={`px-3 py-1.5 rounded-lg border ${p === page ? "bg-[var(--color-primary)] text-black border-[var(--color-primary)]" : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10"}`}
                 >
                   {p}
                 </button>

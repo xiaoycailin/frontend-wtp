@@ -1,6 +1,6 @@
 ﻿<script lang="ts">
   import { goto } from "$app/navigation";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/auth";
   import { onMount } from "svelte";
   import "../style.css";
 
@@ -563,4 +563,3 @@
     </p>
   </main>
 </div>
-

@@ -88,6 +88,11 @@
       const qs = buildQuery();
       const res = await fetch(
         `/api/v1/transactions/history${qs ? `?${qs}` : ""}`,
+        {
+          headers: {
+            Authorization: "Bearer " + data.token,
+          },
+        },
       );
       const json = await res.json();
       if (!res.ok) {
@@ -96,7 +101,9 @@
 
       const nextItems = json.data.items ?? [];
       const previousIds = new Set(transactions.map((item) => item.id));
-      const incoming = nextItems.filter((item: Transaction) => !previousIds.has(item.id));
+      const incoming = nextItems.filter(
+        (item: Transaction) => !previousIds.has(item.id),
+      );
 
       transactions = nextItems;
       meta = json.data.meta ?? {
@@ -216,7 +223,9 @@
       </p>
     </div>
     {#if lastUpdated}
-      <p class="text-[11px] text-white/40">auto refresh 10 detik Â· update terakhir {lastUpdated}</p>
+      <p class="text-[11px] text-white/40">
+        auto refresh 10 detik Â· update terakhir {lastUpdated}
+      </p>
     {/if}
   </header>
 
@@ -371,7 +380,9 @@
             </tr>
           {:else}
             {#each transactions as trx}
-              <tr class={`border-t border-white/5 hover:bg-white/[0.03] ${highlightedIds.includes(trx.id) ? "bg-emerald-500/10" : ""}`}>
+              <tr
+                class={`border-t border-white/5 hover:bg-white/[0.03] ${highlightedIds.includes(trx.id) ? "bg-emerald-500/10" : ""}`}
+              >
                 <!-- Transaksi -->
                 <td class="px-3 py-2 align-top">
                   <div class="space-y-0.5">
@@ -561,9 +572,10 @@
     </div>
   </div>
   {#if toastMessage}
-    <div class="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-xs font-semibold shadow-lg backdrop-blur-sm">
+    <div
+      class="fixed top-4 right-4 z-50 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-xs font-semibold shadow-lg backdrop-blur-sm"
+    >
       {toastMessage}
     </div>
   {/if}
 </section>
-

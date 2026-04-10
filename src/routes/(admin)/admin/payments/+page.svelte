@@ -113,15 +113,18 @@
     try {
       loading = true;
       const res = await fetch(
-        editingPayment ? `/api/v1/payments/${editingPayment.id}` : "/api/v1/payments",
+        editingPayment
+          ? `/api/v1/payments/${editingPayment.id}`
+          : "/api/v1/payments",
         {
-        method: editingPayment ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          method: editingPayment ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(body),
         },
-        body: JSON.stringify(body),
-      });
+      );
       const json = await res.json();
       if (!res.ok) {
         throw new Error(json?.data?.message ?? "Gagal menyimpan payment");
@@ -154,7 +157,9 @@
 
       const json = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(json?.data?.message ?? json?.message ?? "Gagal menghapus payment");
+        throw new Error(
+          json?.data?.message ?? json?.message ?? "Gagal menghapus payment",
+        );
       }
 
       payments = payments.filter((item) => item.id !== payment.id);
@@ -327,7 +332,9 @@
                             disabled={deletingPaymentId === p.id}
                             on:click={() => handleDeletePayment(p)}
                           >
-                            {deletingPaymentId === p.id ? "Menghapus..." : "Hapus"}
+                            {deletingPaymentId === p.id
+                              ? "Menghapus..."
+                              : "Hapus"}
                           </button>
                         </div>
                       </td>
@@ -358,7 +365,7 @@
           class="text-xs text-white/50 hover:text-white"
           on:click={() => (showPaymentModal = false)}
         >
-          âœ•
+          Tutup
         </button>
       </div>
 
@@ -475,4 +482,3 @@
     </div>
   </div>
 {/if}
-

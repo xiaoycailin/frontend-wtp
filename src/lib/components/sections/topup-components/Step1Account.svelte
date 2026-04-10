@@ -1,4 +1,6 @@
 ﻿<script lang="ts">
+  import { Globe, User } from "@boxicons/svelte";
+
   let { userId = $bindable(""), serverId = $bindable("") } = $props();
 </script>
 
@@ -15,7 +17,9 @@
       <div class="field">
         <label class="field-label">User ID</label>
         <div class="input-wrap">
-          <span class="input-icon">ðŸ‘¤</span>
+          <span class="input-icon">
+            <User class="input-icon" size="sm" opacity={0.7} />
+          </span>
           <input
             type="text"
             bind:value={userId}
@@ -28,7 +32,9 @@
       <div class="field">
         <label class="field-label">Server</label>
         <div class="input-wrap">
-          <span class="input-icon">ðŸŒ</span>
+          <span class="input-icon">
+            <Globe class="input-icon" size="sm" opacity={0.7} />
+          </span>
           <input
             type="text"
             bind:value={serverId}
@@ -55,7 +61,12 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(to bottom, var(--color-primary), rgba(245, 197, 24, 0.3), transparent);
+    background: linear-gradient(
+      to bottom,
+      var(--color-primary),
+      rgba(245, 197, 24, 0.3),
+      transparent
+    );
   }
   .step-header {
     display: flex;
@@ -126,4 +137,3 @@
     color: rgba(255, 255, 255, 0.2);
   }
 </style>
-

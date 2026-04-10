@@ -25,6 +25,8 @@
     };
   };
 
+  export const { data } = $props();
+
   let flashSales = $state<FlashSaleItem[]>([]);
   let products = $state<ProductItem[]>([]);
   let loading = $state(false);
@@ -72,10 +74,14 @@
   }
 
   async function loadFlashSales() {
-    const res = await fetch("/api/v1/products/flashsale");
+    const res = await fetch("/api/v1/products/flashsale", {
+      headers: {
+        Authorization: "Bearer " + data.token,
+      },
+    });
     const json = await res.json();
-    const data = unwrapData(json);
-    flashSales = Array.isArray(data) ? data : [];
+    const dt = unwrapData(json);
+    flashSales = Array.isArray(dt) ? dt : [];
   }
 
   async function bootstrap() {
@@ -111,7 +117,9 @@
 
       const json = await res.json();
       if (!res.ok) {
-        throw new Error(json?.message ?? json?.data?.message ?? "Gagal membuat flash sale");
+        throw new Error(
+          json?.message ?? json?.data?.message ?? "Gagal membuat flash sale",
+        );
       }
 
       form = {
@@ -156,11 +164,22 @@
 </script>
 
 <section class="space-y-5">
-  <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+  <header
+    class="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
+  >
     <div>
-      <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">Promo & Flash Sale</p>
-      <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">Flash Sale Management</h1>
-      <p class="text-xs md:text-sm text-white/50 mt-1 max-w-xl">Kelola promo diskon produk yang tampil sebagai flash sale di halaman topup.</p>
+      <p
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
+      >
+        Promo & Flash Sale
+      </p>
+      <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
+        Flash Sale Management
+      </h1>
+      <p class="text-xs md:text-sm text-white/50 mt-1 max-w-xl">
+        Kelola promo diskon produk yang tampil sebagai flash sale di halaman
+        topup.
+      </p>
     </div>
   </header>
 
@@ -168,13 +187,18 @@
     <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-4 space-y-4">
       <div>
         <h2 class="text-sm font-bold text-white">Buat Flash Sale</h2>
-        <p class="text-[11px] text-white/50 mt-1">Pilih produk lalu tentukan tipe diskon dan stok promo.</p>
+        <p class="text-[11px] text-white/50 mt-1">
+          Pilih produk lalu tentukan tipe diskon dan stok promo.
+        </p>
       </div>
 
       <div class="space-y-3 text-xs">
         <label class="flex flex-col gap-1">
           <span class="text-white/60">Produk</span>
-          <select bind:value={form.productId} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
+          <select
+            bind:value={form.productId}
+            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+          >
             <option value="">Pilih produk</option>
             {#each products as product}
               <option value={product.id}>{product.title}</option>
@@ -185,7 +209,10 @@
         <div class="grid grid-cols-2 gap-3">
           <label class="flex flex-col gap-1">
             <span class="text-white/60">Tipe Diskon</span>
-            <select bind:value={form.discType} class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]">
+            <select
+              bind:value={form.discType}
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+            >
               <option value="flat">Flat</option>
               <option value="percent">Percent</option>
             </select>
@@ -193,17 +220,35 @@
 
           <label class="flex flex-col gap-1">
             <span class="text-white/60">Stok</span>
-            <input bind:value={form.stock} type="number" min="0" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]" />
+            <input
+              bind:value={form.stock}
+              type="number"
+              min="0"
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+            />
           </label>
         </div>
 
         <label class="flex flex-col gap-1">
           <span class="text-white/60">Nilai Diskon</span>
-          <input bind:value={form.discount} type="number" min="1" class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]" placeholder={form.discType === "percent" ? "contoh 10" : "contoh 5000"} />
+          <input
+            bind:value={form.discount}
+            type="number"
+            min="1"
+            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+            placeholder={form.discType === "percent"
+              ? "contoh 10"
+              : "contoh 5000"}
+          />
         </label>
       </div>
 
-      <button type="button" onclick={createFlashSale} disabled={submitting || !form.productId || !form.discount} class="w-full px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740] disabled:opacity-50">
+      <button
+        type="button"
+        onclick={createFlashSale}
+        disabled={submitting || !form.productId || !form.discount}
+        class="w-full px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740] disabled:opacity-50"
+      >
         {submitting ? "Menyimpan..." : "Buat Flash Sale"}
       </button>
 
@@ -216,10 +261,14 @@
     </div>
 
     <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl overflow-hidden">
-      <div class="px-4 py-3 border-b border-white/5 flex items-center justify-between gap-3">
+      <div
+        class="px-4 py-3 border-b border-white/5 flex items-center justify-between gap-3"
+      >
         <div>
           <h2 class="text-sm font-bold text-white">Daftar Flash Sale</h2>
-          <p class="text-[11px] text-white/50 mt-1">Total {flashSales.length} flash sale aktif/tersimpan.</p>
+          <p class="text-[11px] text-white/50 mt-1">
+            Total {flashSales.length} flash sale aktif/tersimpan.
+          </p>
         </div>
       </div>
 
@@ -230,13 +279,30 @@
       {:else}
         <div class="divide-y divide-white/5">
           {#each flashSales as item}
-            <div class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div
+              class="p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3"
+            >
               <div class="space-y-1 min-w-0">
-                <p class="text-sm font-semibold text-white truncate">{item.products?.title ?? "Produk tidak ditemukan"}</p>
-                <p class="text-[11px] text-white/45">{item.products?.subCategory?.title ?? "-"} Â· {item.products?.status ?? "-"}</p>
-                <div class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-white/65">
-                  <span>Harga asli: {formatCurrency(item.products?.price ?? 0)}</span>
-                  <span>Diskon: {item.discType === "percent" ? `${item.discount}%` : formatCurrency(item.discount)}</span>
+                <p class="text-sm font-semibold text-white truncate">
+                  {item.products?.title ?? "Produk tidak ditemukan"}
+                </p>
+                <p class="text-[11px] text-white/45">
+                  {item.products?.subCategory?.title ?? "-"} Â· {item.products
+                    ?.status ?? "-"}
+                </p>
+                <div
+                  class="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-white/65"
+                >
+                  <span
+                    >Harga asli: {formatCurrency(
+                      item.products?.price ?? 0,
+                    )}</span
+                  >
+                  <span
+                    >Diskon: {item.discType === "percent"
+                      ? `${item.discount}%`
+                      : formatCurrency(item.discount)}</span
+                  >
                   <span>Stok: {item.stock}</span>
                   <span>Terjual: {item.sellCount ?? 0}</span>
                   <span>Dibuat: {formatDate(item.createdAt)}</span>
@@ -244,7 +310,11 @@
               </div>
 
               <div class="flex items-center gap-2 shrink-0">
-                <button type="button" onclick={() => deleteFlashSale(item.id)} class="px-3 py-2 rounded-lg text-[11px] font-semibold bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20">
+                <button
+                  type="button"
+                  onclick={() => deleteFlashSale(item.id)}
+                  class="px-3 py-2 rounded-lg text-[11px] font-semibold bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20"
+                >
                   Hapus
                 </button>
               </div>
@@ -255,4 +325,3 @@
     </div>
   </div>
 </section>
-

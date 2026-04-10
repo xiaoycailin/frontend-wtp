@@ -7,25 +7,29 @@
     MenuSearch,
     TrophyStar,
     Newspaper,
-    Calculator,
     User,
     ShoppingBag,
   } from "@boxicons/svelte";
   import { page } from "$app/stores";
-  import { auth } from "$lib/auth.svelte";
+  import { auth } from "$lib/auth";
+
   import SeoHead from "$lib/components/SeoHead.svelte";
   import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
   import { goto } from "$app/navigation";
-  // import { goto } from "$app/navigation";
+
   let { children, data } = $props();
 
   const siteConfig = data?.siteConfig ?? {};
-  const primaryColor = siteConfig?.primaryColor ?? '#f5c518';
-  const secondaryColor = siteConfig?.secondaryColor ?? '#0e0e0e';
-  const accentColor = siteConfig?.accentColor ?? '#ffffff';
+  const primaryColor = siteConfig?.primaryColor ?? "#f5c518";
+  const secondaryColor = siteConfig?.secondaryColor ?? "#0e0e0e";
+  const accentColor = siteConfig?.accentColor ?? "#ffffff";
 
   let mobileMenuOpen = $state(false);
   let searchQuery = $state("");
+
+  // state lokal auth
+  let isLoggedIn = $state(false);
+  let displayName = $state<string | null>(null);
 
   setContext("sch_query", {
     get value() {
@@ -36,37 +40,27 @@
     },
   });
 
+  // navItems reaktif ke isLoggedIn
   const navItems = $derived(() => {
     const items = [
-      { label: "Topup", href: "/", icon: Basket, active: true },
-      { label: "Produk", href: "/products", icon: ShoppingBag, active: false },
-      {
-        label: "Cek Transaksi",
-        href: "/invoice",
-        icon: MenuSearch,
-        active: false,
-      },
-      {
-        label: "Leaderboard",
-        href: "/leaderboard",
-        icon: TrophyStar,
-        active: false,
-      },
-      { label: "Artikel", href: "/article", icon: Newspaper, active: false },
-      // {
-      //   label: "Kalkulator",
-      //   href: "/calculator",
-      //   icon: Calculator,
-      //   active: false,
-      // },
+      { label: "Topup", href: "/", icon: Basket },
+      { label: "Produk", href: "/products", icon: ShoppingBag },
+      { label: "Cek Transaksi", href: "/invoice", icon: MenuSearch },
+      { label: "Leaderboard", href: "/leaderboard", icon: TrophyStar },
+      { label: "Artikel", href: "/article", icon: Newspaper },
     ];
-    if (auth.isLoggedIn) {
-      items.push({ label: "Akun Saya", href: "/account", icon: User, active: false });
+
+    if (isLoggedIn) {
+      items.push({
+        label: "Akun Saya",
+        href: "/account",
+        icon: User,
+      });
     }
+
     return items;
   });
 
-  // exact match untuk "/", prefix match untuk yang lain
   function isActive(href: string, pathname: string): boolean {
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(href + "/");
@@ -76,12 +70,26 @@
     auth.init();
     setupFetchInterceptor();
   });
+
+  // sinkronkan dengan auth (sesuaikan dengan struktur auth-mu)
+  $effect(() => {
+    isLoggedIn = auth.isLoggedIn ?? false;
+    displayName = auth.user?.displayName ?? auth.user?.email ?? null;
+  });
+
+  function handleLogout() {
+    auth.logout?.();
+    goto("/");
+  }
 </script>
 
 <SeoHead {siteConfig} />
 
-<div style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};" class="min-h-screen bg-[#1a1a1a] text-white font-sans flex flex-col">
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• NAVBAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<div
+  style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};"
+  class="min-h-screen bg-[#1a1a1a] text-white font-sans flex flex-col"
+>
+  <!-- NAVBAR -->
   <header
     class="sticky top-0 z-50 bg-[#111111]/80 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/40"
   >
@@ -91,23 +99,15 @@
     >
       <!-- Logo -->
       <a href="/" class="shrink-0 flex items-center gap-2 mr-2">
-        <!-- <div
-          class="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-[var(--color-primary)] flex items-center justify-center shadow-md shadow-yellow-500/30"
-        >
-          <svg viewBox="0 0 24 24" class="w-5 h-5 text-black fill-current">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-          </svg>
-        </div> -->
         {#if siteConfig?.logoUrl}
           <img src={siteConfig.logoUrl} width="50" alt="" />
         {:else}
-          <div class="w-10 h-10 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-black font-black">W</div>
+          <div
+            class="w-10 h-10 rounded-lg bg-[var(--color-primary)] flex items-center justify-center text-black font-black"
+          >
+            W
+          </div>
         {/if}
-        <!-- <span
-          class="hidden sm:block text-base font-black tracking-tight text-[var(--color-primary)]"
-        >
-          WTP<span class="text-white">ANJAY</span>
-        </span> -->
       </a>
 
       <!-- Search Bar -->
@@ -134,50 +134,56 @@
           bind:value={searchQuery}
           placeholder="Cari Game atau Voucher"
           class="w-full bg-white/8 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-sm
-					 text-white placeholder-white/30 outline-none
-					 focus:border-[var(--color-primary)]/60 focus:bg-white/10 transition-all duration-200"
+           text-white placeholder-white/30 outline-none
+           focus:border-[var(--color-primary)]/60 focus:bg-white/10 transition-all duration-200"
         />
       </div>
 
       <!-- Auth Buttons (desktop) -->
-      <div class="hidden md:flex items-center gap-2 flex-shrink-0">
-        {#if auth.isLoggedIn}
-          <div class="flex items-center gap-2">
-            {#if auth.isAdmin}
-              <span
-                onclick={async () => await goto("/admin")}
-                class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/25"
-              >
-                Admin
-              </span>
-            {/if}
-            <span class="text-sm text-white/70 font-medium">
-              {auth.user?.displayName}
-            </span>
-            <button
-              onclick={() => auth.logout()}
-              class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white/60
-               hover:text-white hover:bg-white/8 transition-all duration-200"
-            >
-              Keluar
-            </button>
-          </div>
-        {:else}
+      <div class="hidden md:flex items-center gap-3 flex-shrink-0">
+        {#if !isLoggedIn}
           <a
             href="/auth/login"
             class="px-4 py-1.5 rounded-lg text-sm font-semibold text-white/80
-             hover:text-white hover:bg-white/8 transition-all duration-200"
+               hover:text-white hover:bg-white/8 transition-all duration-200"
           >
             Masuk
           </a>
           <a
             href="/auth/register"
             class="px-4 py-1.5 rounded-lg text-sm font-bold bg-[var(--color-primary)] text-black
-             hover:bg-[#ffd740] shadow-md shadow-yellow-500/20
-             transition-all duration-200 hover:shadow-yellow-500/40"
+               hover:bg-[#ffd740] shadow-md shadow-yellow-500/20
+               transition-all duration-200 hover:shadow-yellow-500/40"
           >
             Daftar
           </a>
+        {:else}
+          <button
+            type="button"
+            class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10
+              text-xs font-semibold text-white/80 hover:bg-white/10 transition-all"
+            onclick={() => goto("/account")}
+          >
+            <div
+              class="w-7 h-7 rounded-full bg-[var(--color-primary)] text-black flex items-center justify-center text-xs font-bold"
+            >
+              {displayName ? displayName.charAt(0).toUpperCase() : "U"}
+            </div>
+            <div class="flex flex-col items-start leading-tight">
+              <span class="text-[11px] text-white/50">Masuk sebagai</span>
+              <span class="text-xs text-white truncate max-w-[120px]">
+                {displayName ?? "User"}
+              </span>
+            </div>
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white/60
+              hover:text-white hover:bg-white/8 border border-white/10 transition-all"
+            onclick={handleLogout}
+          >
+            Keluar
+          </button>
         {/if}
       </div>
 
@@ -185,21 +191,21 @@
       <button
         onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
         class="md:hidden flex-shrink-0 w-9 h-9 flex items-center justify-center
-				   rounded-lg bg-white/5 border border-white/10 transition-colors hover:bg-white/10"
+           rounded-lg bg-white/5 border border-white/10 transition-colors hover:bg-white/10"
         aria-label="Toggle menu"
       >
         <div class="flex flex-col gap-1.5 w-4">
           <span
             class="block h-0.5 bg-white/70 transition-all duration-300
-						   {mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}"
+               {mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}"
           ></span>
           <span
             class="block h-0.5 bg-white/70 transition-all duration-300
-						   {mobileMenuOpen ? 'opacity-0' : ''}"
+               {mobileMenuOpen ? 'opacity-0' : ''}"
           ></span>
           <span
             class="block h-0.5 bg-white/70 transition-all duration-300
-						   {mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}"
+               {mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}"
           ></span>
         </div>
       </button>
@@ -210,7 +216,7 @@
       <div
         class="mx-auto max-w-[1400px] w-full px-2 md:px-8 flex items-center gap-2 h-12 md:h-12"
       >
-        {#each navItems as item}
+        {#each navItems() as item}
           {@const active = isActive(item.href, $page.url.pathname)}
           <a
             href={item.href}
@@ -231,7 +237,7 @@
       <div
         class="md:hidden border-t border-white/10 bg-[#0f0f0f] px-4 py-3 space-y-1 animate-in slide-in-from-top-2"
       >
-        {#each navItems as item}
+        {#each navItems() as item}
           {@const active = isActive(item.href, $page.url.pathname)}
           <a
             href={item.href}
@@ -246,61 +252,12 @@
           </a>
         {/each}
 
-        {#if auth.isLoggedIn}
-          <!-- User info -->
-          <div
-            class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/5"
-          >
-            <div
-              class="w-8 h-8 rounded-full bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/30
-                flex items-center justify-center text-[var(--color-primary)] text-xs font-bold shrink-0"
-            >
-              {auth.user?.displayName?.charAt(0).toUpperCase() ?? "?"}
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-white truncate">
-                {auth.user?.displayName}
-              </p>
-              <p class="text-xs text-white/40 truncate">{auth.user?.email}</p>
-            </div>
-            {#if auth.isAdmin}
-              <span
-                class="px-1.5 py-0.5 rounded text-[10px] font-bold
-                   bg-[var(--color-primary)]/15 text-[var(--color-primary)] border border-[var(--color-primary)]/25 shrink-0"
-              >
-                Admin
-              </span>
-            {/if}
-          </div>
-          <button
-            onclick={() => {
-              auth.logout();
-              mobileMenuOpen = false;
-            }}
-            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-           text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Keluar
-          </button>
-        {:else}
+        {#if !isLoggedIn}
           <a
             href="/auth/login"
             onclick={() => (mobileMenuOpen = false)}
             class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold
-           text-white/80 hover:text-white hover:bg-white/8 transition-colors border border-white/10"
+             text-white/80 hover:text-white hover:bg-white/8 transition-colors border border-white/10"
           >
             Masuk
           </a>
@@ -308,43 +265,67 @@
             href="/auth/register"
             onclick={() => (mobileMenuOpen = false)}
             class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold
-           bg-[var(--color-primary)] text-black hover:bg-[#ffd740]
-           shadow-md shadow-yellow-500/20 transition-all duration-200"
+             bg-[var(--color-primary)] text-black hover:bg-[#ffd740]
+             shadow-md shadow-yellow-500/20 transition-all duration-200"
           >
             Daftar Gratis
           </a>
+        {:else}
+          <button
+            type="button"
+            onclick={() => {
+              mobileMenuOpen = false;
+              goto("/account");
+            }}
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+             bg-white/5 text-white hover:bg-white/10 border border-white/10"
+          >
+            <div
+              class="w-8 h-8 rounded-full bg-[var(--color-primary)] text-black flex items-center justify-center text-sm font-bold"
+            >
+              {displayName ? displayName.charAt(0).toUpperCase() : "U"}
+            </div>
+            <div class="flex flex-col items-start leading-tight">
+              <span class="text-[11px] text-white/50">Masuk sebagai</span>
+              <span class="text-xs text-white truncate max-w-[140px]">
+                {displayName ?? "User"}
+              </span>
+            </div>
+          </button>
+          <button
+            type="button"
+            onclick={() => {
+              mobileMenuOpen = false;
+              handleLogout();
+            }}
+            class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold
+             text-white/80 hover:text-white hover:bg-white/8 transition-colors border border-white/10"
+          >
+            Keluar
+          </button>
         {/if}
       </div>
     {/if}
   </header>
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• MAIN CONTENT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <!-- MAIN CONTENT -->
   <main class="flex-1 max-w-[1400px] mx-auto w-full px-5 md:px-8 py-6">
     <div class="bg-pattern" aria-hidden="true"></div>
     {@render children()}
   </main>
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FOOTER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <!-- FOOTER -->
   <footer
     class="bg-[#0d0d0d]/80 backdrop-blur-xl border-t border-white/5 mt-auto"
   >
     <div class="max-w-[1400px] mx-auto w-full px-5 md:px-8 py-10">
-      <!-- Footer Grid -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-        <!-- Brand -->
         <div class="col-span-2 md:col-span-1">
           <div class="flex items-center gap-2 mb-4">
-            <!-- <div
-              class="w-8 h-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center"
-            >
-              <svg viewBox="0 0 24 24" class="w-4 h-4 text-black fill-current">
-                <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                />
-              </svg>
-            </div> -->
             <img src={siteConfig.logoUrl} width="50" alt="" />
-            <span class="font-black text-[var(--color-primary)]">{siteConfig.siteName}</span>
+            <span class="font-black text-[var(--color-primary)]"
+              >{siteConfig.siteName}</span
+            >
           </div>
           <p class="text-xs text-white/40 leading-relaxed max-w-[200px]">
             {siteConfig.tagline ??
@@ -352,7 +333,6 @@
           </p>
         </div>
 
-        <!-- Links -->
         {#each [{ title: "Layanan", links: [{ label: "Topup", href: "/" }, { label: "Cek Transaksi", href: "/invoice" }, { label: "Leaderboard", href: "/leaderboard" }] }, { title: "Info", links: [{ label: "Artikel", href: "/article" }, { label: "Kalkulator", href: "/calculator" }, { label: "FAQ", href: "/faq" }] }, { title: "Perusahaan", links: [{ label: "Tentang Kami", href: "/about" }, { label: "Hubungi Kami", href: "/contact" }] }] as col}
           <div>
             <h4
@@ -376,12 +356,11 @@
         {/each}
       </div>
 
-      <!-- Bottom Bar -->
       <div
         class="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3"
       >
         <p class="text-xs text-white/30">
-          Â© 2026 {siteConfig.siteName}. All rights reserved.
+          © 2026 {siteConfig.siteName}. All rights reserved.
         </p>
         <div class="flex items-center gap-4">
           <a
@@ -399,7 +378,7 @@
     </div>
   </footer>
 
-  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• FLOATING CUSTOMER SERVICE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <!-- FLOATING CUSTOMER SERVICE -->
   <button
     class="fixed bottom-5 right-5 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full
            bg-[var(--color-primary)] text-black text-sm font-bold shadow-xl shadow-yellow-500/30
@@ -421,4 +400,3 @@
     <span class="hidden sm:inline">Customer Service</span>
   </button>
 </div>
-
