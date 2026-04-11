@@ -91,6 +91,16 @@
     );
   }
 
+  function setSheetConfig(sheetName: string, nextConfig: Partial<SheetConfig>) {
+    sheetConfigs = {
+      ...sheetConfigs,
+      [sheetName]: {
+        ...getSheetConfig(sheetName),
+        ...nextConfig,
+      },
+    };
+  }
+
   const canSubmit = $derived(
     selectedSheets.length > 0 &&
       !uploading &&
@@ -373,18 +383,6 @@
     }
   }
 
-  function updateSheetConfig(sheetName: string, key: keyof SheetConfig, value: string | boolean) {
-    sheetConfigs = {
-      ...sheetConfigs,
-      [sheetName]: {
-        enabled: getSheetConfig(sheetName).enabled,
-        subCategoryId: getSheetConfig(sheetName).subCategoryId,
-        thumbnailUrl: getSheetConfig(sheetName).thumbnailUrl,
-        [key]: value,
-      },
-    };
-  }
-
   function updateRow(
     sheetName: string,
     index: number,
@@ -528,11 +526,9 @@
                       class="rounded border-white/20 bg-black/60"
                       checked={config.enabled}
                       onchange={(e) =>
-                        updateSheetConfig(
-                          sheet.name,
-                          "enabled",
-                          (e.currentTarget as HTMLInputElement).checked,
-                        )}
+                        setSheetConfig(sheet.name, {
+                          enabled: (e.currentTarget as HTMLInputElement).checked,
+                        })}
                     />
                     <span class="truncate font-semibold">{sheet.name}</span>
                   </label>
@@ -621,7 +617,7 @@
         <div>
           <p class="text-sm font-semibold text-white">Preview {activeSheet?.name ?? "Produk"}</p>
           <p class="text-[11px] text-white/45">
-            Preview ini sekarang ngikut tombol Preview, bukan checkbox import.
+            Preview ini ngikut tombol Preview, bukan checkbox import.
           </p>
         </div>
         <div class="text-[11px] text-white/45">
@@ -722,7 +718,7 @@
                   <td class="px-4 py-3 min-w-[220px]">
                     <textarea
                       rows="2"
-                      class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-white resize-y focus:outline-none focus:border-[var(--color-primary)]/70"
+                      class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border:white/10 text-xs text-white resize-y focus:outline-none focus:border-[var(--color-primary)]/70"
                       oninput={(e) =>
                         updateRow(
                           activeSheet.name,
@@ -784,11 +780,9 @@
             class="rounded border-white/20 bg-black/60"
             checked={settingsConfig.enabled}
             onchange={(e) =>
-              updateSheetConfig(
-                settingsSheet.name,
-                "enabled",
-                (e.currentTarget as HTMLInputElement).checked,
-              )}
+              setSheetConfig(settingsSheet.name, {
+                enabled: (e.currentTarget as HTMLInputElement).checked,
+              })}
           />
           Import page ini
         </label>
@@ -798,11 +792,9 @@
           <select
             value={settingsConfig.subCategoryId}
             onchange={(e) =>
-              updateSheetConfig(
-                settingsSheet.name,
-                "subCategoryId",
-                (e.currentTarget as HTMLSelectElement).value,
-              )}
+              setSheetConfig(settingsSheet.name, {
+                subCategoryId: (e.currentTarget as HTMLSelectElement).value,
+              })}
             class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
           >
             <option value="">Pilih sub kategori</option>
@@ -812,26 +804,29 @@
           </select>
         </div>
 
-        <ImageUrlField
-          label="Thumbnail Page"
-          value={settingsConfig.thumbnailUrl}
-          placeholder="https://asset.weebin.site/uploads/...jpg"
-          help="Bisa paste manual atau pilih dari image manager. Thumbnail ini dipakai untuk semua produk pada page ini."
-        />
+        <div class="space-y-1.5">
+          <label class="text-xs text-white/70">Thumbnail Page</label>
+          <ImageUrlField
+            value={settingsConfig.thumbnailUrl}
+            placeholder="https://asset.weebin.site/uploads/...jpg"
+            help="Bisa paste manual atau pilih dari image manager. Thumbnail ini dipakai untuk semua produk pada page ini."
+          />
+        </div>
 
         <div class="space-y-1.5">
-          <label class="text-xs text-white/70">Sinkronkan thumbnail</label>
+          <label class="text-xs text-white/70">URL thumbnail tersimpan</label>
           <input
             class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
             value={settingsConfig.thumbnailUrl}
             oninput={(e) =>
-              updateSheetConfig(
-                settingsSheet.name,
-                "thumbnailUrl",
-                (e.currentTarget as HTMLInputElement).value,
-              )}
+              setSheetConfig(settingsSheet.name, {
+                thumbnailUrl: (e.currentTarget as HTMLInputElement).value,
+              })}
             placeholder="https://asset.weebin.site/uploads/...jpg"
           />
+          <p class="text-[11px] text-white/45">
+            Field ini yang dipakai langsung ke payload import.
+          </p>
         </div>
 
         <div class="flex items-center justify-between gap-3 pt-2">
