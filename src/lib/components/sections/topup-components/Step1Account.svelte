@@ -1,7 +1,18 @@
-﻿<script lang="ts">
+<script lang="ts">
   import { Globe, User } from "@boxicons/svelte";
+  import type { SupportedGameConfig, ZoneInputMode } from "./types";
 
-  let { userId = $bindable(""), serverId = $bindable("") } = $props();
+  let {
+    userId = $bindable(""),
+    serverId = $bindable(""),
+    gameConfig = null,
+    zoneInputMode = "text",
+  }: {
+    userId: string;
+    serverId: string;
+    gameConfig?: SupportedGameConfig | null;
+    zoneInputMode?: ZoneInputMode;
+  } = $props();
 </script>
 
 <div class="step-card">
@@ -9,18 +20,23 @@
   <div class="px-5 py-4">
     <div class="step-header">
       <div class="step-badge">1</div>
-      <h3 class="step-title">Masukkan Data Akun</h3>
+      <div>
+        <h3 class="step-title">Masukkan Data Akun</h3>
+        {#if gameConfig}
+          <p class="step-subtitle">{gameConfig.label}</p>
+        {/if}
+      </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <!-- User ID -->
+    <div class={`grid grid-cols-1 ${zoneInputMode === "none" ? "" : "sm:grid-cols-2"} gap-3`}>
       <div class="field">
-        <label class="field-label">User ID</label>
+        <label class="field-label" for="primary_id">User ID</label>
         <div class="input-wrap">
           <span class="input-icon">
             <User class="input-icon" size="sm" opacity={0.7} />
           </span>
           <input
+            id="primary_id"
             type="text"
             bind:value={userId}
             placeholder="Masukkan User ID"
@@ -28,21 +44,36 @@
           />
         </div>
       </div>
-      <!-- Server -->
-      <div class="field">
-        <label class="field-label">Server</label>
-        <div class="input-wrap">
-          <span class="input-icon">
-            <Globe class="input-icon" size="sm" opacity={0.7} />
-          </span>
-          <input
-            type="text"
-            bind:value={serverId}
-            placeholder="Masukkan Server"
-            class="field-input"
-          />
+
+      {#if zoneInputMode !== "none"}
+        <div class="field">
+          <label class="field-label" for="server_id">
+            {zoneInputMode === "select" ? "Server" : "Server ID"}
+          </label>
+          <div class="input-wrap">
+            <span class="input-icon">
+              <Globe class="input-icon" size="sm" opacity={0.7} />
+            </span>
+
+            {#if zoneInputMode === "select"}
+              <select id="server_id" bind:value={serverId} class="field-input field-select">
+                <option value="">Pilih Server</option>
+                {#each gameConfig?.servers ?? [] as server}
+                  <option value={server}>{server.toUpperCase()}</option>
+                {/each}
+              </select>
+            {:else}
+              <input
+                id="server_id"
+                type="text"
+                bind:value={serverId}
+                placeholder="Masukkan Server ID"
+                class="field-input"
+              />
+            {/if}
+          </div>
         </div>
-      </div>
+      {/if}
     </div>
   </div>
 </div>
@@ -94,6 +125,11 @@
     letter-spacing: 0.025em;
     flex: 1;
   }
+  .step-subtitle {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.15rem;
+  }
   .field {
     display: flex;
     flex-direction: column;
@@ -135,5 +171,8 @@
   }
   .field-input::placeholder {
     color: rgba(255, 255, 255, 0.2);
+  }
+  .field-select {
+    appearance: none;
   }
 </style>

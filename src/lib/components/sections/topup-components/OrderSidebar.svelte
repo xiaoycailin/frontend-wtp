@@ -1,6 +1,11 @@
 ﻿<script lang="ts">
   import ConfirmOrderModal from "./ConfirmOrderModal.svelte";
-  import type { Product, PromoApplied } from "./types";
+  import type {
+    Product,
+    PromoApplied,
+    SupportedGameConfig,
+    ZoneInputMode,
+  } from "./types";
   import { goto } from "$app/navigation";
   import { fmt } from "./utils";
   import { teleport } from "$lib/utils";
@@ -19,6 +24,9 @@
     selectedPay,
     phone,
     email = "",
+    gameConfig = null,
+    zoneInputMode = "text",
+    gameConfigLoading = false,
   }: {
     selected: Product | null;
     canOrder: boolean;
@@ -33,6 +41,9 @@
     selectedPay: any;
     phone: string;
     email?: string;
+    gameConfig?: SupportedGameConfig | null;
+    zoneInputMode?: ZoneInputMode;
+    gameConfigLoading?: boolean;
   } = $props();
 
   // ── FIX 1: State untuk menyimpan hasil review dari server ─────────────
@@ -49,6 +60,7 @@
   const displayIsFlashSale = $derived(reviewData?.isFlashSale ?? false);
   const displayFee = $derived(reviewData?.fee ?? surcharge ?? 0);
   const displayTotal = $derived(reviewData?.total ?? totalPrice);
+  const requiresServerInput = $derived(zoneInputMode !== "none");
 
   // ── FIX 3: $effect dengan guard + AbortController ─────────────────────
   $effect(() => {
@@ -66,7 +78,9 @@
       flashId: isFlashSale ? selected.id : undefined,
       userData: {
         primary_id: userId,
-        server_id: serverId,
+        ...(requiresServerInput && serverId.trim()
+          ? { server_id: serverId }
+          : {}),
       },
       isFlashSale,
     };
@@ -194,6 +208,8 @@
   {userId}
   {serverId}
   {phone}
+  {gameConfig}
+  {zoneInputMode}
   {email}
   {selectedPay}
   {reviewData}
@@ -536,18 +552,24 @@
       </svg>
       {canOrder
         ? "Pesan Sekarang!"
-        : !userId.trim()
-          ? "Isi User ID dulu"
-          : !selected
-            ? "Pilih Nominal dulu"
-            : !selectedPay
-              ? "Pilih Pembayaran"
-              : "Isi No. WhatsApp"}
+        : gameConfigLoading
+          ? "Cek config game..."
+          : !userId.trim()
+            ? "Isi User ID dulu"
+            : requiresServerInput && !serverId.trim()
+              ? zoneInputMode === "select"
+                ? "Pilih Server dulu"
+                : "Isi Server ID dulu"
+              : !selected
+                ? "Pilih Nominal dulu"
+                : !selectedPay
+                  ? "Pilih Pembayaran"
+                  : "Isi No. WhatsApp"}
     </button>
 
     <!-- Progress checklist -->
     <div class="mt-3 space-y-1">
-      {#each [{ ok: !!userId.trim(), label: "Data akun" }, { ok: !!selected, label: "Nominal dipilih" }, { ok: !!selectedPay, label: "Metode bayar" }, { ok: phone.trim().length > 6, label: "No. WhatsApp" }] as item}
+      {#each [{ ok: !!userId.trim() && (!requiresServerInput || !!serverId.trim()), label: requiresServerInput ? "Data akun + server" : "Data akun" }, { ok: !!selected, label: "Nominal dipilih" }, { ok: !!selectedPay, label: "Metode bayar" }, { ok: phone.trim().length > 6, label: "No. WhatsApp" }] as item}
         <div class="flex items-center gap-2">
           <div
             class="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
@@ -697,11 +719,17 @@
           ? reviewLoading
             ? "Memuat..."
             : "Pesan Sekarang"
-          : !userId.trim()
-            ? "Isi User ID"
-            : !selectedPay
-              ? "Pilih Pembayaran"
-              : "Isi WhatsApp"}
+          : gameConfigLoading
+            ? "Cek game..."
+            : !userId.trim()
+              ? "Isi User ID"
+              : requiresServerInput && !serverId.trim()
+                ? zoneInputMode === "select"
+                  ? "Pilih Server"
+                  : "Isi Server ID"
+                : !selectedPay
+                  ? "Pilih Pembayaran"
+                  : "Isi WhatsApp"}
       </button>
     </div>
   </div>

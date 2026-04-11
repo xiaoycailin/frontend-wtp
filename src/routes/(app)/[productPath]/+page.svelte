@@ -7,4 +7,8 @@
 </script>
 
 <HeroProductDetail productDetail={data.productDetail} />
-<TopupForm products={data.products} productDetail={data.productDetail} />
+<TopupForm
+  products={data.products}
+  productDetail={data.productDetail}
+  productPath={data.productPath}
+/>

@@ -1,6 +1,10 @@
 <script lang="ts">
-  import type { Product, PromoApplied } from "./types";
-  // import { getVaSurcharge } from "./paymentConstants";
+  import type {
+    Product,
+    PromoApplied,
+    SupportedGameConfig,
+    ZoneInputMode,
+  } from "./types";
 
   import Step1Account from "./Step1Account.svelte";
   import Step2Nominal from "./Step2Nominal.svelte";
@@ -10,29 +14,30 @@
   import Step6Contact from "./Step6Contact.svelte";
   import OrderSidebar from "./OrderSidebar.svelte";
 
-  let { products, productDetail } = $props();
+  let { products, productDetail, productPath } = $props();
 
-  // ── Step 1 ─────────────────────────────────────────────────────
   let userId = $state("");
   let serverId = $state("");
 
-  // ── Step 2 ─────────────────────────────────────────────────────
   let selected = $state<Product | null>(null);
-
-  // ── Step 3 ─────────────────────────────────────────────────────
   let quantity = $state(1);
-
-  // ── Step 4 ─────────────────────────────────────────────────────
   let promoApplied = $state<PromoApplied | null>(null);
-
-  // ── Step 5 ─────────────────────────────────────────────────────
   let selectedPay: any = $state({});
-
-  // ── Step 6 ─────────────────────────────────────────────────────
   let phone = $state("");
   let email = $state("");
 
-  // ── Derived values ─────────────────────────────────────────────
+  let supportedGames = $state<SupportedGameConfig[]>([]);
+  let gameConfig = $state<SupportedGameConfig | null>(null);
+  let gameConfigLoading = $state(false);
+
+  const zoneInputMode = $derived<ZoneInputMode>(
+    !gameConfig?.requiresZone
+      ? "none"
+      : gameConfig.servers?.length
+        ? "select"
+        : "text",
+  );
+
   const basePrice = $derived(selected?.price ?? 0);
 
   const discountAmount = $derived(
@@ -43,9 +48,54 @@
 
   const totalPrice = $derived((basePrice - discountAmount) * quantity);
 
+  const requiresServerInput = $derived(zoneInputMode !== "none");
+
   const canOrder = $derived(
-    !!userId.trim() && !!selected && !!selectedPay && !!email.trim(),
+    !!userId.trim() &&
+      (!!selected || false) &&
+      !!selectedPay &&
+      !!email.trim() &&
+      (!requiresServerInput || !!serverId.trim()),
   );
+
+  async function fetchSupportedGames() {
+    gameConfigLoading = true;
+    try {
+      const res = await fetch("/api/v1/games/supported");
+      const json = await res.json();
+      if (!res.ok) {
+        supportedGames = [];
+        gameConfig = null;
+        return;
+      }
+
+      supportedGames = json?.data ?? [];
+      gameConfig =
+        supportedGames.find((item) => item.code === productPath) ?? null;
+    } catch (error) {
+      console.error("Failed to load supported games", error);
+      supportedGames = [];
+      gameConfig = null;
+    } finally {
+      gameConfigLoading = false;
+    }
+  }
+
+  $effect(() => {
+    fetchSupportedGames();
+  });
+
+  $effect(() => {
+    if (zoneInputMode === "none") {
+      serverId = "";
+    } else if (
+      zoneInputMode === "select" &&
+      serverId &&
+      !(gameConfig?.servers ?? []).includes(serverId)
+    ) {
+      serverId = "";
+    }
+  });
 </script>
 
 <svelte:head>
@@ -55,9 +105,13 @@
 <section
   class="w-full mt-6 grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5 items-start"
 >
-  <!-- LEFT — Steps 1–6 -->
   <div class="flex flex-col gap-4">
-    <Step1Account bind:userId bind:serverId />
+    <Step1Account
+      bind:userId
+      bind:serverId
+      {gameConfig}
+      {zoneInputMode}
+    />
 
     <Step2Nominal {products} bind:selected />
 
@@ -70,7 +124,6 @@
     <Step6Contact bind:phone bind:email />
   </div>
 
-  <!-- RIGHT — Sticky sidebar -->
   <div class="flex flex-col gap-4 xl:sticky xl:top-[115px]">
     <OrderSidebar
       bind:selected
@@ -85,6 +138,9 @@
       {selectedPay}
       {phone}
       {email}
+      {gameConfig}
+      {zoneInputMode}
+      {gameConfigLoading}
     />
   </div>
 </section>

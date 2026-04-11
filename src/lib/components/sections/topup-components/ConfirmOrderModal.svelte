@@ -1,6 +1,6 @@
 ﻿<script lang="ts">
   import { teleport } from "$lib/utils";
-  import type { Product } from "./types";
+  import type { Product, SupportedGameConfig, ZoneInputMode } from "./types";
   import { fmt } from "./utils";
 
   let {
@@ -12,6 +12,8 @@
     phone,
     email,
     selectedPay,
+    gameConfig = null,
+    zoneInputMode = "text",
     reviewData,
     displayBasePrice,
     displayFlashDiscount,
@@ -33,6 +35,8 @@
     phone: string;
     email: string;
     selectedPay: any;
+    gameConfig?: SupportedGameConfig | null;
+    zoneInputMode?: ZoneInputMode;
     reviewData: any;
     displayBasePrice: number;
     displayFlashDiscount: number;
@@ -153,10 +157,10 @@
                 <span class="modal-info-key">User ID</span>
                 <span class="modal-info-val">{userId || "-"}</span>
               </div>
-              {#if serverId}
+              {#if zoneInputMode !== "none" && serverId}
                 <div class="modal-info-row">
-                  <span class="modal-info-key">Server ID</span>
-                  <span class="modal-info-val">{serverId}</span>
+                  <span class="modal-info-key">{zoneInputMode === "select" ? "Server" : "Server ID"}</span>
+                  <span class="modal-info-val">{zoneInputMode === "select" ? serverId.toUpperCase() : serverId}</span>
                 </div>
               {/if}
               <div class="modal-info-row">

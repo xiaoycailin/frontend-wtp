@@ -28,4 +28,14 @@ export interface PromoApplied {
   discount: number;
 }
 
+export interface SupportedGameConfig {
+  code: string;
+  label: string;
+  requiresZone: boolean;
+  autoZone: boolean;
+  servers?: string[];
+}
+
+export type ZoneInputMode = "none" | "text" | "select";
+
 export type TabKey = "flash" | "special" | "diamond";

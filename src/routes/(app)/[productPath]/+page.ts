@@ -33,5 +33,6 @@ export const load: PageLoad = async ({ params, fetch }) => {
   return {
     products: result,
     productDetail: catData,
+    productPath: params.productPath,
   };
 };
