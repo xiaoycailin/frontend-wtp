@@ -26,6 +26,16 @@
     raw: Record<string, string>;
   };
 
+  type SheetConfig = {
+    subCategoryId: string;
+    thumbnailUrl: string;
+  };
+
+  type ParsedSheet = {
+    name: string;
+    rows: ParsedRow[];
+  };
+
   const { data } = $props();
   const categories: Category[] = data?.categories ?? [];
 
@@ -37,15 +47,44 @@
   );
 
   let fileName = $state("");
-  let rows = $state<ParsedRow[]>([]);
+  let sheets = $state<ParsedSheet[]>([]);
+  let activeSheetName = $state("");
+  let sheetConfigs = $state<Record<string, SheetConfig>>({});
   let parseError = $state<string | null>(null);
-  let subCategoryId = $state("");
-  let thumbnailUrl = $state("");
   let uploading = $state(false);
   let submitError = $state<string | null>(null);
   let submitSuccess = $state<string | null>(null);
 
-  const expectedExample = ["Nama Produk", "SKU", "Harga", "Stok", "Deskripsi"];
+  const expectedExample = [
+    "Kode Produk",
+    "Produk",
+    "Harga",
+    "Stok",
+    "Deskripsi",
+  ];
+
+  const activeSheet = $derived(
+    sheets.find((sheet) => sheet.name === activeSheetName) ?? null,
+  );
+
+  const activeConfig = $derived(
+    activeSheetName
+      ? (sheetConfigs[activeSheetName] ?? { subCategoryId: "", thumbnailUrl: "" })
+      : { subCategoryId: "", thumbnailUrl: "" },
+  );
+
+  const canSubmit = $derived(
+    sheets.length > 0 &&
+      !uploading &&
+      sheets.every((sheet) => {
+        const config = sheetConfigs[sheet.name];
+        return (
+          sheet.rows.length > 0 &&
+          !!config?.subCategoryId &&
+          sheet.rows.every((row) => row.title && row.sku && row.price)
+        );
+      }),
+  );
 
   function normalizeHeader(value: string) {
     return value
@@ -69,15 +108,26 @@
     return "";
   }
 
+  function normalizeSheetPath(target: string) {
+    if (!target) return "";
+
+    const cleaned = target.replace(/^\/+/, "");
+    if (cleaned.startsWith("xl/")) return cleaned;
+    if (cleaned.startsWith("worksheets/")) return `xl/${cleaned}`;
+    return `xl/${cleaned}`;
+  }
+
   function getCellValue(cell: Element | null, sharedStrings: string[]) {
     if (!cell) return "";
 
     const type = cell.getAttribute("t");
     const valueNode = cell.getElementsByTagName("v")[0];
-    const inlineNode = cell.getElementsByTagName("t")[0];
+    const inlineNode = cell.getElementsByTagName("is")[0];
 
-    if (type === "inlineStr" && inlineNode?.textContent) {
-      return inlineNode.textContent;
+    if (type === "inlineStr" && inlineNode) {
+      return Array.from(inlineNode.getElementsByTagName("t"))
+        .map((node) => node.textContent ?? "")
+        .join("");
     }
 
     if (!valueNode?.textContent) return "";
@@ -101,17 +151,61 @@
     return Math.max(index - 1, 0);
   }
 
+  function mapRow(raw: Record<string, string>, rowNumber: number) {
+    const sku = pickValue(raw, [
+      "sku",
+      "kode_produk",
+      "kode",
+      "code",
+      "product_code",
+    ]);
+
+    const title = pickValue(raw, [
+      "nama_produk",
+      "produk",
+      "title",
+      "nama",
+      "item",
+      "nominal",
+      "kode_produk",
+    ]);
+
+    const price = pickValue(raw, ["harga", "price", "modal", "harga_jual"]);
+    const stock = pickValue(raw, ["stok", "stock", "qty", "quantity"]);
+    const description = pickValue(raw, ["deskripsi", "description", "keterangan"]);
+    const seller = pickValue(raw, ["seller", "penjual"]);
+    const status = pickValue(raw, ["status"]);
+    const updatedAt = pickValue(raw, ["perubahan_terakhir", "updated_at"]);
+
+    const fallbackNotes = [seller && `Seller: ${seller}`, status && `Status: ${status}`, updatedAt && `Updated: ${updatedAt}`]
+      .filter(Boolean)
+      .join(" | ");
+
+    return {
+      rowNumber,
+      title,
+      sku,
+      price,
+      stock: stock || "999",
+      description,
+      conditionNotes: fallbackNotes,
+      isSpecial: false,
+      raw,
+    } satisfies ParsedRow;
+  }
+
   async function parseExcel(file: File) {
     const JSZip = (await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm")).default;
     const buffer = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(buffer);
-
     const parser = new DOMParser();
-    const workbookXml = await zip.file("xl/workbook.xml")?.async("string");
 
+    const workbookXml = await zip.file("xl/workbook.xml")?.async("string");
     if (!workbookXml) {
       throw new Error("File Excel tidak valid.");
     }
+
+    const workbookDoc = parser.parseFromString(workbookXml, "application/xml");
 
     const relsXml = await zip.file("xl/_rels/workbook.xml.rels")?.async("string");
     const relMap = new Map<string, string>();
@@ -122,7 +216,7 @@
       for (const rel of relNodes) {
         const id = rel.getAttribute("Id");
         const target = rel.getAttribute("Target");
-        if (id && target) relMap.set(id, target);
+        if (id && target) relMap.set(id, normalizeSheetPath(target));
       }
     }
 
@@ -140,90 +234,109 @@
       }
     }
 
-    const workbookDoc = parser.parseFromString(workbookXml, "application/xml");
-    const sheet = workbookDoc.getElementsByTagName("sheet")[0];
-
-    if (!sheet) {
+    const sheetNodes = Array.from(workbookDoc.getElementsByTagName("sheet"));
+    if (!sheetNodes.length) {
       throw new Error("Sheet Excel tidak ditemukan.");
     }
 
-    const relId = sheet.getAttribute("r:id");
-    const target = relId ? relMap.get(relId) : null;
-    const sheetPath = target ? `xl/${target.replace(/^\//, "")}` : "xl/worksheets/sheet1.xml";
-    const sheetXml = await zip.file(sheetPath)?.async("string");
+    const nextSheets: ParsedSheet[] = [];
 
-    if (!sheetXml) {
+    for (const sheetNode of sheetNodes) {
+      const sheetName = cleanText(sheetNode.getAttribute("name") ?? "Sheet");
+      const relId =
+        sheetNode.getAttribute("r:id") ??
+        sheetNode.getAttribute("id") ??
+        "";
+
+      const target = relMap.get(relId);
+      const fallbackSheetId = sheetNode.getAttribute("sheetId") ?? "1";
+      const candidatePaths = [
+        target,
+        `xl/worksheets/sheet${fallbackSheetId}.xml`,
+        `xl/worksheets/${sheetName}.xml`,
+      ].filter(Boolean) as string[];
+
+      let sheetXml = "";
+      for (const candidate of candidatePaths) {
+        const content = await zip.file(candidate)?.async("string");
+        if (content) {
+          sheetXml = content;
+          break;
+        }
+      }
+
+      if (!sheetXml) {
+        continue;
+      }
+
+      const sheetDoc = parser.parseFromString(sheetXml, "application/xml");
+      const rowNodes = Array.from(sheetDoc.getElementsByTagName("row"));
+      if (!rowNodes.length) continue;
+
+      const matrix = rowNodes.map((rowNode) => {
+        const row: string[] = [];
+        const cells = Array.from(rowNode.getElementsByTagName("c"));
+        for (const cell of cells) {
+          const ref = cell.getAttribute("r") ?? "A1";
+          const colIndex = columnRefToIndex(ref);
+          row[colIndex] = cleanText(getCellValue(cell, sharedStrings));
+        }
+        return row;
+      });
+
+      const headerRow = matrix.find((row) => row.some((cell) => cleanText(cell)));
+      if (!headerRow) continue;
+
+      const headers = headerRow.map((cell, index) =>
+        normalizeHeader(cell || `column_${index + 1}`),
+      );
+      const headerIndex = matrix.indexOf(headerRow);
+
+      const parsedRows = matrix
+        .slice(headerIndex + 1)
+        .map((row, index) => {
+          const raw = headers.reduce<Record<string, string>>(
+            (acc, header, headerCellIndex) => {
+              acc[header] = cleanText(row[headerCellIndex] ?? "");
+              return acc;
+            },
+            {},
+          );
+
+          return mapRow(raw, headerIndex + index + 2);
+        })
+        .filter((row) => row.title || row.sku || row.price);
+
+      if (parsedRows.length) {
+        nextSheets.push({
+          name: sheetName,
+          rows: parsedRows,
+        });
+      }
+    }
+
+    if (!nextSheets.length) {
       throw new Error("Isi sheet Excel gagal dibaca.");
     }
 
-    const sheetDoc = parser.parseFromString(sheetXml, "application/xml");
-    const rowNodes = Array.from(sheetDoc.getElementsByTagName("row"));
-
-    if (!rowNodes.length) {
-      throw new Error("Sheet Excel kosong.");
-    }
-
-    const matrix = rowNodes.map((rowNode) => {
-      const row: string[] = [];
-      const cells = Array.from(rowNode.getElementsByTagName("c"));
-      for (const cell of cells) {
-        const ref = cell.getAttribute("r") ?? "A1";
-        const colIndex = columnRefToIndex(ref);
-        row[colIndex] = cleanText(getCellValue(cell, sharedStrings));
-      }
-      return row;
-    });
-
-    const headerRow = matrix.find((row) => row.some((cell) => cleanText(cell)));
-
-    if (!headerRow) {
-      throw new Error("Header Excel tidak ditemukan.");
-    }
-
-    const headers = headerRow.map((cell, index) => normalizeHeader(cell || `column_${index + 1}`));
-    const headerIndex = matrix.indexOf(headerRow);
-
-    const parsedRows = matrix
-      .slice(headerIndex + 1)
-      .map((row, index) => {
-        const raw = headers.reduce<Record<string, string>>((acc, header, headerIndex) => {
-          acc[header] = cleanText(row[headerIndex] ?? "");
-          return acc;
-        }, {});
-
-        const title = pickValue(raw, ["nama_produk", "produk", "title", "nama", "item", "nominal"]);
-        const sku = pickValue(raw, ["sku", "kode_produk", "kode", "code"]);
-        const price = pickValue(raw, ["harga", "price", "modal", "harga_jual"]);
-        const stock = pickValue(raw, ["stok", "stock", "qty", "quantity"]);
-        const description = pickValue(raw, ["deskripsi", "description", "keterangan"]);
-        const conditionNotes = pickValue(raw, ["catatan_kondisi", "condition_notes", "note", "notes"]);
-
-        return {
-          rowNumber: headerIndex + index + 2,
-          title,
-          sku,
-          price,
-          stock: stock || "100",
-          description,
-          conditionNotes,
-          isSpecial: false,
-          raw,
-        } satisfies ParsedRow;
-      })
-      .filter((row) => row.title || row.sku || row.price);
-
-    if (!parsedRows.length) {
-      throw new Error("Tidak ada data produk yang berhasil dibaca dari Excel.");
-    }
-
-    rows = parsedRows;
+    sheets = nextSheets;
+    activeSheetName = nextSheets[0]?.name ?? "";
+    sheetConfigs = nextSheets.reduce<Record<string, SheetConfig>>((acc, sheet) => {
+      acc[sheet.name] = {
+        subCategoryId: sheetConfigs[sheet.name]?.subCategoryId ?? "",
+        thumbnailUrl: sheetConfigs[sheet.name]?.thumbnailUrl ?? "",
+      };
+      return acc;
+    }, {});
   }
 
   async function handleFileChange(event: Event) {
     const input = event.currentTarget as HTMLInputElement;
     const file = input.files?.[0];
 
-    rows = [];
+    sheets = [];
+    activeSheetName = "";
+    sheetConfigs = {};
     parseError = null;
     submitError = null;
     submitSuccess = null;
@@ -239,15 +352,29 @@
     }
   }
 
-  function updateRow(index: number, key: keyof ParsedRow, value: string | boolean) {
-    rows = rows.map((row, rowIndex) =>
-      rowIndex === index ? { ...row, [key]: value } : row,
-    );
+  function updateSheetConfig(sheetName: string, key: keyof SheetConfig, value: string) {
+    sheetConfigs = {
+      ...sheetConfigs,
+      [sheetName]: {
+        subCategoryId: sheetConfigs[sheetName]?.subCategoryId ?? "",
+        thumbnailUrl: sheetConfigs[sheetName]?.thumbnailUrl ?? "",
+        [key]: value,
+      },
+    };
   }
 
-  const canSubmit = $derived(
-    !!subCategoryId && rows.length > 0 && !uploading && rows.every((row) => row.title && row.sku && row.price),
-  );
+  function updateRow(sheetName: string, index: number, key: keyof ParsedRow, value: string | boolean) {
+    sheets = sheets.map((sheet) =>
+      sheet.name === sheetName
+        ? {
+            ...sheet,
+            rows: sheet.rows.map((row, rowIndex) =>
+              rowIndex === index ? { ...row, [key]: value } : row,
+            ),
+          }
+        : sheet,
+    );
+  }
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -257,39 +384,52 @@
     submitSuccess = null;
 
     try {
-      for (const row of rows) {
-        const res = await fetch("/api/v1/products", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: row.title,
-            sku: row.sku,
-            description: row.description || undefined,
-            subCategoryId,
-            price: Number(String(row.price).replace(/[^0-9.-]/g, "")) || 0,
-            currency: "IDR",
-            stock: Number(String(row.stock).replace(/[^0-9.-]/g, "")) || 0,
-            thumbnails: thumbnailUrl || undefined,
-            conditionNotes: row.conditionNotes || undefined,
-            special: row.isSpecial,
-          }),
-        });
+      let totalInserted = 0;
 
-        const json = await res.json().catch(() => ({}));
+      for (const sheet of sheets) {
+        const config = sheetConfigs[sheet.name];
 
-        if (!res.ok) {
-          throw new Error(
-            json?.data?.message ??
-              json?.message ??
-              `Gagal menambahkan produk pada baris ${row.rowNumber}`,
-          );
+        for (const row of sheet.rows) {
+          const res = await fetch("/api/v1/products", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              title: row.title,
+              sku: row.sku,
+              description: row.description || undefined,
+              subCategoryId: config.subCategoryId,
+              price: Number(String(row.price).replace(/[^0-9.-]/g, "")) || 0,
+              currency: "IDR",
+              stock:
+                row.stock.toLowerCase() === "unlimited"
+                  ? 999999
+                  : Number(String(row.stock).replace(/[^0-9.-]/g, "")) || 0,
+              thumbnails: config.thumbnailUrl || undefined,
+              conditionNotes: row.conditionNotes || undefined,
+              special: row.isSpecial,
+            }),
+          });
+
+          const json = await res.json().catch(() => ({}));
+
+          if (!res.ok) {
+            throw new Error(
+              json?.data?.message ??
+                json?.message ??
+                `Gagal menambahkan produk pada sheet ${sheet.name} baris ${row.rowNumber}`,
+            );
+          }
+
+          totalInserted += 1;
         }
       }
 
-      submitSuccess = `${rows.length} produk berhasil ditambahkan.`;
-      rows = [];
+      submitSuccess = `${totalInserted} produk berhasil ditambahkan dari ${sheets.length} page.`;
+      sheets = [];
+      activeSheetName = "";
+      sheetConfigs = {};
       fileName = "";
     } catch (error: any) {
       console.error(error);
@@ -307,10 +447,10 @@
         Import Produk
       </p>
       <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
-        Batch Insert dari Excel
+        Batch Insert dari Excel per Page
       </h1>
       <p class="text-xs md:text-sm text-white/50 mt-1 max-w-2xl">
-        Upload file Excel, convert dulu ke JSON di frontend, cek preview hasilnya, lalu kirim produk yang valid ke server.
+        File Excel dibaca per sheet. Jadi page seperti ML, B, C, atau sheet lain akan otomatis muncul dan bisa diatur sub kategori + thumbnail masing-masing.
       </p>
     </div>
 
@@ -323,7 +463,7 @@
     </button>
   </header>
 
-  <div class="grid gap-5 xl:grid-cols-[340px_minmax(0,1fr)]">
+  <div class="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
     <div class="space-y-4 rounded-2xl border border-white/5 bg-[#0c0c0c] p-4">
       <div class="space-y-1.5">
         <label class="text-xs text-white/70">Upload Excel</label>
@@ -334,32 +474,77 @@
           onchange={handleFileChange}
         />
         <p class="text-[11px] text-white/45">
-          Contoh kolom yang kebaca: {expectedExample.join(", ")}.
+          Parser sekarang otomatis baca semua sheet/page. Contoh kolom: {expectedExample.join(", ")}.
         </p>
         {#if fileName}
           <p class="text-[11px] text-white/60">File: {fileName}</p>
         {/if}
       </div>
 
-      <div class="space-y-1.5">
-        <label class="text-xs text-white/70">Sub Kategori tujuan</label>
-        <select
-          bind:value={subCategoryId}
-          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
-        >
-          <option value="">Pilih sub kategori</option>
-          {#each availableSubCategories as sub}
-            <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
-          {/each}
-        </select>
-      </div>
+      {#if sheets.length}
+        <div class="space-y-2">
+          <label class="text-xs text-white/70">Daftar page dari sheet</label>
+          <div class="flex flex-wrap gap-2">
+            {#each sheets as sheet}
+              <button
+                type="button"
+                class={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
+                  activeSheetName === sheet.name
+                    ? "bg-[var(--color-primary)] text-black border-[var(--color-primary)]"
+                    : "bg-black/30 text-white/70 border-white/10 hover:bg-white/10"
+                }`}
+                onclick={() => (activeSheetName = sheet.name)}
+              >
+                {sheet.name} ({sheet.rows.length})
+              </button>
+            {/each}
+          </div>
+        </div>
+      {/if}
 
-      <ImageUrlField
-        label="Thumbnail untuk semua produk"
-        bind:value={thumbnailUrl}
-        placeholder="https://asset.weebin.site/uploads/...jpg"
-        help="Satu URL thumbnail untuk semua produk import. Kalau mau beda-beda bisa diedit setelah produk masuk."
-      />
+      {#if activeSheet}
+        <div class="space-y-1.5">
+          <label class="text-xs text-white/70">Sub Kategori untuk page {activeSheet.name}</label>
+          <select
+            value={activeConfig.subCategoryId}
+            onchange={(e) =>
+              updateSheetConfig(
+                activeSheet.name,
+                "subCategoryId",
+                (e.currentTarget as HTMLSelectElement).value,
+              )}
+            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
+          >
+            <option value="">Pilih sub kategori</option>
+            {#each availableSubCategories as sub}
+              <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
+            {/each}
+          </select>
+        </div>
+
+        <ImageUrlField
+          label={`Thumbnail untuk page ${activeSheet.name}`}
+          value={activeConfig.thumbnailUrl}
+          placeholder="https://asset.weebin.site/uploads/...jpg"
+          help="Satu thumbnail untuk semua produk di page/sheet ini."
+        />
+
+        {@const currentThumbnail = activeConfig.thumbnailUrl}
+        <div class="space-y-1.5">
+          <label class="text-xs text-white/70">Sinkronkan thumbnail page</label>
+          <input
+            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
+            value={currentThumbnail}
+            oninput={(e) =>
+              updateSheetConfig(
+                activeSheet.name,
+                "thumbnailUrl",
+                (e.currentTarget as HTMLInputElement).value,
+              )}
+            placeholder="https://asset.weebin.site/uploads/...jpg"
+          />
+        </div>
+      {/if}
 
       {#if parseError}
         <div class="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
@@ -379,26 +564,40 @@
         </div>
       {/if}
 
+      <div class="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-white/55 space-y-1">
+        <p class="font-semibold text-white/70">Ringkasan page</p>
+        {#if sheets.length}
+          {#each sheets as sheet}
+            <div class="flex items-center justify-between gap-3">
+              <span>{sheet.name}</span>
+              <span>{sheet.rows.length} produk</span>
+            </div>
+          {/each}
+        {:else}
+          <p>Belum ada sheet terbaca.</p>
+        {/if}
+      </div>
+
       <button
         type="button"
         class="w-full px-4 py-2.5 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740] disabled:opacity-50"
         disabled={!canSubmit}
         onclick={handleSubmit}
       >
-        {uploading ? "Mengimport..." : `Import ${rows.length} Produk`}
+        {uploading ? "Mengimport..." : `Import Semua Page (${sheets.reduce((acc, sheet) => acc + sheet.rows.length, 0)})`}
       </button>
     </div>
 
     <div class="rounded-2xl border border-white/5 bg-[#0c0c0c] overflow-hidden">
       <div class="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
         <div>
-          <p class="text-sm font-semibold text-white">Preview Produk</p>
+          <p class="text-sm font-semibold text-white">Preview {activeSheet?.name ?? "Produk"}</p>
           <p class="text-[11px] text-white/45">
             Cek hasil convert Excel ke JSON sebelum disimpan.
           </p>
         </div>
         <div class="text-[11px] text-white/45">
-          {rows.length} baris siap diproses
+          {activeSheet?.rows.length ?? 0} baris di page ini
         </div>
       </div>
 
@@ -417,56 +616,92 @@
             </tr>
           </thead>
           <tbody>
-            {#if !rows.length}
+            {#if !activeSheet}
               <tr>
                 <td colspan="8" class="px-4 py-8 text-center text-white/35">
-                  Upload file Excel dulu buat lihat preview-nya.
+                  Upload file Excel dulu buat lihat semua page.
                 </td>
               </tr>
             {:else}
-              {#each rows as row, index}
+              {#each activeSheet.rows as row, index}
                 <tr class="border-b border-white/5 align-top">
                   <td class="px-4 py-3 text-white/45">{row.rowNumber}</td>
                   <td class="px-4 py-3 min-w-[220px]">
                     <input
                       class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
                       value={row.title}
-                      oninput={(e) => updateRow(index, "title", (e.currentTarget as HTMLInputElement).value)}
+                      oninput={(e) =>
+                        updateRow(
+                          activeSheet.name,
+                          index,
+                          "title",
+                          (e.currentTarget as HTMLInputElement).value,
+                        )}
                     />
                   </td>
                   <td class="px-4 py-3 min-w-[140px]">
                     <input
                       class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
                       value={row.sku}
-                      oninput={(e) => updateRow(index, "sku", (e.currentTarget as HTMLInputElement).value)}
+                      oninput={(e) =>
+                        updateRow(
+                          activeSheet.name,
+                          index,
+                          "sku",
+                          (e.currentTarget as HTMLInputElement).value,
+                        )}
                     />
                   </td>
                   <td class="px-4 py-3 min-w-[120px]">
                     <input
                       class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
                       value={row.price}
-                      oninput={(e) => updateRow(index, "price", (e.currentTarget as HTMLInputElement).value)}
+                      oninput={(e) =>
+                        updateRow(
+                          activeSheet.name,
+                          index,
+                          "price",
+                          (e.currentTarget as HTMLInputElement).value,
+                        )}
                     />
                   </td>
                   <td class="px-4 py-3 min-w-[100px]">
                     <input
                       class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
                       value={row.stock}
-                      oninput={(e) => updateRow(index, "stock", (e.currentTarget as HTMLInputElement).value)}
+                      oninput={(e) =>
+                        updateRow(
+                          activeSheet.name,
+                          index,
+                          "stock",
+                          (e.currentTarget as HTMLInputElement).value,
+                        )}
                     />
                   </td>
                   <td class="px-4 py-3 min-w-[240px]">
                     <textarea
                       rows="2"
                       class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-white resize-y focus:outline-none focus:border-[var(--color-primary)]/70"
-                      oninput={(e) => updateRow(index, "description", (e.currentTarget as HTMLTextAreaElement).value)}
+                      oninput={(e) =>
+                        updateRow(
+                          activeSheet.name,
+                          index,
+                          "description",
+                          (e.currentTarget as HTMLTextAreaElement).value,
+                        )}
                     >{row.description}</textarea>
                   </td>
                   <td class="px-4 py-3 min-w-[220px]">
                     <textarea
                       rows="2"
                       class="w-full px-2.5 py-2 rounded-lg bg-black/30 border border-white/10 text-xs text-white resize-y focus:outline-none focus:border-[var(--color-primary)]/70"
-                      oninput={(e) => updateRow(index, "conditionNotes", (e.currentTarget as HTMLTextAreaElement).value)}
+                      oninput={(e) =>
+                        updateRow(
+                          activeSheet.name,
+                          index,
+                          "conditionNotes",
+                          (e.currentTarget as HTMLTextAreaElement).value,
+                        )}
                     >{row.conditionNotes}</textarea>
                   </td>
                   <td class="px-4 py-3 text-center">
@@ -474,7 +709,13 @@
                       type="checkbox"
                       class="rounded border-white/20 bg-black/60"
                       checked={row.isSpecial}
-                      onchange={(e) => updateRow(index, "isSpecial", (e.currentTarget as HTMLInputElement).checked)}
+                      onchange={(e) =>
+                        updateRow(
+                          activeSheet.name,
+                          index,
+                          "isSpecial",
+                          (e.currentTarget as HTMLInputElement).checked,
+                        )}
                     />
                   </td>
                 </tr>
