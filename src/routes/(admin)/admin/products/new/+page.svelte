@@ -17,6 +17,7 @@
   const categories: Category[] = data?.categories ?? [];
 
   let title = $state("");
+  let sku = $state("");
   let description = $state("");
   let subCategoryId = $state("");
   let price = $state<string | number>("");
@@ -39,7 +40,7 @@
   );
 
   const canSubmit = $derived(
-    !!title && !!subCategoryId && !!price && !!currency && !loading,
+    !!title && !!subCategoryId && !!price && !!currency && !loading && !!sku,
   );
 
   async function handleSubmit(e: Event) {
@@ -52,6 +53,7 @@
     try {
       const body = {
         title,
+        sku,
         description: description || undefined,
         subCategoryId,
         price: Number(price),
@@ -114,6 +116,16 @@
                  focus:outline-none focus:border-[var(--color-primary)]/70"
           placeholder="Weekly Diamond Pass"
           bind:value={title}
+          required
+        />
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-xs text-white/70">Kode SKU (kode Produk)</label>
+        <input
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          placeholder="ML35"
+          bind:value={sku}
           required
         />
       </div>

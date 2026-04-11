@@ -31,7 +31,7 @@
 
   // console.log(sc);
   const games: Game[] = sc.map((g) => {
-    console.log(g);
+    // console.log(g);
 
     return {
       category: g.categoryId,

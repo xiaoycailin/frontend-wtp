@@ -55,7 +55,7 @@
 </script>
 
 <svelte:head>
-  <title>Admin Dashboard - {siteConfig.siteName}</title>
+  <title>Admin Dashboard - {siteConfig?.siteName}</title>
 </svelte:head>
 
 <div
@@ -79,7 +79,7 @@
       <div class="flex flex-col leading-tight">
         <span class="text-xs text-white/40 font-semibold">Admin Panel</span>
         <span class="text-sm font-bold text-[var(--color-primary)]"
-          >{siteConfig.siteName}</span
+          >{siteConfig?.siteName}</span
         >
       </div>
     </div>

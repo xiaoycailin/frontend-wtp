@@ -1,9 +1,10 @@
 // src/routes/admin/categories/+page.server.ts
+import config from "../../../../config";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ fetch, cookies }) => {
+export const load: PageServerLoad = async ({ fetch, cookies}) => {
   try {
-    const res = await fetch("/api/v1/payments/available", {
+    const res = await fetch(config.API_BASE_URL+"/payments/available", {
       headers: {
         Authorization: "Bearer " + cookies.get("wtpanjay_token"),
       },
@@ -13,7 +14,7 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
     if (!res.ok) {
       return {
         payments: [],
-        error: json?.data?.message ?? "Gagal memuat kategori",
+        error: json?.data?.message ?? "Gagal memuat payments",
       };
     }
 
@@ -25,7 +26,7 @@ export const load: PageServerLoad = async ({ fetch, cookies }) => {
   } catch (e) {
     return {
       payments: [],
-      error: "Terjadi kesalahan saat memuat kategori",
+      error: "Terjadi kesalahan saat memuat payments",
     };
   }
 };

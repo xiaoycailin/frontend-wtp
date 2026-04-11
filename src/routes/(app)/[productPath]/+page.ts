@@ -5,7 +5,7 @@ import type { PageLoad } from "./$types";
 import { building } from "$app/environment";
 
 // it so that it gets served as a static asset in production
-export const prerender = true;
+// export const prerender = true;
 
 export const load: PageLoad = async ({ params, fetch }) => {
   // Skip fetch during prerender/building to avoid 404 errors

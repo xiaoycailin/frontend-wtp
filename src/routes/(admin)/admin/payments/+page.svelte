@@ -1,5 +1,6 @@
 ﻿<script lang="ts">
   import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
+  import { onMount } from "svelte";
 
   type Payment = {
     id: number;
@@ -101,7 +102,7 @@
       paymentName: paymentForm.paymentName.trim(),
       methodCode: paymentForm.methodCode.trim(),
       feeType: paymentForm.feeType,
-      feeValue: Number(paymentForm.feeValue),
+      feeValue: Number(paymentForm.feeValue ?? "0"),
       source: paymentForm.source.trim(),
       paymentVisibility:
         paymentForm.paymentVisibility === "inactive"
@@ -185,6 +186,9 @@
       return acc;
     }, {});
   });
+  onMount(() => {
+    fetchPayments()
+  })
 </script>
 
 <section class="space-y-6">
@@ -306,7 +310,7 @@
                       <td class="px-3 py-2 align-top text-white/80">
                         {p.feeType === "percent"
                           ? `${p.feeValue}%`
-                          : `Rp ${p.feeValue.toLocaleString("id-ID")}`}
+                          : `Rp ${(p.feeValue ?? 0)?.toLocaleString("id-ID")}`}
                       </td>
                       <td class="px-3 py-2 align-top">
                         <span

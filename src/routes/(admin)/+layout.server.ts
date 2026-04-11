@@ -1,6 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
 import { building } from "$app/environment";
+import config from "../../config";
 
 export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
   // Skip fetch during prerender/building to avoid 404 errors
@@ -14,13 +15,16 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
 
   try {
     const [siteRes, userRes] = await Promise.all([
-      fetch("/api/v1/site-config").catch(() => ({ ok: false })),
-      fetch("/api/v1/users/self", {
+      fetch(config.API_BASE_URL+"/site-config").catch(() => ({ ok: false })),
+      fetch(config.API_BASE_URL+"/users/self", {
         headers: {
           Authorization: "Bearer " + cookies.get("wtpanjay_token"),
         },
       }).catch(() => ({ ok: false })),
     ]);
+
+    // console.log("Cookie RES",cookies.get("wtpanjay_token"));
+    
 
     const siteJson = siteRes.ok ? await siteRes.json().catch(() => ({})) : {};
     const userJson = userRes.ok ? await userRes.json().catch(() => ({})) : {};

@@ -12,7 +12,7 @@
     noIndex = false,
   }: Props = $props();
 
-  console.log(siteConfig);
+  // console.log(siteConfig);
 
   // â”€â”€ Resolvers (page override > siteConfig > fallback) â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const siteName = siteConfig?.siteName ?? "WTPANJAY";

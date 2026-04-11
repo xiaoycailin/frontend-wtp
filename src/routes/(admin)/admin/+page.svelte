@@ -1,4 +1,7 @@
 ﻿<script lang="ts">
+  import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
+  import { onMount } from "svelte";
+
   type StatusCount = {
     paymentStatus?: string;
     orderStatus?: string;
@@ -120,6 +123,7 @@
 
   const { data } = $props();
   const token: string | null = data.token ?? null;
+  // console.log(data);
 
   let summary = $state<Summary | null>(null);
   let loading = $state(false);
@@ -201,8 +205,13 @@
     }
   }
 
-  $effect(() => {
+  onMount(() => {
+    setupFetchInterceptor();
     fetchSummary();
+  });
+
+  $effect(() => {
+    // fetchSummary();
 
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
