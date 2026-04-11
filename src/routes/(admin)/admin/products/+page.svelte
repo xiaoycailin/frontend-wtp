@@ -212,6 +212,14 @@
     <div class="flex items-center gap-3">
       <button
         type="button"
+        class="px-3 py-2 rounded-lg text-xs font-semibold bg-white/5 text-white/80 border border-white/10
+               hover:bg-white/10 transition-colors duration-150"
+        onclick={() => goto("/admin/products/import")}
+      >
+        Import dari Excel
+      </button>
+      <button
+        type="button"
         class="px-3 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black
                hover:bg-[#ffd740] transition-colors duration-150"
         onclick={() => goto("/admin/products/new")}
