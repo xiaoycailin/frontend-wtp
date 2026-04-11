@@ -30,6 +30,7 @@
     { label: "Produk", href: "/admin/products", icon: ProductHunt },
     { label: "Flash Sale", href: "/admin/flash-sale", icon: Bolt },
     { label: "Kategori", href: "/admin/category", icon: Categories },
+    { label: "Banners", href: "/admin/banners", icon: CaretDownSquare },
     { label: "Badge Library", href: "/admin/badges", icon: CaretDownSquare },
     { label: "Pembayaran", href: "/admin/payments", icon: CardViewLarge },
     { label: "Activity Log", href: "/admin/activity-log", icon: Receipt },

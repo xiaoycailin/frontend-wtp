@@ -12,7 +12,7 @@
   <title>Website Topup Terpercaya</title>
 </svelte:head> -->
 
-<Banners />
+<Banners banners={data.banners ?? []} />
 
 <!-- <ParticleCanvas /> -->
 <Productlist {data} searchQuery={search.value} />

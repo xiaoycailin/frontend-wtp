@@ -7,26 +7,39 @@ import { building } from "$app/environment";
 // export const prerender = true;
 
 export const load: PageLoad = async ({ fetch }) => {
-  // Skip fetch during prerender/building to avoid 404 errors
   if (building) {
-    return { category: [] };
+    return { category: [], banners: [] };
   }
 
   try {
-    const category = await fetch("/api/v1/category?productInclude=true");
-    if (!category.ok) {
-      return { category: [] };
+    const [categoryRes, bannerRes] = await Promise.all([
+      fetch("/api/v1/category?productInclude=true"),
+      fetch("/api/v1/banners?type=banner"),
+    ]);
+
+    let category = [];
+    let banners = [];
+
+    if (categoryRes.ok) {
+      const raw = await categoryRes.text();
+      const result = JSON.parse(raw);
+      category = result?.data ?? [];
     }
 
-    const raw = await category.text();
-    const result = JSON.parse(raw);
+    if (bannerRes.ok) {
+      const raw = await bannerRes.text();
+      const result = JSON.parse(raw);
+      banners = result?.data ?? [];
+    }
 
     return {
-      category: result?.data ?? [],
+      category,
+      banners,
     };
   } catch {
     return {
       category: [],
+      banners: [],
     };
   }
 };
