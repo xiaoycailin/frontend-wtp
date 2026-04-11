@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Globe, User } from "@boxicons/svelte";
+  import { ChevronDown, Globe, User } from "@boxicons/svelte";
   import type { SupportedGameConfig, ZoneInputMode } from "./types";
 
   let {
@@ -72,7 +72,9 @@
                 <span class:placeholder={!serverId}>
                   {serverId ? serverId.toUpperCase() : "Pilih Server"}
                 </span>
-                <span class={`select-chevron ${serverDropdownOpen ? "open" : ""}`}>⌄</span>
+                <span class={`select-chevron ${serverDropdownOpen ? "open" : ""}`}>
+                  <ChevronDown size="sm" />
+                </span>
               </button>
 
               {#if serverDropdownOpen}
