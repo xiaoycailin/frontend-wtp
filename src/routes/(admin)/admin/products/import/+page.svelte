@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
 
   type SubCategory = {
     id: string;
@@ -49,6 +50,7 @@
   let fileName = $state("");
   let sheets = $state<ParsedSheet[]>([]);
   let activeSheetName = $state("");
+  let settingsSheetName = $state("");
   let sheetConfigs = $state<Record<string, SheetConfig>>({});
   let parseError = $state<string | null>(null);
   let uploading = $state(false);
@@ -67,18 +69,8 @@
     sheets.find((sheet) => sheet.name === activeSheetName) ?? null,
   );
 
-  const activeConfig = $derived(
-    activeSheetName
-      ? (sheetConfigs[activeSheetName] ?? {
-          enabled: false,
-          subCategoryId: "",
-          thumbnailUrl: "",
-        })
-      : {
-          enabled: false,
-          subCategoryId: "",
-          thumbnailUrl: "",
-        },
+  const settingsSheet = $derived(
+    sheets.find((sheet) => sheet.name === settingsSheetName) ?? null,
   );
 
   const selectedSheets = $derived(
@@ -89,13 +81,23 @@
     selectedSheets.reduce((acc, sheet) => acc + sheet.rows.length, 0),
   );
 
+  function getSheetConfig(sheetName: string): SheetConfig {
+    return (
+      sheetConfigs[sheetName] ?? {
+        enabled: false,
+        subCategoryId: "",
+        thumbnailUrl: "",
+      }
+    );
+  }
+
   const canSubmit = $derived(
     selectedSheets.length > 0 &&
       !uploading &&
       selectedSheets.every((sheet) => {
-        const config = sheetConfigs[sheet.name];
+        const config = getSheetConfig(sheet.name);
         return (
-          !!config?.subCategoryId &&
+          !!config.subCategoryId &&
           sheet.rows.every((row) => row.title && row.sku && row.price)
         );
       }),
@@ -186,7 +188,6 @@
     ]);
 
     const price = pickValue(raw, ["harga", "price", "modal", "harga_jual"]);
-    const stock = pickValue(raw, ["stok", "stock", "qty", "quantity"]);
     const description = pickValue(raw, ["deskripsi", "description", "keterangan"]);
     const seller = pickValue(raw, ["seller", "penjual"]);
     const status = pickValue(raw, ["status"]);
@@ -205,7 +206,7 @@
       title,
       sku,
       price,
-      stock: stock || "999",
+      stock: "999",
       description,
       conditionNotes: fallbackNotes,
       isSpecial: false,
@@ -337,10 +338,11 @@
     }
 
     sheets = nextSheets;
-    activeSheetName = nextSheets[0]?.name ?? "";
-    sheetConfigs = nextSheets.reduce<Record<string, SheetConfig>>((acc, sheet, index) => {
+    activeSheetName = nextSheets.find((sheet) => sheet.name === "ML")?.name ?? nextSheets[0]?.name ?? "";
+    settingsSheetName = "";
+    sheetConfigs = nextSheets.reduce<Record<string, SheetConfig>>((acc, sheet) => {
       acc[sheet.name] = {
-        enabled: sheetConfigs[sheet.name]?.enabled ?? index === 0,
+        enabled: false,
         subCategoryId: sheetConfigs[sheet.name]?.subCategoryId ?? "",
         thumbnailUrl: sheetConfigs[sheet.name]?.thumbnailUrl ?? "",
       };
@@ -354,6 +356,7 @@
 
     sheets = [];
     activeSheetName = "";
+    settingsSheetName = "";
     sheetConfigs = {};
     parseError = null;
     submitError = null;
@@ -374,9 +377,9 @@
     sheetConfigs = {
       ...sheetConfigs,
       [sheetName]: {
-        enabled: sheetConfigs[sheetName]?.enabled ?? false,
-        subCategoryId: sheetConfigs[sheetName]?.subCategoryId ?? "",
-        thumbnailUrl: sheetConfigs[sheetName]?.thumbnailUrl ?? "",
+        enabled: getSheetConfig(sheetName).enabled,
+        subCategoryId: getSheetConfig(sheetName).subCategoryId,
+        thumbnailUrl: getSheetConfig(sheetName).thumbnailUrl,
         [key]: value,
       },
     };
@@ -400,6 +403,14 @@
     );
   }
 
+  function openPreview(sheetName: string) {
+    activeSheetName = sheetName;
+  }
+
+  function openSettings(sheetName: string) {
+    settingsSheetName = sheetName;
+  }
+
   async function handleSubmit() {
     if (!canSubmit) return;
 
@@ -411,7 +422,7 @@
       let totalInserted = 0;
 
       for (const sheet of selectedSheets) {
-        const config = sheetConfigs[sheet.name];
+        const config = getSheetConfig(sheet.name);
 
         for (const row of sheet.rows) {
           const res = await fetch("/api/v1/products", {
@@ -426,10 +437,7 @@
               subCategoryId: config.subCategoryId,
               price: Number(String(row.price).replace(/[^0-9.-]/g, "")) || 0,
               currency: "IDR",
-              stock:
-                row.stock.toLowerCase() === "unlimited"
-                  ? 999999
-                  : Number(String(row.stock).replace(/[^0-9.-]/g, "")) || 0,
+              stock: 999,
               thumbnails: config.thumbnailUrl || undefined,
               conditionNotes: row.conditionNotes || undefined,
               special: row.isSpecial,
@@ -453,6 +461,7 @@
       submitSuccess = `${totalInserted} produk berhasil ditambahkan dari ${selectedSheets.length} page terpilih.`;
       sheets = [];
       activeSheetName = "";
+      settingsSheetName = "";
       sheetConfigs = {};
       fileName = "";
     } catch (error: any) {
@@ -474,7 +483,7 @@
         Batch Insert dari Excel per Page
       </h1>
       <p class="text-xs md:text-sm text-white/50 mt-1 max-w-2xl">
-        File Excel dibaca per sheet. Kamu bisa pilih page mana saja yang mau di-import, jadi gak wajib semua page ikut masuk.
+        Pilih page yang mau di-import, atur kategori dan thumbnail per page lewat popup, lalu preview datanya sebelum submit.
       </p>
     </div>
 
@@ -487,7 +496,7 @@
     </button>
   </header>
 
-  <div class="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+  <div class="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
     <div class="space-y-4 rounded-2xl border border-white/5 bg-[#0c0c0c] p-4">
       <div class="space-y-1.5">
         <label class="text-xs text-white/70">Upload Excel</label>
@@ -508,98 +517,58 @@
       {#if sheets.length}
         <div class="space-y-2">
           <label class="text-xs text-white/70">Pilih page yang mau di-import</label>
-          <div class="space-y-2">
+          <div class="space-y-2 max-h-[520px] overflow-auto pr-1">
             {#each sheets as sheet}
-              <label class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/80">
-                <div class="flex items-center gap-2 min-w-0">
-                  <input
-                    type="checkbox"
-                    class="rounded border-white/20 bg-black/60"
-                    checked={sheetConfigs[sheet.name]?.enabled ?? false}
-                    onchange={(e) =>
-                      updateSheetConfig(
-                        sheet.name,
-                        "enabled",
-                        (e.currentTarget as HTMLInputElement).checked,
-                      )}
-                  />
+              {@const config = getSheetConfig(sheet.name)}
+              <div class="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 space-y-2">
+                <div class="flex items-center justify-between gap-3">
+                  <label class="flex items-center gap-2 min-w-0 text-xs text-white/85">
+                    <input
+                      type="checkbox"
+                      class="rounded border-white/20 bg-black/60"
+                      checked={config.enabled}
+                      onchange={(e) =>
+                        updateSheetConfig(
+                          sheet.name,
+                          "enabled",
+                          (e.currentTarget as HTMLInputElement).checked,
+                        )}
+                    />
+                    <span class="truncate font-semibold">{sheet.name}</span>
+                  </label>
+                  <span class="text-[11px] text-white/45">{sheet.rows.length} produk</span>
+                </div>
+
+                <div class="flex items-center gap-2">
                   <button
                     type="button"
-                    class={`truncate text-left ${activeSheetName === sheet.name ? "text-[var(--color-primary)] font-semibold" : "text-white/80"}`}
-                    onclick={() => (activeSheetName = sheet.name)}
+                    class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
+                    onclick={() => openPreview(sheet.name)}
                   >
-                    {sheet.name}
+                    Preview
+                  </button>
+                  <button
+                    type="button"
+                    class="px-2.5 py-1.5 rounded-lg text-[11px] font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
+                    onclick={() => openSettings(sheet.name)}
+                  >
+                    Setting
                   </button>
                 </div>
-                <span class="text-[11px] text-white/45">{sheet.rows.length} produk</span>
-              </label>
+
+                <div class="text-[11px] text-white/45 space-y-1">
+                  <p>
+                    Status: <span class={config.enabled ? "text-emerald-300" : "text-white/35"}>{config.enabled ? "siap import" : "skip"}</span>
+                  </p>
+                  <p>
+                    Sub kategori: <span class="text-white/65">{availableSubCategories.find((sub) => sub.id === config.subCategoryId)?.title ?? "belum dipilih"}</span>
+                  </p>
+                  <p>
+                    Thumbnail: <span class="text-white/65">{config.thumbnailUrl ? "sudah diisi" : "belum diisi"}</span>
+                  </p>
+                </div>
+              </div>
             {/each}
-          </div>
-        </div>
-      {/if}
-
-      {#if activeSheet}
-        <div class="rounded-xl border border-white/10 bg-black/20 p-3 space-y-3">
-          <div class="flex items-center justify-between gap-3">
-            <div>
-              <p class="text-xs font-semibold text-white">Setting page {activeSheet.name}</p>
-              <p class="text-[11px] text-white/45">
-                {activeConfig.enabled ? "Page ini akan ikut di-import" : "Page ini tidak ikut di-import"}
-              </p>
-            </div>
-            <label class="inline-flex items-center gap-2 text-xs text-white/80">
-              <input
-                type="checkbox"
-                class="rounded border-white/20 bg-black/60"
-                checked={activeConfig.enabled}
-                onchange={(e) =>
-                  updateSheetConfig(
-                    activeSheet.name,
-                    "enabled",
-                    (e.currentTarget as HTMLInputElement).checked,
-                  )}
-              />
-              Import page ini
-            </label>
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-xs text-white/70">Sub Kategori untuk page {activeSheet.name}</label>
-            <select
-              value={activeConfig.subCategoryId}
-              onchange={(e) =>
-                updateSheetConfig(
-                  activeSheet.name,
-                  "subCategoryId",
-                  (e.currentTarget as HTMLSelectElement).value,
-                )}
-              class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
-              disabled={!activeConfig.enabled}
-            >
-              <option value="">Pilih sub kategori</option>
-              {#each availableSubCategories as sub}
-                <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
-              {/each}
-            </select>
-          </div>
-
-          <div class="space-y-1.5">
-            <label class="text-xs text-white/70">Thumbnail untuk page {activeSheet.name}</label>
-            <input
-              class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70 disabled:opacity-50"
-              value={activeConfig.thumbnailUrl}
-              oninput={(e) =>
-                updateSheetConfig(
-                  activeSheet.name,
-                  "thumbnailUrl",
-                  (e.currentTarget as HTMLInputElement).value,
-                )}
-              placeholder="https://asset.weebin.site/uploads/...jpg"
-              disabled={!activeConfig.enabled}
-            />
-            <p class="text-[11px] text-white/45">
-              Satu thumbnail untuk semua produk di page ini.
-            </p>
           </div>
         </div>
       {/if}
@@ -626,11 +595,10 @@
         <p class="font-semibold text-white/70">Ringkasan import</p>
         {#if sheets.length}
           {#each sheets as sheet}
+            {@const config = getSheetConfig(sheet.name)}
             <div class="flex items-center justify-between gap-3">
-              <span class={sheetConfigs[sheet.name]?.enabled ? "text-white/80" : "text-white/30"}>
-                {sheet.name}
-              </span>
-              <span>{sheetConfigs[sheet.name]?.enabled ? `${sheet.rows.length} produk` : "skip"}</span>
+              <span class={config.enabled ? "text-white/80" : "text-white/30"}>{sheet.name}</span>
+              <span>{config.enabled ? `${sheet.rows.length} produk` : "skip"}</span>
             </div>
           {/each}
         {:else}
@@ -653,7 +621,7 @@
         <div>
           <p class="text-sm font-semibold text-white">Preview {activeSheet?.name ?? "Produk"}</p>
           <p class="text-[11px] text-white/45">
-            Cek hasil convert Excel ke JSON sebelum disimpan.
+            Preview ini sekarang ngikut tombol Preview, bukan checkbox import.
           </p>
         </div>
         <div class="text-[11px] text-white/45">
@@ -679,7 +647,7 @@
             {#if !activeSheet}
               <tr>
                 <td colspan="8" class="px-4 py-8 text-center text-white/35">
-                  Upload file Excel dulu buat lihat semua page.
+                  Klik tombol Preview di salah satu page untuk lihat datanya.
                 </td>
               </tr>
             {:else}
@@ -786,4 +754,99 @@
       </div>
     </div>
   </div>
+
+  {#if settingsSheet}
+    {@const settingsConfig = getSheetConfig(settingsSheet.name)}
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+      <div class="w-full max-w-xl rounded-2xl border border-white/10 bg-[#0c0c0c] p-5 space-y-4 shadow-2xl">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em]">
+              Setting Page
+            </p>
+            <h2 class="text-xl font-black text-white mt-1">{settingsSheet.name}</h2>
+            <p class="text-xs text-white/45 mt-1">
+              Atur sub kategori dan thumbnail untuk semua produk di page ini.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="px-3 py-2 rounded-lg text-xs font-semibold bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
+            onclick={() => (settingsSheetName = "")}
+          >
+            Tutup
+          </button>
+        </div>
+
+        <label class="inline-flex items-center gap-2 text-xs text-white/80">
+          <input
+            type="checkbox"
+            class="rounded border-white/20 bg-black/60"
+            checked={settingsConfig.enabled}
+            onchange={(e) =>
+              updateSheetConfig(
+                settingsSheet.name,
+                "enabled",
+                (e.currentTarget as HTMLInputElement).checked,
+              )}
+          />
+          Import page ini
+        </label>
+
+        <div class="space-y-1.5">
+          <label class="text-xs text-white/70">Sub Kategori</label>
+          <select
+            value={settingsConfig.subCategoryId}
+            onchange={(e) =>
+              updateSheetConfig(
+                settingsSheet.name,
+                "subCategoryId",
+                (e.currentTarget as HTMLSelectElement).value,
+              )}
+            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
+          >
+            <option value="">Pilih sub kategori</option>
+            {#each availableSubCategories as sub}
+              <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
+            {/each}
+          </select>
+        </div>
+
+        <ImageUrlField
+          label="Thumbnail Page"
+          value={settingsConfig.thumbnailUrl}
+          placeholder="https://asset.weebin.site/uploads/...jpg"
+          help="Bisa paste manual atau pilih dari image manager. Thumbnail ini dipakai untuk semua produk pada page ini."
+        />
+
+        <div class="space-y-1.5">
+          <label class="text-xs text-white/70">Sinkronkan thumbnail</label>
+          <input
+            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
+            value={settingsConfig.thumbnailUrl}
+            oninput={(e) =>
+              updateSheetConfig(
+                settingsSheet.name,
+                "thumbnailUrl",
+                (e.currentTarget as HTMLInputElement).value,
+              )}
+            placeholder="https://asset.weebin.site/uploads/...jpg"
+          />
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <p class="text-[11px] text-white/45">
+            Stock default semua produk di import ini akan jadi <span class="text-white font-semibold">999</span>.
+          </p>
+          <button
+            type="button"
+            class="px-4 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
+            onclick={() => (settingsSheetName = "")}
+          >
+            Selesai
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </section>
