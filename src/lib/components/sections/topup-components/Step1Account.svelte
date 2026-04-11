@@ -13,6 +13,13 @@
     gameConfig?: SupportedGameConfig | null;
     zoneInputMode?: ZoneInputMode;
   } = $props();
+
+  let serverDropdownOpen = $state(false);
+
+  function selectServer(server: string) {
+    serverId = server;
+    serverDropdownOpen = false;
+  }
 </script>
 
 <div class="step-card">
@@ -56,12 +63,31 @@
             </span>
 
             {#if zoneInputMode === "select"}
-              <select id="server_id" bind:value={serverId} class="field-input field-select">
-                <option value="">Pilih Server</option>
-                {#each gameConfig?.servers ?? [] as server}
-                  <option value={server}>{server.toUpperCase()}</option>
-                {/each}
-              </select>
+              <button
+                id="server_id"
+                type="button"
+                class="field-input field-select-btn"
+                onclick={() => (serverDropdownOpen = !serverDropdownOpen)}
+              >
+                <span class:placeholder={!serverId}>
+                  {serverId ? serverId.toUpperCase() : "Pilih Server"}
+                </span>
+                <span class={`select-chevron ${serverDropdownOpen ? "open" : ""}`}>⌄</span>
+              </button>
+
+              {#if serverDropdownOpen}
+                <div class="custom-dropdown-menu">
+                  {#each gameConfig?.servers ?? [] as server}
+                    <button
+                      type="button"
+                      class={`custom-dropdown-item ${serverId === server ? "active" : ""}`}
+                      onclick={() => selectServer(server)}
+                    >
+                      {server.toUpperCase()}
+                    </button>
+                  {/each}
+                </div>
+              {/if}
             {:else}
               <input
                 id="server_id"
@@ -174,5 +200,53 @@
   }
   .field-select {
     appearance: none;
+  }
+  .field-select-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    cursor: pointer;
+  }
+  .placeholder {
+    color: rgba(255, 255, 255, 0.2);
+  }
+  .select-chevron {
+    color: rgba(255, 255, 255, 0.45);
+    transition: transform 0.2s ease;
+    margin-left: 0.75rem;
+  }
+  .select-chevron.open {
+    transform: rotate(180deg);
+  }
+  .custom-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: #1a1a1a;
+    border: 1px solid rgba(245, 197, 24, 0.2);
+    border-radius: 0.9rem;
+    padding: 0.35rem;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  }
+  .custom-dropdown-item {
+    width: 100%;
+    text-align: left;
+    padding: 0.7rem 0.85rem;
+    border-radius: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+    transition: all 0.18s ease;
+  }
+  .custom-dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
+  .custom-dropdown-item.active {
+    background: rgba(245, 197, 24, 0.14);
+    color: var(--color-primary);
+    font-weight: 700;
   }
 </style>
