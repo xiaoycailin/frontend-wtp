@@ -1,6 +1,5 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
 
   type SubCategory = {
     id: string;
@@ -27,6 +26,7 @@
   };
 
   type SheetConfig = {
+    enabled: boolean;
     subCategoryId: string;
     thumbnailUrl: string;
   };
@@ -69,17 +69,32 @@
 
   const activeConfig = $derived(
     activeSheetName
-      ? (sheetConfigs[activeSheetName] ?? { subCategoryId: "", thumbnailUrl: "" })
-      : { subCategoryId: "", thumbnailUrl: "" },
+      ? (sheetConfigs[activeSheetName] ?? {
+          enabled: false,
+          subCategoryId: "",
+          thumbnailUrl: "",
+        })
+      : {
+          enabled: false,
+          subCategoryId: "",
+          thumbnailUrl: "",
+        },
+  );
+
+  const selectedSheets = $derived(
+    sheets.filter((sheet) => sheetConfigs[sheet.name]?.enabled),
+  );
+
+  const totalSelectedRows = $derived(
+    selectedSheets.reduce((acc, sheet) => acc + sheet.rows.length, 0),
   );
 
   const canSubmit = $derived(
-    sheets.length > 0 &&
+    selectedSheets.length > 0 &&
       !uploading &&
-      sheets.every((sheet) => {
+      selectedSheets.every((sheet) => {
         const config = sheetConfigs[sheet.name];
         return (
-          sheet.rows.length > 0 &&
           !!config?.subCategoryId &&
           sheet.rows.every((row) => row.title && row.sku && row.price)
         );
@@ -177,7 +192,11 @@
     const status = pickValue(raw, ["status"]);
     const updatedAt = pickValue(raw, ["perubahan_terakhir", "updated_at"]);
 
-    const fallbackNotes = [seller && `Seller: ${seller}`, status && `Status: ${status}`, updatedAt && `Updated: ${updatedAt}`]
+    const fallbackNotes = [
+      seller && `Seller: ${seller}`,
+      status && `Status: ${status}`,
+      updatedAt && `Updated: ${updatedAt}`,
+    ]
       .filter(Boolean)
       .join(" | ");
 
@@ -265,9 +284,7 @@
         }
       }
 
-      if (!sheetXml) {
-        continue;
-      }
+      if (!sheetXml) continue;
 
       const sheetDoc = parser.parseFromString(sheetXml, "application/xml");
       const rowNodes = Array.from(sheetDoc.getElementsByTagName("row"));
@@ -321,8 +338,9 @@
 
     sheets = nextSheets;
     activeSheetName = nextSheets[0]?.name ?? "";
-    sheetConfigs = nextSheets.reduce<Record<string, SheetConfig>>((acc, sheet) => {
+    sheetConfigs = nextSheets.reduce<Record<string, SheetConfig>>((acc, sheet, index) => {
       acc[sheet.name] = {
+        enabled: sheetConfigs[sheet.name]?.enabled ?? index === 0,
         subCategoryId: sheetConfigs[sheet.name]?.subCategoryId ?? "",
         thumbnailUrl: sheetConfigs[sheet.name]?.thumbnailUrl ?? "",
       };
@@ -352,10 +370,11 @@
     }
   }
 
-  function updateSheetConfig(sheetName: string, key: keyof SheetConfig, value: string) {
+  function updateSheetConfig(sheetName: string, key: keyof SheetConfig, value: string | boolean) {
     sheetConfigs = {
       ...sheetConfigs,
       [sheetName]: {
+        enabled: sheetConfigs[sheetName]?.enabled ?? false,
         subCategoryId: sheetConfigs[sheetName]?.subCategoryId ?? "",
         thumbnailUrl: sheetConfigs[sheetName]?.thumbnailUrl ?? "",
         [key]: value,
@@ -363,7 +382,12 @@
     };
   }
 
-  function updateRow(sheetName: string, index: number, key: keyof ParsedRow, value: string | boolean) {
+  function updateRow(
+    sheetName: string,
+    index: number,
+    key: keyof ParsedRow,
+    value: string | boolean,
+  ) {
     sheets = sheets.map((sheet) =>
       sheet.name === sheetName
         ? {
@@ -386,7 +410,7 @@
     try {
       let totalInserted = 0;
 
-      for (const sheet of sheets) {
+      for (const sheet of selectedSheets) {
         const config = sheetConfigs[sheet.name];
 
         for (const row of sheet.rows) {
@@ -426,7 +450,7 @@
         }
       }
 
-      submitSuccess = `${totalInserted} produk berhasil ditambahkan dari ${sheets.length} page.`;
+      submitSuccess = `${totalInserted} produk berhasil ditambahkan dari ${selectedSheets.length} page terpilih.`;
       sheets = [];
       activeSheetName = "";
       sheetConfigs = {};
@@ -450,7 +474,7 @@
         Batch Insert dari Excel per Page
       </h1>
       <p class="text-xs md:text-sm text-white/50 mt-1 max-w-2xl">
-        File Excel dibaca per sheet. Jadi page seperti ML, B, C, atau sheet lain akan otomatis muncul dan bisa diatur sub kategori + thumbnail masing-masing.
+        File Excel dibaca per sheet. Kamu bisa pilih page mana saja yang mau di-import, jadi gak wajib semua page ikut masuk.
       </p>
     </div>
 
@@ -474,7 +498,7 @@
           onchange={handleFileChange}
         />
         <p class="text-[11px] text-white/45">
-          Parser sekarang otomatis baca semua sheet/page. Contoh kolom: {expectedExample.join(", ")}.
+          Parser otomatis baca semua sheet/page. Contoh kolom: {expectedExample.join(", ")}.
         </p>
         {#if fileName}
           <p class="text-[11px] text-white/60">File: {fileName}</p>
@@ -483,66 +507,100 @@
 
       {#if sheets.length}
         <div class="space-y-2">
-          <label class="text-xs text-white/70">Daftar page dari sheet</label>
-          <div class="flex flex-wrap gap-2">
+          <label class="text-xs text-white/70">Pilih page yang mau di-import</label>
+          <div class="space-y-2">
             {#each sheets as sheet}
-              <button
-                type="button"
-                class={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${
-                  activeSheetName === sheet.name
-                    ? "bg-[var(--color-primary)] text-black border-[var(--color-primary)]"
-                    : "bg-black/30 text-white/70 border-white/10 hover:bg-white/10"
-                }`}
-                onclick={() => (activeSheetName = sheet.name)}
-              >
-                {sheet.name} ({sheet.rows.length})
-              </button>
+              <label class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-white/80">
+                <div class="flex items-center gap-2 min-w-0">
+                  <input
+                    type="checkbox"
+                    class="rounded border-white/20 bg-black/60"
+                    checked={sheetConfigs[sheet.name]?.enabled ?? false}
+                    onchange={(e) =>
+                      updateSheetConfig(
+                        sheet.name,
+                        "enabled",
+                        (e.currentTarget as HTMLInputElement).checked,
+                      )}
+                  />
+                  <button
+                    type="button"
+                    class={`truncate text-left ${activeSheetName === sheet.name ? "text-[var(--color-primary)] font-semibold" : "text-white/80"}`}
+                    onclick={() => (activeSheetName = sheet.name)}
+                  >
+                    {sheet.name}
+                  </button>
+                </div>
+                <span class="text-[11px] text-white/45">{sheet.rows.length} produk</span>
+              </label>
             {/each}
           </div>
         </div>
       {/if}
 
       {#if activeSheet}
-        <div class="space-y-1.5">
-          <label class="text-xs text-white/70">Sub Kategori untuk page {activeSheet.name}</label>
-          <select
-            value={activeConfig.subCategoryId}
-            onchange={(e) =>
-              updateSheetConfig(
-                activeSheet.name,
-                "subCategoryId",
-                (e.currentTarget as HTMLSelectElement).value,
-              )}
-            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
-          >
-            <option value="">Pilih sub kategori</option>
-            {#each availableSubCategories as sub}
-              <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
-            {/each}
-          </select>
-        </div>
+        <div class="rounded-xl border border-white/10 bg-black/20 p-3 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-white">Setting page {activeSheet.name}</p>
+              <p class="text-[11px] text-white/45">
+                {activeConfig.enabled ? "Page ini akan ikut di-import" : "Page ini tidak ikut di-import"}
+              </p>
+            </div>
+            <label class="inline-flex items-center gap-2 text-xs text-white/80">
+              <input
+                type="checkbox"
+                class="rounded border-white/20 bg-black/60"
+                checked={activeConfig.enabled}
+                onchange={(e) =>
+                  updateSheetConfig(
+                    activeSheet.name,
+                    "enabled",
+                    (e.currentTarget as HTMLInputElement).checked,
+                  )}
+              />
+              Import page ini
+            </label>
+          </div>
 
-        <ImageUrlField
-          label={`Thumbnail untuk page ${activeSheet.name}`}
-          value={activeConfig.thumbnailUrl}
-          placeholder="https://asset.weebin.site/uploads/...jpg"
-          help="Satu thumbnail untuk semua produk di page/sheet ini."
-        />
+          <div class="space-y-1.5">
+            <label class="text-xs text-white/70">Sub Kategori untuk page {activeSheet.name}</label>
+            <select
+              value={activeConfig.subCategoryId}
+              onchange={(e) =>
+                updateSheetConfig(
+                  activeSheet.name,
+                  "subCategoryId",
+                  (e.currentTarget as HTMLSelectElement).value,
+                )}
+              class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
+              disabled={!activeConfig.enabled}
+            >
+              <option value="">Pilih sub kategori</option>
+              {#each availableSubCategories as sub}
+                <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
+              {/each}
+            </select>
+          </div>
 
-        {@const currentThumbnail = activeConfig.thumbnailUrl}
-        <div class="space-y-1.5">
-          <label class="text-xs text-white/70">Sinkronkan thumbnail page</label>
-          <input
-            class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70"
-            value={currentThumbnail}
-            oninput={(e) =>
-              updateSheetConfig(
-                activeSheet.name,
-                "thumbnailUrl",
-                (e.currentTarget as HTMLInputElement).value,
-              )}
-            placeholder="https://asset.weebin.site/uploads/...jpg"
-          />
+          <div class="space-y-1.5">
+            <label class="text-xs text-white/70">Thumbnail untuk page {activeSheet.name}</label>
+            <input
+              class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white focus:outline-none focus:border-[var(--color-primary)]/70 disabled:opacity-50"
+              value={activeConfig.thumbnailUrl}
+              oninput={(e) =>
+                updateSheetConfig(
+                  activeSheet.name,
+                  "thumbnailUrl",
+                  (e.currentTarget as HTMLInputElement).value,
+                )}
+              placeholder="https://asset.weebin.site/uploads/...jpg"
+              disabled={!activeConfig.enabled}
+            />
+            <p class="text-[11px] text-white/45">
+              Satu thumbnail untuk semua produk di page ini.
+            </p>
+          </div>
         </div>
       {/if}
 
@@ -565,12 +623,14 @@
       {/if}
 
       <div class="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-white/55 space-y-1">
-        <p class="font-semibold text-white/70">Ringkasan page</p>
+        <p class="font-semibold text-white/70">Ringkasan import</p>
         {#if sheets.length}
           {#each sheets as sheet}
             <div class="flex items-center justify-between gap-3">
-              <span>{sheet.name}</span>
-              <span>{sheet.rows.length} produk</span>
+              <span class={sheetConfigs[sheet.name]?.enabled ? "text-white/80" : "text-white/30"}>
+                {sheet.name}
+              </span>
+              <span>{sheetConfigs[sheet.name]?.enabled ? `${sheet.rows.length} produk` : "skip"}</span>
             </div>
           {/each}
         {:else}
@@ -584,7 +644,7 @@
         disabled={!canSubmit}
         onclick={handleSubmit}
       >
-        {uploading ? "Mengimport..." : `Import Semua Page (${sheets.reduce((acc, sheet) => acc + sheet.rows.length, 0)})`}
+        {uploading ? "Mengimport..." : `Import Page Terpilih (${totalSelectedRows})`}
       </button>
     </div>
 
