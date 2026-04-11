@@ -108,7 +108,7 @@
   .step-card {
     position: relative;
     border-radius: 1rem;
-    overflow: hidden;
+    overflow: visible;
     border: 1px solid rgba(255, 255, 255, 0.07);
     background: #111111;
   }
@@ -170,6 +170,7 @@
   }
   .input-wrap {
     position: relative;
+    z-index: 30;
   }
   .input-icon {
     position: absolute;
@@ -224,7 +225,7 @@
     top: calc(100% + 0.4rem);
     left: 0;
     right: 0;
-    z-index: 20;
+    z-index: 999;
     background: #1a1a1a;
     border: 1px solid rgba(245, 197, 24, 0.2);
     border-radius: 0.9rem;
