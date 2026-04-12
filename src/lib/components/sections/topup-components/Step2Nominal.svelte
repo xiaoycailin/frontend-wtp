@@ -12,11 +12,20 @@
   let diamonds = $state<Product[]>([]);
   let specialItems = $state<Product[]>([]);
 
-  const tabs: { key: TabKey; label: string }[] = [
+  const allTabs: { key: TabKey; label: string }[] = [
     { key: "flash", label: "⚡ Flash Sale" },
     { key: "special", label: "🔥 Special Items" },
     { key: "diamond", label: "💎 Topup Instant" },
   ];
+
+  const tabDataMap: Record<TabKey, () => unknown[]> = {
+    flash: () => flashSale,
+    special: () => specialItems,
+    diamond: () => diamonds,
+  };
+
+  // tabs yang tampil = hanya yang punya data
+  const tabs = $derived(allTabs.filter((t) => tabDataMap[t.key]().length > 0));
 
   onMount(() => {
     diamonds = [];
@@ -71,12 +80,12 @@
       }
     });
 
-    // Auto-select dari query param ?productId=...
+    // PINDAH KE SINI: setelah forEach, baru cek tab pertama yang ada data
+    // juga override query param jika productId ditemukan
     const searchParams = $page.url.searchParams;
     const productId = searchParams.get("productId");
 
     if (productId) {
-      // 1) cek di flashSale (pakai id flash)
       let found = flashSale.find((f) => String(f.id) === productId);
       if (found) {
         activeTab = "flash";
@@ -84,7 +93,6 @@
         return;
       }
 
-      // 2) cek di specialItems (pakai id product)
       found = specialItems.find((s) => String(s.id) === productId);
       if (found) {
         activeTab = "special";
@@ -92,13 +100,17 @@
         return;
       }
 
-      // 3) cek di diamonds (pakai id product)
       found = diamonds.find((d) => String(d.id) === productId);
       if (found) {
         activeTab = "diamond";
         selected = found;
+        return;
       }
     }
+
+    // fallback: tab pertama yang punya data
+    const firstAvailable = allTabs.find((t) => tabDataMap[t.key]().length > 0);
+    if (firstAvailable) activeTab = firstAvailable.key;
   });
 
   function toggleSelect(p: Product) {

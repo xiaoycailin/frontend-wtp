@@ -9,6 +9,7 @@
   import { goto } from "$app/navigation";
   import { fmt } from "./utils";
   import { teleport } from "$lib/utils";
+  import { getContext } from "svelte";
 
   let {
     selected = $bindable<Product | null>(null),
@@ -46,14 +47,12 @@
     gameConfigLoading?: boolean;
   } = $props();
 
-  // ── FIX 1: State untuk menyimpan hasil review dari server ─────────────
   let reviewData = $state<any>(null);
   let purchaseData = $state<any>(null);
   let reviewLoading = $state(false);
   let purchaseLoading = $state(false);
   let showConfirmModal = $state(false);
 
-  // ── FIX 2: Derived — pakai data server kalau ada, fallback ke props ──
   const displayBasePrice = $derived(reviewData?.price ?? basePrice);
   const displayFlashDiscount = $derived(reviewData?.discount ?? 0);
   const displayDiscountLabel = $derived(reviewData?.discountLabel ?? null);
@@ -62,7 +61,41 @@
   const displayTotal = $derived(reviewData?.total ?? totalPrice);
   const requiresServerInput = $derived(zoneInputMode !== "none");
 
-  // ── FIX 3: $effect dengan guard + AbortController ─────────────────────
+  // ── canOrder internal — wajib: userId, nominal, metode bayar, email ──
+  const internalCanOrder = $derived(
+    !!userId.trim() &&
+      (!requiresServerInput || !!serverId.trim()) &&
+      !!selected &&
+      !!selectedPay?.id &&
+      !!email.trim() &&
+      !gameConfigLoading,
+  );
+
+  // hint teks tombol — urutan prioritas dari yang paling awal harus diisi
+  const orderHint = $derived(() => {
+    if (gameConfigLoading) return "Cek config game...";
+    if (!userId.trim()) return "Isi User ID dulu";
+    if (requiresServerInput && !serverId.trim())
+      return zoneInputMode === "select"
+        ? "Pilih Server dulu"
+        : "Isi Server ID dulu";
+    if (!selected) return "Pilih Nominal dulu";
+    if (!selectedPay?.id) return "Pilih Pembayaran dulu";
+    if (!email.trim()) return "Isi Email dulu";
+    return "Pesan Sekarang!";
+  });
+
+  // checklist — 4 item wajib (phone opsional, tidak masuk checklist)
+  const progresChecklist = $derived(() => [
+    {
+      ok: !!userId.trim() && (!requiresServerInput || !!serverId.trim()),
+      label: requiresServerInput ? "Data akun + server" : "Data akun",
+    },
+    { ok: !!selected, label: "Nominal dipilih" },
+    { ok: !!selectedPay?.id, label: "Metode bayar" },
+    { ok: !!email.trim(), label: "Email" },
+  ]);
+
   $effect(() => {
     if (!selected || !selectedPay?.id) {
       reviewData = null;
@@ -87,7 +120,6 @@
 
     const controller = new AbortController();
     purchaseReview(body, controller.signal);
-
     return () => controller.abort();
   });
 
@@ -125,7 +157,7 @@
     }
   }
 
-  // ── Toast ──────────────────────────────────────────────────────────────
+  // ── Toast ──
   type ToastType = "error" | "success" | "info";
   let toast = $state<{ message: string; type: ToastType } | null>(null);
   let toastTimer: ReturnType<typeof setTimeout>;
@@ -146,10 +178,7 @@
     try {
       const res = await fetch("/api/v1/payments/purchase", {
         method: "POST",
-        body: JSON.stringify({
-          ...purchaseData,
-          email: email.trim(),
-        }),
+        body: JSON.stringify({ ...purchaseData, email: email.trim() }),
         headers: { "Content-Type": "application/json" },
       });
 
@@ -164,7 +193,6 @@
 
         showConfirmModal = false;
         purchaseLoading = false;
-
         setTimeout(() => showToast(errMsg, "error"), 150);
         return;
       }
@@ -198,6 +226,9 @@
       console.error("Purchase error:", err);
     }
   };
+
+  // const siteConfig: any = getContext("site_config");
+  // console.log(siteConfig);
 </script>
 
 <!-- Modal konfirmasi -->
@@ -280,9 +311,7 @@
         />
       </svg>
     {/if}
-
     <span class="toast-msg">{toast.message}</span>
-
     <button
       class="toast-close"
       onclick={() => (toast = null)}
@@ -351,6 +380,7 @@
     <p class="text-[11px] text-white/40">Hubungi admin kami sekarang.</p>
   </div>
   <button
+    // onclick={}
     class="ml-auto flex-shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold
            bg-white/5 border border-white/10 text-white/60
            hover:border-[var(--color-primary)]/40 hover:text-[var(--color-primary)] transition-all duration-200"
@@ -509,28 +539,28 @@
   <!-- CTA desktop -->
   <div class="hidden md:block px-4 pb-4">
     <button
-      disabled={!canOrder}
+      disabled={!internalCanOrder || reviewLoading}
       class="relative w-full flex items-center justify-center gap-2 py-3.5 rounded-xl
              text-sm font-black tracking-wide transition-all duration-300 overflow-hidden"
       style="
-        background: {canOrder && !reviewLoading
+        background: {internalCanOrder && !reviewLoading
         ? 'var(--color-primary)'
         : 'rgba(255,255,255,0.05)'};
-        color:      {canOrder && !reviewLoading
+        color:      {internalCanOrder && !reviewLoading
         ? '#000'
         : 'rgba(255,255,255,0.2)'};
-        box-shadow: {canOrder && !reviewLoading
+        box-shadow: {internalCanOrder && !reviewLoading
         ? '0 0 25px rgba(245,197,24,0.4),0 4px 15px rgba(245,197,24,0.2)'
         : 'none'};
-        cursor:     {canOrder && !reviewLoading ? 'pointer' : 'not-allowed'};
+        cursor:     {internalCanOrder && !reviewLoading
+        ? 'pointer'
+        : 'not-allowed'};
       "
       onclick={() => {
-        if (canOrder && !reviewLoading) {
-          showConfirmModal = true;
-        }
+        if (internalCanOrder && !reviewLoading) showConfirmModal = true;
       }}
     >
-      {#if canOrder}
+      {#if internalCanOrder && !reviewLoading}
         <div
           class="absolute inset-0 opacity-30"
           style="background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,0.5) 50%,transparent 60%);
@@ -550,26 +580,12 @@
           d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
         />
       </svg>
-      {canOrder
-        ? "Pesan Sekarang!"
-        : gameConfigLoading
-          ? "Cek config game..."
-          : !userId.trim()
-            ? "Isi User ID dulu"
-            : requiresServerInput && !serverId.trim()
-              ? zoneInputMode === "select"
-                ? "Pilih Server dulu"
-                : "Isi Server ID dulu"
-              : !selected
-                ? "Pilih Nominal dulu"
-                : !selectedPay
-                  ? "Pilih Pembayaran"
-                  : "Isi No. WhatsApp"}
+      {internalCanOrder ? "Pesan Sekarang!" : orderHint()}
     </button>
 
     <!-- Progress checklist -->
     <div class="mt-3 space-y-1">
-      {#each [{ ok: !!userId.trim() && (!requiresServerInput || !!serverId.trim()), label: requiresServerInput ? "Data akun + server" : "Data akun" }, { ok: !!selected, label: "Nominal dipilih" }, { ok: !!selectedPay, label: "Metode bayar" }, { ok: phone.trim().length > 6, label: "No. WhatsApp" }] as item}
+      {#each progresChecklist() as item}
         <div class="flex items-center gap-2">
           <div
             class="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
@@ -646,9 +662,9 @@
 
           {#if displayIsFlashSale && displayFlashDiscount > 0 && discountAmount > 0}
             <span class="ds-divider">·</span>
-            <span class="ds-total-save">
-              Total hemat {fmt(displayFlashDiscount + discountAmount)}
-            </span>
+            <span class="ds-total-save"
+              >Total hemat {fmt(displayFlashDiscount + discountAmount)}</span
+            >
           {/if}
         </div>
       </div>
@@ -673,15 +689,15 @@
       </div>
 
       <button
-        disabled={!canOrder || reviewLoading}
-        class="bar-btn {canOrder && !reviewLoading
+        disabled={!internalCanOrder || reviewLoading}
+        class="bar-btn {internalCanOrder && !reviewLoading
           ? 'bar-btn-active'
           : 'bar-btn-disabled'}"
         onclick={() => {
-          if (canOrder && !reviewLoading) showConfirmModal = true;
+          if (internalCanOrder && !reviewLoading) showConfirmModal = true;
         }}
       >
-        {#if canOrder && !reviewLoading}
+        {#if internalCanOrder && !reviewLoading}
           <div class="bar-btn-shine"></div>
         {/if}
         {#if reviewLoading}
@@ -715,21 +731,11 @@
             />
           </svg>
         {/if}
-        {canOrder
+        {internalCanOrder
           ? reviewLoading
             ? "Memuat..."
             : "Pesan Sekarang"
-          : gameConfigLoading
-            ? "Cek game..."
-            : !userId.trim()
-              ? "Isi User ID"
-              : requiresServerInput && !serverId.trim()
-                ? zoneInputMode === "select"
-                  ? "Pilih Server"
-                  : "Isi Server ID"
-                : !selectedPay
-                  ? "Pilih Pembayaran"
-                  : "Isi WhatsApp"}
+          : orderHint()}
       </button>
     </div>
   </div>
@@ -777,7 +783,6 @@
     animation: toastIn 280ms cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   }
-
   .toast-error {
     background: rgba(248, 113, 113, 0.12);
     border-color: rgba(248, 113, 113, 0.3);
@@ -791,7 +796,7 @@
   .toast-info {
     background: rgba(245, 197, 24, 0.1);
     border-color: rgba(245, 197, 24, 0.25);
-    color: var(--color-primary);
+    color: white;
   }
 
   .toast-icon {
@@ -979,7 +984,6 @@
     margin-bottom: 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
-
   .discount-strip-inner {
     display: flex;
     align-items: center;
@@ -1001,7 +1005,6 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
-
   .ds-promo-badge {
     display: inline-flex;
     align-items: center;
@@ -1016,13 +1019,11 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
   }
-
   .ds-text {
     font-size: 0.6875rem;
     color: rgba(255, 255, 255, 0.4);
     font-weight: 500;
   }
-
   .ds-amount {
     font-size: 0.75rem;
     font-weight: 900;
@@ -1034,13 +1035,11 @@
   .ds-promo {
     color: #34d399;
   }
-
   .ds-divider {
     font-size: 0.625rem;
     color: rgba(255, 255, 255, 0.2);
     font-weight: 500;
   }
-
   .ds-total-save {
     font-size: 0.625rem;
     font-weight: 700;

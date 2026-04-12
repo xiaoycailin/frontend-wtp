@@ -76,9 +76,7 @@
   }
 
   const slides = $derived(
-    banners.length
-      ? banners.filter((item) => item.type === "banner")
-      : [],
+    banners.length ? banners.filter((item) => item.type === "banner") : [],
   );
 
   function nextSlide() {
@@ -134,13 +132,20 @@
       class="relative w-full overflow-hidden rounded-2xl bg-[#0a0a0a]"
       style="aspect-ratio: 16/5; min-height: 160px; max-height: 420px;"
     >
-      <div
+      <button
         class="absolute inset-0 flex will-change-transform"
         style="
           width: {slides.length * 100}%;
-          transform: translateX(calc(-{currentSlide * (100 / slides.length)}% + {dragOffset / slides.length}px));
-          transition: {isDragging ? 'none' : 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)'};
-          cursor: {slides.length > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'};
+          transform: translateX(calc(-{currentSlide *
+          (100 / slides.length)}% + {dragOffset / slides.length}px));
+          transition: {isDragging
+          ? 'none'
+          : 'transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94)'};
+          cursor: {slides.length > 1
+          ? isDragging
+            ? 'grabbing'
+            : 'grab'
+          : 'default'};
           user-select: none;
         "
         onmousedown={onMouseDown}
@@ -150,13 +155,21 @@
         ontouchstart={onTouchStart}
         ontouchmove={onTouchMove}
         ontouchend={onTouchEnd}
-        role="region"
+        // role="region"
         aria-label="Banner slider"
       >
         {#each slides as slide}
-          <div class="relative h-full overflow-hidden" style="width: {100 / slides.length}%;">
+          <div
+            class="relative h-full overflow-hidden"
+            style="width: {100 / slides.length}%;"
+          >
             {#if slide.clickUrl}
-              <a href={slide.clickUrl} class="block w-full h-full" target="_blank" rel="noopener noreferrer">
+              <a
+                href={slide.clickUrl}
+                class="block w-full h-full"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <img
                   src={slide.imageUrl}
                   alt={slide.title}
@@ -180,11 +193,20 @@
             ></div>
           </div>
         {/each}
-      </div>
+      </button>
 
-      <div class="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-white/20 rounded-tl pointer-events-none" style="z-index:12;"></div>
-      <div class="absolute top-3 right-12 w-6 h-6 border-t-2 border-r-2 border-white/20 rounded-tr pointer-events-none" style="z-index:12;"></div>
-      <div class="absolute bottom-10 left-3 w-6 h-6 border-b-2 border-l-2 border-white/20 rounded-bl pointer-events-none" style="z-index:12;"></div>
+      <div
+        class="absolute top-3 left-3 w-6 h-6 border-t-2 border-l-2 border-white/20 rounded-tl pointer-events-none"
+        style="z-index:12;"
+      ></div>
+      <div
+        class="absolute top-3 right-12 w-6 h-6 border-t-2 border-r-2 border-white/20 rounded-tr pointer-events-none"
+        style="z-index:12;"
+      ></div>
+      <div
+        class="absolute bottom-10 left-3 w-6 h-6 border-b-2 border-l-2 border-white/20 rounded-bl pointer-events-none"
+        style="z-index:12;"
+      ></div>
 
       {#if slides.length > 1}
         <button
@@ -196,8 +218,18 @@
           style="z-index: 20;"
           aria-label="Previous slide"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
 
@@ -210,8 +242,18 @@
           style="z-index: 20;"
           aria-label="Next slide"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </button>
       {/if}
@@ -220,7 +262,10 @@
         class="absolute right-0 top-0 bottom-0 w-10 flex items-center justify-center border-l border-white/10 bg-black/30 backdrop-blur-sm pointer-events-none"
         style="z-index: 15; writing-mode: vertical-rl;"
       >
-        <span class="text-[9px] font-bold tracking-[4px] text-white/30 uppercase">WTPANJAY</span>
+        <span
+          class="text-[9px] font-bold tracking-[4px] text-white/30 uppercase"
+          >WTPANJAY</span
+        >
       </div>
 
       {#if slides.length > 1}
@@ -235,7 +280,9 @@
               style="
                 width: {i === currentSlide ? '22px' : '6px'};
                 height: 6px;
-                background: {i === currentSlide ? 'var(--color-primary)' : 'rgba(255,255,255,0.3)'};
+                background: {i === currentSlide
+                ? 'var(--color-primary)'
+                : 'rgba(255,255,255,0.3)'};
               "
               aria-label={`Slide ${i + 1}`}
             ></button>

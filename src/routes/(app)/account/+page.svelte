@@ -30,7 +30,7 @@
       const res = await fetch("/api/v1/users/self");
       if (!res.ok) throw new Error("Failed to load user");
       const json = await res.json();
-      user = json;
+      user = json.data;
     } catch (e) {
       console.error(e);
       error = "Gagal memuat data pengguna";
@@ -115,6 +115,15 @@
           </p>
         </div>
         <div class="flex items-center gap-2 text-xs">
+          <!-- TAMBAH: tombol admin jika role admin -->
+          {#if user?.role === "admin"}
+            <a
+              href="/admin"
+              class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
+            >
+              Dashboard Admin →
+            </a>
+          {/if}
           <button
             on:click={() => goto("/")}
             class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
@@ -250,9 +259,9 @@
                   </td>
                   <td class="px-4 py-3 align-top">
                     <div class="flex items-center gap-2">
-                      {#if tx.product?.thumbnails?.[0]}
+                      {#if tx.product?.thumbnails}
                         <img
-                          src={tx.product.thumbnails[0]}
+                          src={tx.product.thumbnails}
                           alt={tx.product.title}
                           class="w-8 h-8 rounded object-cover"
                         />
@@ -261,12 +270,14 @@
                         <p class="font-semibold text-white text-sm">
                           {tx.product?.title || "-"}
                         </p>
-                        <p class="text-xs text-white/50">{tx.skuCode || "-"}</p>
+                        <p class="text-xs text-white/50">
+                          quantity: {tx?.quantity || "0"}
+                        </p>
                       </div>
                     </div>
                   </td>
                   <td class="px-4 py-3 align-top font-semibold text-white">
-                    {formatCurrency(tx.amount)}
+                    {formatCurrency(tx.price)}
                   </td>
                   <td class="px-4 py-3 align-top">
                     <span

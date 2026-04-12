@@ -54,6 +54,7 @@
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === "Escape" && !loading) onCancel();
   }
+  // console.log(reviewData);
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -144,7 +145,7 @@
                   {/if}
                 </div>
                 {#if displayIsFlashSale}
-                  <span class="flash-badge">âš¡ Flash Sale</span>
+                  <span class="flash-badge">⚡ Flash Sale</span>
                 {/if}
               </div>
             </section>
@@ -153,14 +154,28 @@
           <section class="modal-section">
             <p class="modal-section-label">Data Akun</p>
             <div class="modal-info-grid">
+              {#if reviewData?.userData?.username}
+                <div class="modal-info-row">
+                  <span class="modal-info-key">Username</span>
+                  <span class="modal-info-val"
+                    >{reviewData?.userData.username}</span
+                  >
+                </div>
+              {/if}
               <div class="modal-info-row">
                 <span class="modal-info-key">User ID</span>
                 <span class="modal-info-val">{userId || "-"}</span>
               </div>
               {#if zoneInputMode !== "none" && serverId}
                 <div class="modal-info-row">
-                  <span class="modal-info-key">{zoneInputMode === "select" ? "Server" : "Server ID"}</span>
-                  <span class="modal-info-val">{zoneInputMode === "select" ? serverId.toUpperCase() : serverId}</span>
+                  <span class="modal-info-key"
+                    >{zoneInputMode === "select" ? "Server" : "Server ID"}</span
+                  >
+                  <span class="modal-info-val"
+                    >{zoneInputMode === "select"
+                      ? serverId.toUpperCase()
+                      : serverId}</span
+                  >
                 </div>
               {/if}
               <div class="modal-info-row">
@@ -208,7 +223,7 @@
               {#if displayIsFlashSale && displayFlashDiscount > 0}
                 <div class="modal-price-row discount">
                   <span class="flex items-center gap-1.5">
-                    <span class="flash-badge-sm">âš¡ FLASH</span>
+                    <span class="flash-badge-sm">⚡ FLASH</span>
                     {displayDiscountLabel ?? "Diskon Flash Sale"}
                   </span>
                   <span>-{fmt(displayFlashDiscount)}</span>
@@ -513,7 +528,7 @@
   .modal-total-amount {
     font-size: 1rem;
     font-weight: 900;
-    color: var(--color-primary);
+    color: #f5c518;
   }
   .flash-badge {
     font-size: 0.625rem;
@@ -582,7 +597,7 @@
     border-radius: 0.75rem;
     font-size: 0.8125rem;
     font-weight: 800;
-    background: var(--color-primary);
+    background: #fcd534;
     color: #000;
     box-shadow: 0 0 20px rgba(245, 197, 24, 0.35);
     transition: all 180ms;
@@ -626,4 +641,3 @@
     }
   }
 </style>
-

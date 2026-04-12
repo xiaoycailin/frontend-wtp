@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
   import ImageUrlField from "$lib/components/admin/ImageUrlField.svelte";
   import MultiImageUrlField from "$lib/components/admin/MultiImageUrlField.svelte";
 
@@ -41,9 +41,10 @@
   let deletingCategoryId = $state<string | null>(null);
   let deletingSubId = $state<string | null>(null);
 
+  // token bisa kamu ganti ambil dari cookies/localStorage
   const token = $state<string | null>(null);
 
-  // modal CRUD
+  // modal state
   let showCategoryModal = $state(false);
   let showSubModal = $state(false);
 
@@ -51,40 +52,20 @@
   let editingSub = $state<SubCategory | null>(null);
   let parentCategoryForSub = $state<Category | null>(null);
 
-  const catForm = $state({ title: "" });
+  // form state kategori
+  const catForm = $state({
+    title: "",
+  });
+
+  // form state sub kategori
   const subForm = $state({
     title: "",
     thumbnail: "",
     description: "",
-    banners: "",
+    banners: "", // textarea, 1 url per baris
     brand: "",
     badgeId: "",
   });
-
-  // ===========================
-  // REORDER STATE
-  // ===========================
-
-  // popup reorder kategori
-  let showReorderCatModal = $state(false);
-  let reorderCatList = $state<Category[]>([]);
-  let reorderCatDragSrc = $state<number | null>(null);
-  let reorderCatDragOver = $state<number | null>(null);
-  let savingReorderCat = $state(false);
-
-  // popup reorder sub kategori
-  let showReorderSubModal = $state(false);
-  // step: 'pick' = pilih kategori dulu, 'sort' = drag sub
-  let reorderSubStep = $state<"pick" | "sort">("pick");
-  let reorderSubSelectedCat = $state<Category | null>(null);
-  let reorderSubList = $state<SubCategory[]>([]);
-  let reorderSubDragSrc = $state<number | null>(null);
-  let reorderSubDragOver = $state<number | null>(null);
-  let savingReorderSub = $state(false);
-
-  // ===========================
-  // FETCH
-  // ===========================
 
   function normalizeConfig(obj: Record<string, unknown>) {
     const copy: Record<string, unknown> = {};
@@ -99,7 +80,9 @@
     try {
       const res = await fetch("/api/v1/badges");
       const json = await res.json();
-      if (!res.ok) throw new Error(json?.data?.message ?? "Gagal memuat badge");
+      if (!res.ok) {
+        throw new Error(json?.data?.message ?? "Gagal memuat badge");
+      }
       badges = json.data ?? [];
     } catch (e) {
       console.error(e);
@@ -112,8 +95,9 @@
     try {
       const res = await fetch("/api/v1/category");
       const json = await res.json();
-      if (!res.ok)
+      if (!res.ok) {
         throw new Error(json?.data?.message ?? "Gagal memuat kategori");
+      }
       categories.splice(0, categories.length, ...(json.data ?? []));
     } catch (e: any) {
       error = e?.message ?? "Terjadi kesalahan saat memuat kategori";
@@ -126,171 +110,6 @@
     fetchCategories();
     fetchBadges();
   });
-
-  // ===========================
-  // REORDER KATEGORI — handlers
-  // ===========================
-
-  function openReorderCat() {
-    reorderCatList = [...categories];
-    reorderCatDragSrc = null;
-    reorderCatDragOver = null;
-    showReorderCatModal = true;
-  }
-
-  function catDragStart(e: DragEvent, i: number) {
-    reorderCatDragSrc = i;
-    e.dataTransfer!.effectAllowed = "move";
-  }
-
-  function catDragOver(e: DragEvent, i: number) {
-    e.preventDefault();
-    e.dataTransfer!.dropEffect = "move";
-    reorderCatDragOver = i;
-  }
-
-  function catDragLeave(i: number) {
-    if (reorderCatDragOver === i) reorderCatDragOver = null;
-  }
-
-  function catDrop(e: DragEvent, targetI: number) {
-    e.preventDefault();
-    if (reorderCatDragSrc === null || reorderCatDragSrc === targetI) {
-      reorderCatDragSrc = null;
-      reorderCatDragOver = null;
-      return;
-    }
-    const list = [...reorderCatList];
-    const [moved] = list.splice(reorderCatDragSrc, 1);
-    list.splice(targetI, 0, moved);
-    reorderCatList = list;
-    reorderCatDragSrc = null;
-    reorderCatDragOver = null;
-  }
-
-  function catDragEnd() {
-    reorderCatDragSrc = null;
-    reorderCatDragOver = null;
-  }
-
-  async function saveReorderCat() {
-    savingReorderCat = true;
-    try {
-      const res = await fetch("/api/v1/category/reorder", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          order: reorderCatList.map((cat, i) => ({ id: cat.id, position: i })),
-        }),
-      });
-      if (!res.ok) {
-        const json = await res.json().catch(() => null);
-        throw new Error(json?.message ?? "Gagal menyimpan urutan");
-      }
-      // update local tanpa refetch
-      categories = [...reorderCatList];
-      showReorderCatModal = false;
-    } catch (e: any) {
-      error = e?.message;
-    } finally {
-      savingReorderCat = false;
-    }
-  }
-
-  // ===========================
-  // REORDER SUB KATEGORI — handlers
-  // ===========================
-
-  function openReorderSub() {
-    reorderSubStep = "pick";
-    reorderSubSelectedCat = null;
-    reorderSubList = [];
-    reorderSubDragSrc = null;
-    reorderSubDragOver = null;
-    showReorderSubModal = true;
-  }
-
-  function pickCatForSub(cat: Category) {
-    reorderSubSelectedCat = cat;
-    reorderSubList = [...(cat.subCategories ?? [])];
-    reorderSubDragSrc = null;
-    reorderSubDragOver = null;
-    reorderSubStep = "sort";
-  }
-
-  function subDragStart(e: DragEvent, i: number) {
-    reorderSubDragSrc = i;
-    e.dataTransfer!.effectAllowed = "move";
-  }
-
-  function subDragOver(e: DragEvent, i: number) {
-    e.preventDefault();
-    e.dataTransfer!.dropEffect = "move";
-    reorderSubDragOver = i;
-  }
-
-  function subDragLeave(i: number) {
-    if (reorderSubDragOver === i) reorderSubDragOver = null;
-  }
-
-  function subDrop(e: DragEvent, targetI: number) {
-    e.preventDefault();
-    if (reorderSubDragSrc === null || reorderSubDragSrc === targetI) {
-      reorderSubDragSrc = null;
-      reorderSubDragOver = null;
-      return;
-    }
-    const list = [...reorderSubList];
-    const [moved] = list.splice(reorderSubDragSrc, 1);
-    list.splice(targetI, 0, moved);
-    reorderSubList = list;
-    reorderSubDragSrc = null;
-    reorderSubDragOver = null;
-  }
-
-  function subDragEnd() {
-    reorderSubDragSrc = null;
-    reorderSubDragOver = null;
-  }
-
-  async function saveReorderSub() {
-    if (!reorderSubSelectedCat) return;
-    savingReorderSub = true;
-    try {
-      const res = await fetch(
-        `/api/v1/category/sub/reorder/${reorderSubSelectedCat.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            order: reorderSubList.map((sub, i) => ({
-              id: sub.id,
-              position: i,
-            })),
-          }),
-        },
-      );
-      if (!res.ok) {
-        const json = await res.json().catch(() => null);
-        throw new Error(json?.message ?? "Gagal menyimpan urutan sub kategori");
-      }
-      // update local
-      categories = categories.map((cat) =>
-        cat.id === reorderSubSelectedCat!.id
-          ? { ...cat, subCategories: [...reorderSubList] }
-          : cat,
-      );
-      showReorderSubModal = false;
-    } catch (e: any) {
-      error = e?.message;
-    } finally {
-      savingReorderSub = false;
-    }
-  }
-
-  // ===========================
-  // CRUD — kategori
-  // ===========================
 
   function openCreateCategory() {
     editingCategory = null;
@@ -333,11 +152,13 @@
       alert("Title wajib diisi");
       return;
     }
+
     const isEdit = !!editingCategory;
     const url = isEdit
       ? `/api/v1/category/${editingCategory!.id}`
       : "/api/v1/category";
     const method = isEdit ? "PUT" : "POST";
+
     try {
       loading = true;
       const res = await fetch(url, {
@@ -348,9 +169,12 @@
         },
         body: JSON.stringify(normalizeConfig({ title: catForm.title.trim() })),
       });
+
       const json = await res.json();
-      if (!res.ok)
+      if (!res.ok) {
         throw new Error(json?.data?.message ?? "Gagal menyimpan kategori");
+      }
+
       showCategoryModal = false;
       await fetchCategories();
     } catch (e: any) {
@@ -365,15 +189,18 @@
       alert("CategoryId tidak ditemukan");
       return;
     }
+
     if (!subForm.title.trim()) {
       alert("Title wajib diisi");
       return;
     }
+
     const isEdit = !!editingSub;
     const url = isEdit
       ? `/api/v1/category/sub/${editingSub!.id}`
       : `/api/v1/category/sub/${parentCategoryForSub!.id}`;
     const method = isEdit ? "PUT" : "POST";
+
     const banners =
       subForm.banners.trim() === ""
         ? undefined
@@ -381,6 +208,7 @@
             .split("\n")
             .map((b) => b.trim())
             .filter(Boolean);
+
     const payload = normalizeConfig({
       title: subForm.title.trim(),
       thumbnail: subForm.thumbnail.trim(),
@@ -389,6 +217,7 @@
       brand: subForm.brand.trim(),
       badgeId: subForm.badgeId,
     });
+
     try {
       loading = true;
       const res = await fetch(url, {
@@ -399,9 +228,12 @@
         },
         body: JSON.stringify(payload),
       });
+
       const json = await res.json();
-      if (!res.ok)
+      if (!res.ok) {
         throw new Error(json?.data?.message ?? "Gagal menyimpan sub kategori");
+      }
+
       showSubModal = false;
       await fetchCategories();
     } catch (e: any) {
@@ -413,21 +245,28 @@
 
   async function handleDeleteCategory(cat: Category) {
     const confirmed = window.confirm(
-      `Yakin mau hapus kategori "${cat.title}" beserta semua sub kategorinya?`,
+      `Yakin mau hapus kategori \"${cat.title}\" beserta semua sub kategorinya?`,
     );
     if (!confirmed) return;
+
     deletingCategoryId = cat.id;
     error = null;
+
     try {
       const res = await fetch(`/api/v1/category/${cat.id}`, {
         method: "DELETE",
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
+
       const json = await res.json().catch(() => null);
-      if (!res.ok)
+      if (!res.ok) {
         throw new Error(
           json?.data?.message ?? json?.message ?? "Gagal menghapus kategori",
         );
+      }
+
       categories = categories.filter((item) => item.id !== cat.id);
     } catch (e: any) {
       error = e?.message ?? "Gagal menghapus kategori";
@@ -438,23 +277,30 @@
 
   async function handleDeleteSub(sub: SubCategory) {
     const confirmed = window.confirm(
-      `Yakin mau hapus sub kategori "${sub.title}"?`,
+      `Yakin mau hapus sub kategori \"${sub.title}\"?`,
     );
     if (!confirmed) return;
+
     deletingSubId = sub.id;
     error = null;
+
     try {
       const res = await fetch(`/api/v1/category/sub/${sub.id}`, {
         method: "DELETE",
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
+
       const json = await res.json().catch(() => null);
-      if (!res.ok)
+      if (!res.ok) {
         throw new Error(
           json?.data?.message ??
             json?.message ??
             "Gagal menghapus sub kategori",
         );
+      }
+
       categories = categories.map((cat) => ({
         ...cat,
         subCategories: (cat.subCategories ?? []).filter(
@@ -469,9 +315,6 @@
   }
 </script>
 
-<!-- ========================= -->
-<!-- MAIN PAGE -->
-<!-- ========================= -->
 <section class="space-y-6">
   <header
     class="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
@@ -489,25 +332,11 @@
         Atur kategori utama dan sub kategori produk top-up & voucher.
       </p>
     </div>
-    <div class="flex items-center gap-2 text-xs flex-wrap justify-end">
-      <button
-        type="button"
-        class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
-        onclick={openReorderSub}
-      >
-        Reorder Sub Kategori
-      </button>
-      <button
-        type="button"
-        class="px-3 py-2 rounded-lg font-semibold bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
-        onclick={openReorderCat}
-      >
-        Reorder Kategori
-      </button>
+    <div class="flex items-center gap-2 text-xs">
       <button
         type="button"
         class="px-3 py-2 rounded-lg font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
-        onclick={openCreateCategory}
+        on:click={openCreateCategory}
       >
         + Tambah Kategori
       </button>
@@ -526,14 +355,14 @@
     {#if !categories.length && !loading}
       <p class="text-xs text-white/50">Belum ada kategori.</p>
     {:else}
-      {#each categories as cat (cat.id)}
+      {#each categories as cat}
         <article
           class="bg-[#0c0c0c] border border-white/5 rounded-2xl overflow-hidden"
         >
           <header
             class="px-4 py-3 flex items-center justify-between gap-3 border-b border-white/5"
           >
-            <div class="space-y-0.5 text-xs flex-1 min-w-0">
+            <div class="space-y-0.5 text-xs">
               <p class="text-[11px] text-white/40 uppercase tracking-[0.16em]">
                 Kategori
               </p>
@@ -544,7 +373,7 @@
               <button
                 type="button"
                 class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
-                onclick={() => openEditCategory(cat)}
+                on:click={() => openEditCategory(cat)}
               >
                 Edit Kategori
               </button>
@@ -552,7 +381,7 @@
                 type="button"
                 class="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 disabled:opacity-50"
                 disabled={deletingCategoryId === cat.id}
-                onclick={() => handleDeleteCategory(cat)}
+                on:click={() => handleDeleteCategory(cat)}
               >
                 {deletingCategoryId === cat.id ? "Menghapus..." : "Hapus"}
               </button>
@@ -563,14 +392,14 @@
             <div class="flex items-center justify-between mb-2 text-xs">
               <p class="text-white/60">
                 Sub Kategori
-                <span class="text-white/40"
-                  >({cat.subCategories?.length ?? 0})</span
-                >
+                <span class="text-white/40">
+                  ({cat.subCategories?.length ?? 0})
+                </span>
               </p>
               <button
                 type="button"
                 class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
-                onclick={() => openCreateSub(cat)}
+                on:click={() => openCreateSub(cat)}
               >
                 + Tambah Sub Kategori
               </button>
@@ -580,20 +409,22 @@
               <table class="min-w-full text-left text-[11px]">
                 <thead class="bg-white/5">
                   <tr>
-                    <th class="px-3 py-2 font-semibold text-white/60"
-                      >Sub Kategori</th
-                    >
+                    <th class="px-3 py-2 font-semibold text-white/60">
+                      Sub Kategori
+                    </th>
                     <th class="px-3 py-2 font-semibold text-white/60">Brand</th>
-                    <th class="px-3 py-2 font-semibold text-white/60"
-                      >Instant</th
-                    >
-                    <th class="px-3 py-2 font-semibold text-white/60"
-                      >Popular</th
-                    >
+                    <th class="px-3 py-2 font-semibold text-white/60">
+                      Instant
+                    </th>
+                    <th class="px-3 py-2 font-semibold text-white/60">
+                      Popular
+                    </th>
                     <th class="px-3 py-2 font-semibold text-white/60">Slug</th>
-                    <th class="px-3 py-2 font-semibold text-white/60 text-right"
-                      >Aksi</th
+                    <th
+                      class="px-3 py-2 font-semibold text-white/60 text-right"
                     >
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -658,15 +489,15 @@
                             {sub.popular ? "Ya" : "Tidak"}
                           </span>
                         </td>
-                        <td class="px-3 py-2 align-top text-white/60"
-                          >{sub.slug}</td
-                        >
+                        <td class="px-3 py-2 align-top text-white/60">
+                          {sub.slug}
+                        </td>
                         <td class="px-3 py-2 align-top text-right">
                           <div class="inline-flex items-center gap-1.5">
                             <button
                               type="button"
                               class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
-                              onclick={() => openEditSub(cat, sub)}
+                              on:click={() => openEditSub(cat, sub)}
                             >
                               Edit
                             </button>
@@ -674,7 +505,7 @@
                               type="button"
                               class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20 disabled:opacity-50"
                               disabled={deletingSubId === sub.id}
-                              onclick={() => handleDeleteSub(sub)}
+                              on:click={() => handleDeleteSub(sub)}
                             >
                               {deletingSubId === sub.id
                                 ? "Menghapus..."
@@ -695,243 +526,13 @@
   </div>
 </section>
 
-<!-- ========================= -->
-<!-- POPUP: REORDER KATEGORI   -->
-<!-- ========================= -->
-{#if showReorderCatModal}
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-  >
-    <div
-      class="rounded-2xl bg-[#111111] border border-white/10 p-4 space-y-3 w-full max-w-sm mx-4"
-    >
-      <!-- header -->
-      <div class="flex items-center justify-between gap-2">
-        <div>
-          <h2 class="text-sm font-semibold text-white">Reorder Kategori</h2>
-          <p class="text-[11px] text-white/40 mt-0.5">
-            Drag untuk ubah urutan, lalu simpan.
-          </p>
-        </div>
-        <button
-          class="text-xs text-white/50 hover:text-white shrink-0"
-          onclick={() => (showReorderCatModal = false)}
-        >
-          Tutup
-        </button>
-      </div>
-
-      <!-- list -->
-      <div class="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
-        {#each reorderCatList as cat, i (cat.id)}
-          <div
-            class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all duration-100 cursor-grab active:cursor-grabbing
-              {reorderCatDragSrc === i
-              ? 'opacity-40 border-white/5 bg-white/[0.02]'
-              : reorderCatDragOver === i && reorderCatDragSrc !== i
-                ? 'border-[var(--color-primary)]/60 bg-[var(--color-primary)]/5'
-                : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.06]'}
-            "
-            draggable="true"
-            ondragstart={(e) => catDragStart(e, i)}
-            ondragover={(e) => catDragOver(e, i)}
-            ondragleave={() => catDragLeave(i)}
-            ondrop={(e) => catDrop(e, i)}
-            ondragend={catDragEnd}
-          >
-            <!-- handle icon -->
-            <span
-              class="text-white/30 select-none text-sm leading-none shrink-0"
-              >⠿</span
-            >
-            <!-- nomor urut -->
-            <span class="text-[10px] text-white/30 w-4 shrink-0 text-center"
-              >{i + 1}</span
-            >
-            <!-- nama -->
-            <span class="text-xs font-medium text-white flex-1 truncate"
-              >{cat.title}</span
-            >
-            <!-- sub count -->
-            <span class="text-[10px] text-white/30 shrink-0">
-              {cat.subCategories?.length ?? 0} sub
-            </span>
-          </div>
-        {/each}
-      </div>
-
-      <!-- footer -->
-      <div class="flex justify-end gap-2 pt-1 text-xs">
-        <button
-          class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
-          type="button"
-          onclick={() => (showReorderCatModal = false)}
-        >
-          Batal
-        </button>
-        <button
-          class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740] disabled:opacity-50"
-          type="button"
-          onclick={saveReorderCat}
-          disabled={savingReorderCat}
-        >
-          {savingReorderCat ? "Menyimpan..." : "Simpan Urutan"}
-        </button>
-      </div>
-    </div>
-  </div>
-{/if}
-
-<!-- ========================= -->
-<!-- POPUP: REORDER SUB        -->
-<!-- ========================= -->
-{#if showReorderSubModal}
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-  >
-    <div
-      class="rounded-2xl bg-[#111111] border border-white/10 p-4 space-y-3 w-full max-w-sm mx-4"
-    >
-      {#if reorderSubStep === "pick"}
-        <!-- STEP 1: pilih kategori -->
-        <div class="flex items-center justify-between gap-2">
-          <div>
-            <h2 class="text-sm font-semibold text-white">
-              Reorder Sub Kategori
-            </h2>
-            <p class="text-[11px] text-white/40 mt-0.5">
-              Pilih kategori terlebih dahulu.
-            </p>
-          </div>
-          <button
-            class="text-xs text-white/50 hover:text-white shrink-0"
-            onclick={() => (showReorderSubModal = false)}
-          >
-            Tutup
-          </button>
-        </div>
-
-        <div class="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
-          {#each categories as cat (cat.id)}
-            <button
-              type="button"
-              class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-white/8 bg-white/[0.03] hover:bg-white/[0.07] hover:border-white/15 transition-all text-left"
-              onclick={() => pickCatForSub(cat)}
-            >
-              <span class="text-xs font-medium text-white truncate"
-                >{cat.title}</span
-              >
-              <span class="text-[10px] text-white/30 shrink-0">
-                {cat.subCategories?.length ?? 0} sub →
-              </span>
-            </button>
-          {/each}
-        </div>
-      {:else}
-        <!-- STEP 2: drag sub -->
-        <div class="flex items-center justify-between gap-2">
-          <div>
-            <h2 class="text-sm font-semibold text-white">
-              Reorder Sub Kategori
-            </h2>
-            <p class="text-[11px] text-white/40 mt-0.5">
-              {reorderSubSelectedCat?.title} · drag untuk ubah urutan.
-            </p>
-          </div>
-          <button
-            class="text-xs text-white/50 hover:text-white shrink-0"
-            onclick={() => (showReorderSubModal = false)}
-          >
-            Tutup
-          </button>
-        </div>
-
-        <!-- back -->
-        <button
-          type="button"
-          class="text-[11px] text-white/40 hover:text-white/70 flex items-center gap-1"
-          onclick={() => {
-            reorderSubStep = "pick";
-          }}
-        >
-          ← Ganti kategori
-        </button>
-
-        <div class="space-y-1.5 max-h-[55vh] overflow-y-auto pr-1">
-          {#if !reorderSubList.length}
-            <p class="text-xs text-white/40 text-center py-4">
-              Belum ada sub kategori.
-            </p>
-          {:else}
-            {#each reorderSubList as sub, i (sub.id)}
-              <div
-                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border transition-all duration-100 cursor-grab active:cursor-grabbing
-                  {reorderSubDragSrc === i
-                  ? 'opacity-40 border-white/5 bg-white/[0.02]'
-                  : reorderSubDragOver === i && reorderSubDragSrc !== i
-                    ? 'border-[var(--color-primary)]/60 bg-[var(--color-primary)]/5'
-                    : 'border-white/8 bg-white/[0.03] hover:bg-white/[0.06]'}
-                "
-                draggable="true"
-                ondragstart={(e) => subDragStart(e, i)}
-                ondragover={(e) => subDragOver(e, i)}
-                ondragleave={() => subDragLeave(i)}
-                ondrop={(e) => subDrop(e, i)}
-                ondragend={subDragEnd}
-              >
-                <span
-                  class="text-white/30 select-none text-sm leading-none shrink-0"
-                  >⠿</span
-                >
-                <span class="text-[10px] text-white/30 w-4 shrink-0 text-center"
-                  >{i + 1}</span
-                >
-                {#if sub.thumbnail}
-                  <img
-                    src={sub.thumbnail}
-                    alt={sub.title}
-                    class="w-6 h-6 rounded object-cover shrink-0"
-                  />
-                {/if}
-                <span class="text-xs font-medium text-white flex-1 truncate"
-                  >{sub.title}</span
-                >
-              </div>
-            {/each}
-          {/if}
-        </div>
-
-        <div class="flex justify-end gap-2 pt-1 text-xs">
-          <button
-            class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
-            type="button"
-            onclick={() => (showReorderSubModal = false)}
-          >
-            Batal
-          </button>
-          <button
-            class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740] disabled:opacity-50"
-            type="button"
-            onclick={saveReorderSub}
-            disabled={savingReorderSub || !reorderSubList.length}
-          >
-            {savingReorderSub ? "Menyimpan..." : "Simpan Urutan"}
-          </button>
-        </div>
-      {/if}
-    </div>
-  </div>
-{/if}
-
-<!-- ========================= -->
-<!-- POPUP: CRUD KATEGORI      -->
-<!-- ========================= -->
 {#if showCategoryModal}
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
   >
     <div
-      class="rounded-2xl bg-[#111111] border border-white/10 p-4 space-y-3 w-full max-w-[480px] mx-4"
+      class="rounded-2xl bg-[#111111] border border-white/10 p-4 space-y-3"
+      style="width: 100%; max-width: 480px; margin: 0 auto;"
     >
       <div class="flex items-center justify-between gap-2">
         <h2 class="text-sm font-semibold text-white">
@@ -939,11 +540,12 @@
         </h2>
         <button
           class="text-xs text-white/50 hover:text-white"
-          onclick={() => (showCategoryModal = false)}
+          on:click={() => (showCategoryModal = false)}
         >
           Tutup
         </button>
       </div>
+
       <div class="space-y-2 text-xs">
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Nama kategori</span>
@@ -954,18 +556,19 @@
           />
         </label>
       </div>
+
       <div class="flex justify-end gap-2 pt-2 text-xs">
         <button
           class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
           type="button"
-          onclick={() => (showCategoryModal = false)}
+          on:click={() => (showCategoryModal = false)}
         >
           Batal
         </button>
         <button
           class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
           type="button"
-          onclick={submitCategory}
+          on:click={submitCategory}
           disabled={loading}
         >
           {loading ? "Menyimpan..." : "Simpan"}
@@ -975,15 +578,13 @@
   </div>
 {/if}
 
-<!-- ========================= -->
-<!-- POPUP: CRUD SUB KATEGORI  -->
-<!-- ========================= -->
 {#if showSubModal}
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
   >
     <div
-      class="rounded-2xl bg-[#111111] border border-white/10 p-4 space-y-3 w-full max-w-[480px] mx-4"
+      class="rounded-2xl bg-[#111111] border border-white/10 p-4 space-y-3"
+      style="width: 100%; max-width: 480px; margin: 0 auto;"
     >
       <div class="flex items-center justify-between gap-2">
         <div>
@@ -998,11 +599,12 @@
         </div>
         <button
           class="text-xs text-white/50 hover:text-white"
-          onclick={() => (showSubModal = false)}
+          on:click={() => (showSubModal = false)}
         >
           Tutup
         </button>
       </div>
+
       <div class="space-y-2 text-xs max-h-[70vh] overflow-y-auto pr-1">
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Nama sub kategori</span>
@@ -1012,12 +614,14 @@
             placeholder="Contoh: Voucher Google Play"
           />
         </label>
+
         <ImageUrlField
           label="Thumbnail URL"
           bind:value={subForm.thumbnail}
           placeholder="https://..."
           help="Bisa paste manual atau pilih dari image manager."
         />
+
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Brand</span>
           <input
@@ -1026,6 +630,7 @@
             placeholder="Contoh: Google, Moonton"
           />
         </label>
+
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Badge</span>
           <select
@@ -1038,6 +643,7 @@
             {/each}
           </select>
         </label>
+
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Deskripsi</span>
           <textarea
@@ -1046,6 +652,7 @@
             placeholder="Deskripsi singkat sub kategori"
           />
         </label>
+
         <MultiImageUrlField
           label="Banner URLs (satu URL per baris)"
           bind:value={subForm.banners}
@@ -1053,18 +660,19 @@
           help="Pilih beberapa gambar sekaligus, atau paste manual."
         />
       </div>
+
       <div class="flex justify-end gap-2 pt-2 text-xs">
         <button
           class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
           type="button"
-          onclick={() => (showSubModal = false)}
+          on:click={() => (showSubModal = false)}
         >
           Batal
         </button>
         <button
           class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
           type="button"
-          onclick={submitSub}
+          on:click={submitSub}
           disabled={loading}
         >
           {loading ? "Menyimpan..." : "Simpan"}

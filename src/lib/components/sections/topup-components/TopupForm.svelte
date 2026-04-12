@@ -13,6 +13,8 @@
   import Step5Payment from "./Step5Payment.svelte";
   import Step6Contact from "./Step6Contact.svelte";
   import OrderSidebar from "./OrderSidebar.svelte";
+  import { onMount } from "svelte";
+  import { auth } from "$lib/auth";
 
   let { products, productDetail, productPath } = $props();
 
@@ -25,6 +27,11 @@
   let selectedPay: any = $state({});
   let phone = $state("");
   let email = $state("");
+
+  onMount(() => {
+    auth.init();
+    email = auth.user?.email ?? "";
+  });
 
   let supportedGames = $state<SupportedGameConfig[]>([]);
   let gameConfig = $state<SupportedGameConfig | null>(null);
@@ -106,12 +113,7 @@
   class="w-full mt-6 grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5 items-start"
 >
   <div class="flex flex-col gap-4">
-    <Step1Account
-      bind:userId
-      bind:serverId
-      {gameConfig}
-      {zoneInputMode}
-    />
+    <Step1Account bind:userId bind:serverId {gameConfig} {zoneInputMode} />
 
     <Step2Nominal {products} bind:selected />
 

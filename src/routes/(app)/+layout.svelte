@@ -19,7 +19,7 @@
 
   let { children, data } = $props();
 
-  const siteConfig = data?.siteConfig ?? {};
+  let siteConfig = data?.siteConfig ?? {};
   const primaryColor = siteConfig?.primaryColor ?? "#f5c518";
   const secondaryColor = siteConfig?.secondaryColor ?? "#0e0e0e";
   const accentColor = siteConfig?.accentColor ?? "#ffffff";
@@ -37,6 +37,14 @@
     },
     set value(v) {
       searchQuery = v;
+    },
+  });
+  setContext("site_config", {
+    get value() {
+      return siteConfig;
+    },
+    set value(v) {
+      siteConfig = v;
     },
   });
 

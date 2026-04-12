@@ -3,7 +3,6 @@
   import TopupForm from "$lib/components/sections/topup-components/TopupForm.svelte";
 
   const { data } = $props();
-  // console.log(data);
 </script>
 
 <HeroProductDetail productDetail={data.productDetail} />

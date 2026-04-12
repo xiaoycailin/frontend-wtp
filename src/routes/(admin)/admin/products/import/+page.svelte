@@ -198,7 +198,11 @@
     ]);
 
     const price = pickValue(raw, ["harga", "price", "modal", "harga_jual"]);
-    const description = pickValue(raw, ["deskripsi", "description", "keterangan"]);
+    const description = pickValue(raw, [
+      "deskripsi",
+      "description",
+      "keterangan",
+    ]);
     const seller = pickValue(raw, ["seller", "penjual"]);
     const status = pickValue(raw, ["status"]);
     const updatedAt = pickValue(raw, ["perubahan_terakhir", "updated_at"]);
@@ -225,7 +229,9 @@
   }
 
   async function parseExcel(file: File) {
-    const JSZip = (await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm")).default;
+    const JSZip = (
+      await import("https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm")
+    ).default;
     const buffer = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(buffer);
     const parser = new DOMParser();
@@ -237,7 +243,9 @@
 
     const workbookDoc = parser.parseFromString(workbookXml, "application/xml");
 
-    const relsXml = await zip.file("xl/_rels/workbook.xml.rels")?.async("string");
+    const relsXml = await zip
+      .file("xl/_rels/workbook.xml.rels")
+      ?.async("string");
     const relMap = new Map<string, string>();
 
     if (relsXml) {
@@ -250,11 +258,16 @@
       }
     }
 
-    const sharedStringsXml = await zip.file("xl/sharedStrings.xml")?.async("string");
+    const sharedStringsXml = await zip
+      .file("xl/sharedStrings.xml")
+      ?.async("string");
     const sharedStrings: string[] = [];
 
     if (sharedStringsXml) {
-      const sharedDoc = parser.parseFromString(sharedStringsXml, "application/xml");
+      const sharedDoc = parser.parseFromString(
+        sharedStringsXml,
+        "application/xml",
+      );
       const items = Array.from(sharedDoc.getElementsByTagName("si"));
       for (const item of items) {
         const texts = Array.from(item.getElementsByTagName("t"))
@@ -274,9 +287,7 @@
     for (const sheetNode of sheetNodes) {
       const sheetName = cleanText(sheetNode.getAttribute("name") ?? "Sheet");
       const relId =
-        sheetNode.getAttribute("r:id") ??
-        sheetNode.getAttribute("id") ??
-        "";
+        sheetNode.getAttribute("r:id") ?? sheetNode.getAttribute("id") ?? "";
 
       const target = relMap.get(relId);
       const fallbackSheetId = sheetNode.getAttribute("sheetId") ?? "1";
@@ -312,7 +323,9 @@
         return row;
       });
 
-      const headerRow = matrix.find((row) => row.some((cell) => cleanText(cell)));
+      const headerRow = matrix.find((row) =>
+        row.some((cell) => cleanText(cell)),
+      );
       if (!headerRow) continue;
 
       const headers = headerRow.map((cell, index) =>
@@ -348,16 +361,22 @@
     }
 
     sheets = nextSheets;
-    activeSheetName = nextSheets.find((sheet) => sheet.name === "ML")?.name ?? nextSheets[0]?.name ?? "";
+    activeSheetName =
+      nextSheets.find((sheet) => sheet.name === "ML")?.name ??
+      nextSheets[0]?.name ??
+      "";
     settingsSheetName = "";
-    sheetConfigs = nextSheets.reduce<Record<string, SheetConfig>>((acc, sheet) => {
-      acc[sheet.name] = {
-        enabled: false,
-        subCategoryId: sheetConfigs[sheet.name]?.subCategoryId ?? "",
-        thumbnailUrl: sheetConfigs[sheet.name]?.thumbnailUrl ?? "",
-      };
-      return acc;
-    }, {});
+    sheetConfigs = nextSheets.reduce<Record<string, SheetConfig>>(
+      (acc, sheet) => {
+        acc[sheet.name] = {
+          enabled: false,
+          subCategoryId: sheetConfigs[sheet.name]?.subCategoryId ?? "",
+          thumbnailUrl: sheetConfigs[sheet.name]?.thumbnailUrl ?? "",
+        };
+        return acc;
+      },
+      {},
+    );
   }
 
   async function handleFileChange(event: Event) {
@@ -472,16 +491,21 @@
 </script>
 
 <section class="space-y-6">
-  <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+  <header
+    class="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
+  >
     <div>
-      <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">
+      <p
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
+      >
         Import Produk
       </p>
       <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
         Batch Insert dari Excel per Page
       </h1>
       <p class="text-xs md:text-sm text-white/50 mt-1 max-w-2xl">
-        Pilih page yang mau di-import, atur kategori dan thumbnail per page lewat popup, lalu preview datanya sebelum submit.
+        Pilih page yang mau di-import, atur kategori dan thumbnail per page
+        lewat popup, lalu preview datanya sebelum submit.
       </p>
     </div>
 
@@ -505,7 +529,9 @@
           onchange={handleFileChange}
         />
         <p class="text-[11px] text-white/45">
-          Parser otomatis baca semua sheet/page. Contoh kolom: {expectedExample.join(", ")}.
+          Parser otomatis baca semua sheet/page. Contoh kolom: {expectedExample.join(
+            ", ",
+          )}.
         </p>
         {#if fileName}
           <p class="text-[11px] text-white/60">File: {fileName}</p>
@@ -514,25 +540,34 @@
 
       {#if sheets.length}
         <div class="space-y-2">
-          <label class="text-xs text-white/70">Pilih page yang mau di-import</label>
+          <label class="text-xs text-white/70"
+            >Pilih page yang mau di-import</label
+          >
           <div class="space-y-2 max-h-[520px] overflow-auto pr-1">
             {#each sheets as sheet}
               {@const config = getSheetConfig(sheet.name)}
-              <div class="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 space-y-2">
+              <div
+                class="rounded-xl border border-white/10 bg-black/20 px-3 py-2.5 space-y-2"
+              >
                 <div class="flex items-center justify-between gap-3">
-                  <label class="flex items-center gap-2 min-w-0 text-xs text-white/85">
+                  <label
+                    class="flex items-center gap-2 min-w-0 text-xs text-white/85"
+                  >
                     <input
                       type="checkbox"
                       class="rounded border-white/20 bg-black/60"
                       checked={config.enabled}
                       onchange={(e) =>
                         setSheetConfig(sheet.name, {
-                          enabled: (e.currentTarget as HTMLInputElement).checked,
+                          enabled: (e.currentTarget as HTMLInputElement)
+                            .checked,
                         })}
                     />
                     <span class="truncate font-semibold">{sheet.name}</span>
                   </label>
-                  <span class="text-[11px] text-white/45">{sheet.rows.length} produk</span>
+                  <span class="text-[11px] text-white/45"
+                    >{sheet.rows.length} produk</span
+                  >
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -554,13 +589,26 @@
 
                 <div class="text-[11px] text-white/45 space-y-1">
                   <p>
-                    Status: <span class={config.enabled ? "text-emerald-300" : "text-white/35"}>{config.enabled ? "siap import" : "skip"}</span>
+                    Status: <span
+                      class={config.enabled
+                        ? "text-emerald-300"
+                        : "text-white/35"}
+                      >{config.enabled ? "siap import" : "skip"}</span
+                    >
                   </p>
                   <p>
-                    Sub kategori: <span class="text-white/65">{availableSubCategories.find((sub) => sub.id === config.subCategoryId)?.title ?? "belum dipilih"}</span>
+                    Sub kategori: <span class="text-white/65"
+                      >{availableSubCategories.find(
+                        (sub) => sub.id === config.subCategoryId,
+                      )?.title ?? "belum dipilih"}</span
+                    >
                   </p>
                   <p>
-                    Thumbnail: <span class="text-white/65">{config.thumbnailUrl ? "sudah diisi" : "belum diisi"}</span>
+                    Thumbnail: <span class="text-white/65"
+                      >{config.thumbnailUrl
+                        ? "sudah diisi"
+                        : "belum diisi"}</span
+                    >
                   </p>
                 </div>
               </div>
@@ -570,31 +618,43 @@
       {/if}
 
       {#if parseError}
-        <div class="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+        <div
+          class="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300"
+        >
           {parseError}
         </div>
       {/if}
 
       {#if submitError}
-        <div class="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+        <div
+          class="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300"
+        >
           {submitError}
         </div>
       {/if}
 
       {#if submitSuccess}
-        <div class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+        <div
+          class="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300"
+        >
           {submitSuccess}
         </div>
       {/if}
 
-      <div class="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-white/55 space-y-1">
+      <div
+        class="rounded-xl border border-white/10 bg-black/20 p-3 text-[11px] text-white/55 space-y-1"
+      >
         <p class="font-semibold text-white/70">Ringkasan import</p>
         {#if sheets.length}
           {#each sheets as sheet}
             {@const config = getSheetConfig(sheet.name)}
             <div class="flex items-center justify-between gap-3">
-              <span class={config.enabled ? "text-white/80" : "text-white/30"}>{sheet.name}</span>
-              <span>{config.enabled ? `${sheet.rows.length} produk` : "skip"}</span>
+              <span class={config.enabled ? "text-white/80" : "text-white/30"}
+                >{sheet.name}</span
+              >
+              <span
+                >{config.enabled ? `${sheet.rows.length} produk` : "skip"}</span
+              >
             </div>
           {/each}
         {:else}
@@ -608,14 +668,20 @@
         disabled={!canSubmit}
         onclick={handleSubmit}
       >
-        {uploading ? "Mengimport..." : `Import Page Terpilih (${totalSelectedRows})`}
+        {uploading
+          ? "Mengimport..."
+          : `Import Page Terpilih (${totalSelectedRows})`}
       </button>
     </div>
 
     <div class="rounded-2xl border border-white/5 bg-[#0c0c0c] overflow-hidden">
-      <div class="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3">
+      <div
+        class="flex items-center justify-between gap-3 border-b border-white/5 px-4 py-3"
+      >
         <div>
-          <p class="text-sm font-semibold text-white">Preview {activeSheet?.name ?? "Produk"}</p>
+          <p class="text-sm font-semibold text-white">
+            Preview {activeSheet?.name ?? "Produk"}
+          </p>
           <p class="text-[11px] text-white/45">
             Preview ini ngikut tombol Preview, bukan checkbox import.
           </p>
@@ -636,7 +702,9 @@
               <th class="px-4 py-2.5 font-semibold text-white/60">Stok</th>
               <th class="px-4 py-2.5 font-semibold text-white/60">Deskripsi</th>
               <th class="px-4 py-2.5 font-semibold text-white/60">Catatan</th>
-              <th class="px-4 py-2.5 font-semibold text-white/60 text-center">isSpecial</th>
+              <th class="px-4 py-2.5 font-semibold text-white/60 text-center"
+                >isSpecial</th
+              >
             </tr>
           </thead>
           <tbody>
@@ -712,8 +780,8 @@
                           index,
                           "description",
                           (e.currentTarget as HTMLTextAreaElement).value,
-                        )}
-                    >{row.description}</textarea>
+                        )}>{row.description}</textarea
+                    >
                   </td>
                   <td class="px-4 py-3 min-w-[220px]">
                     <textarea
@@ -725,8 +793,8 @@
                           index,
                           "conditionNotes",
                           (e.currentTarget as HTMLTextAreaElement).value,
-                        )}
-                    >{row.conditionNotes}</textarea>
+                        )}>{row.conditionNotes}</textarea
+                    >
                   </td>
                   <td class="px-4 py-3 text-center">
                     <input
@@ -753,14 +821,22 @@
 
   {#if settingsSheet}
     {@const settingsConfig = getSheetConfig(settingsSheet.name)}
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div class="w-full max-w-xl rounded-2xl border border-white/10 bg-[#0c0c0c] p-5 space-y-4 shadow-2xl">
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+    >
+      <div
+        class="w-full max-w-xl rounded-2xl border border-white/10 bg-[#0c0c0c] p-5 space-y-4 shadow-2xl"
+      >
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em]">
+            <p
+              class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em]"
+            >
               Setting Page
             </p>
-            <h2 class="text-xl font-black text-white mt-1">{settingsSheet.name}</h2>
+            <h2 class="text-xl font-black text-white mt-1">
+              {settingsSheet.name}
+            </h2>
             <p class="text-xs text-white/45 mt-1">
               Atur sub kategori dan thumbnail untuk semua produk di page ini.
             </p>
@@ -831,7 +907,9 @@
 
         <div class="flex items-center justify-between gap-3 pt-2">
           <p class="text-[11px] text-white/45">
-            Stock default semua produk di import ini akan jadi <span class="text-white font-semibold">999</span>.
+            Stock default semua produk di import ini akan jadi <span
+              class="text-white font-semibold">999</span
+            >.
           </p>
           <button
             type="button"

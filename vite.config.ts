@@ -5,9 +5,9 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
   server: {
-  	host:true,
-  	port: 4173,
     allowedHosts: true,
+    host: true,
+    port: 4173,
     proxy: {
       "/api/v1": {
         // target: "https://gateway.weebin.site",
@@ -18,10 +18,10 @@ export default defineConfig({
     },
   },
   preview: {
-  	allowedHosts: true,
-    host: true,   // 🔥 INI PENTING
+    allowedHosts: true,
+    host: true, // 🔥 INI PENTING
     port: 4173,
-     proxy: {
+    proxy: {
       "/api/v1": {
         // target: "https://gateway.weebin.site",
         target: "http://localhost:3000",

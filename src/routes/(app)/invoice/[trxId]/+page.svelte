@@ -180,6 +180,14 @@
       <section class="card">
         <p class="card-label">Data Akun</p>
         <div class="info-list">
+          {#if transaction.userAccountData.username}
+            <div class="info-row">
+              <span class="info-key">Username</span>
+              <span class="info-val"
+                >{transaction.userAccountData.username}</span
+              >
+            </div>
+          {/if}
           <div class="info-row">
             <span class="info-key">User ID</span>
             <span class="info-val"
