@@ -154,7 +154,9 @@
 
 <section class="space-y-6 max-w-4xl">
   <header class="space-y-1">
-    <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em]">
+    <p
+      class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em]"
+    >
       Site Config
     </p>
     <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
@@ -404,6 +406,124 @@
     </div>
   </section>
 
+  <!-- INTEGRASI & TRACKING -->
+  <section class="space-y-4 bg-[#0c0c0c] border border-white/5 rounded-2xl p-4">
+    <h2 class="text-xs font-semibold text-white/80 uppercase tracking-[0.16em]">
+      Integrasi & Tracking
+    </h2>
+
+    <div class="grid md:grid-cols-2 gap-4 text-xs">
+      <div>
+        <label class="text-white/60 text-xs mb-1 block"
+          >Google Analytics ID</label
+        >
+        <input
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          placeholder="G-XXXXXXXXXX"
+          bind:value={config.googleAnalyticsId}
+          onblur={(e) => onBlurText("googleAnalyticsId", e)}
+        />
+        {#if fieldErrors.googleAnalyticsId}
+          <p class="mt-1 text-[11px] text-red-300">
+            {fieldErrors.googleAnalyticsId[0]}
+          </p>
+        {/if}
+      </div>
+
+      <div>
+        <label class="text-white/60 text-xs mb-1 block"
+          >Google Tag Manager ID</label
+        >
+        <input
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          placeholder="GTM-XXXXXXX"
+          bind:value={config.googleTagManagerId}
+          onblur={(e) => onBlurText("googleTagManagerId", e)}
+        />
+        {#if fieldErrors.googleTagManagerId}
+          <p class="mt-1 text-[11px] text-red-300">
+            {fieldErrors.googleTagManagerId[0]}
+          </p>
+        {/if}
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4 text-xs">
+      <div>
+        <label class="text-white/60 text-xs mb-1 block">Facebook Pixel ID</label
+        >
+        <input
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          placeholder="123456789012345"
+          bind:value={config.facebookPixelId}
+          onblur={(e) => onBlurText("facebookPixelId", e)}
+        />
+        {#if fieldErrors.facebookPixelId}
+          <p class="mt-1 text-[11px] text-red-300">
+            {fieldErrors.facebookPixelId[0]}
+          </p>
+        {/if}
+      </div>
+
+      <div>
+        <label class="text-white/60 text-xs mb-1 block">TikTok Pixel ID</label>
+        <input
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          placeholder="C123ABC456DEF7890"
+          bind:value={config.tiktokPixelId}
+          onblur={(e) => onBlurText("tiktokPixelId", e)}
+        />
+        {#if fieldErrors.tiktokPixelId}
+          <p class="mt-1 text-[11px] text-red-300">
+            {fieldErrors.tiktokPixelId[0]}
+          </p>
+        {/if}
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4 text-xs">
+      <div>
+        <label class="text-white/60 text-xs mb-1 block"
+          >Google Site Verification</label
+        >
+        <input
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          placeholder="kode verifikasi dari Google Search Console"
+          bind:value={config.googleSiteVerification}
+          onblur={(e) => onBlurText("googleSiteVerification", e)}
+        />
+        {#if fieldErrors.googleSiteVerification}
+          <p class="mt-1 text-[11px] text-red-300">
+            {fieldErrors.googleSiteVerification[0]}
+          </p>
+        {/if}
+      </div>
+
+      <div>
+        <label class="text-white/60 text-xs mb-1 block"
+          >Bing Site Verification</label
+        >
+        <input
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          placeholder="kode verifikasi dari Bing Webmaster"
+          bind:value={config.bingSiteVerification}
+          onblur={(e) => onBlurText("bingSiteVerification", e)}
+        />
+        {#if fieldErrors.bingSiteVerification}
+          <p class="mt-1 text-[11px] text-red-300">
+            {fieldErrors.bingSiteVerification[0]}
+          </p>
+        {/if}
+      </div>
+    </div>
+  </section>
+
   <!-- KONTAK & SOSIAL -->
   <section class="space-y-4 bg-[#0c0c0c] border border-white/5 rounded-2xl p-4">
     <h2 class="text-xs font-semibold text-white/80 uppercase tracking-[0.16em]">
@@ -612,4 +732,3 @@
     </button>
   </div>
 </section>
-
