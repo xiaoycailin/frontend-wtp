@@ -1,2 +1,3 @@
-export const fmt = (n: number) => "Rp " + n.toLocaleString("id-ID");
-
+export const fmt = (n: any) => {
+  return "Rp " + Number(n).toLocaleString("id-ID");
+};

@@ -13,13 +13,14 @@ export interface Product {
 }
 
 export interface PaymentMethod {
-  id: string;
+  id: any;
   name: string;
   logo?: string;
   tag?: "BEST PRICE" | "PROMO";
   note?: string;
   autoCheck?: boolean;
   surcharge?: number;
+  requiredLogin?: boolean;
 }
 
 export interface PromoApplied {

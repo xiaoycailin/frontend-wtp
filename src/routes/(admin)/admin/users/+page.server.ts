@@ -14,11 +14,14 @@ export const load: PageServerLoad = async ({ url, fetch, cookies }) => {
   params.set("limit", String(limit));
 
   try {
-    const res = await fetch(`${config.API_BASE_URL}/users?${params.toString()}`, {
-      headers: {
-        Authorization: "Bearer " + cookies.get("wtpanjay_token"),
+    const res = await fetch(
+      `${config.API_BASE_URL}/users?${params.toString()}`,
+      {
+        headers: {
+          Authorization: "Bearer " + cookies.get("wtpanjay_token"),
+        },
       },
-    });
+    );
 
     const json = await res.json();
 

@@ -2,10 +2,18 @@ import type { PaymentMethod } from "./types";
 
 export const directMethods: PaymentMethod[] = [
   {
-    id: "coinpedia",
-    name: "Coinpedia",
+    id: 1778925,
+    name: "T-Gems",
     tag: "BEST PRICE",
-    note: "Max. 0,00 COINPEDIA",
+    note: "Min. 1.000 T-Gems",
+    requiredLogin: true,
+  },
+  {
+    id: 1778926,
+    name: "T-Points",
+    tag: "BEST PRICE",
+    note: "Min. 1.000 T-Points",
+    requiredLogin: true,
   },
 ];
 

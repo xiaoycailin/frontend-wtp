@@ -107,7 +107,7 @@
 
 <svelte:head>
   <!-- â”€â”€ Basic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-  <title>{title}</title>
+  <!-- <title>{title}</title> -->
   <meta name="description" content={description} />
   {#if siteConfig?.metaKeywords}
     <meta name="keywords" content={siteConfig.metaKeywords} />
@@ -229,4 +229,3 @@
   <!-- svelte-ignore -->
   {@html `<script type="application/ld+json">${schemaOrgJson}</script>`}
 </svelte:head>
-

@@ -1,6 +1,11 @@
 ﻿<script lang="ts">
   const { data } = $props();
 
+  type BalanceItem = {
+    type: "WALLET" | "POINTS";
+    amount: string; // Prisma BigInt dikirim biasanya sebagai string
+  };
+
   type UserItem = {
     id: string;
     email: string;
@@ -16,10 +21,13 @@
       products?: number;
       transactions?: number;
     };
+    userBalances?: BalanceItem[];
   };
 
   let users = $state<UserItem[]>(data.users ?? []);
-  let meta = $state(data.meta ?? { total: 0, page: 1, limit: 20, totalPages: 1 });
+  let meta = $state(
+    data.meta ?? { total: 0, page: 1, limit: 20, totalPages: 1 },
+  );
   let error = $state<string | null>(data.error ?? null);
   let q = $state<string>(data.q ?? "");
   let role = $state<string>(data.role ?? "");
@@ -30,6 +38,19 @@
       dateStyle: "medium",
       timeStyle: "short",
     });
+  }
+
+  function formatAmount(amount?: string, fallback = "0") {
+    if (!amount) return fallback;
+    // anggap amount = minor unit (mis. rupiah)
+    const num = Number(amount);
+    if (!Number.isFinite(num)) return fallback;
+    return num.toLocaleString("id-ID");
+  }
+
+  function getBalance(user: UserItem, type: "WALLET" | "POINTS") {
+    const bal = user.userBalances?.find((b) => b.type === type);
+    return bal?.amount;
   }
 
   function submitFilter() {
@@ -50,23 +71,67 @@
     params.set("limit", String(meta.limit || 20));
     window.location.href = `/admin/users?${params.toString()}`;
   }
+
+  async function initUserBalances(userId: string) {
+    if (!confirm("Inisialisasi saldo & point user ini?")) return;
+
+    try {
+      const res = await fetch(`/api/v1/users/${userId}/init-balances`, {
+        method: "POST",
+        headers: {
+          // "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(
+          err?.message ||
+            "Gagal menginisialisasi saldo & point user. Coba lagi.",
+        );
+        return;
+      }
+
+      const json = await res.json();
+
+      // update balances di state lokal biar langsung ke-reflect di UI
+      const balances = json?.balances as BalanceItem[] | undefined;
+      if (balances && Array.isArray(balances)) {
+        users = users.map((u) =>
+          u.id === userId ? { ...u, userBalances: balances } : u,
+        );
+      }
+
+      alert("Saldo & point user berhasil diinisialisasi.");
+      console.log("init-balances result", json);
+    } catch (e) {
+      console.error(e);
+      alert("Terjadi kesalahan jaringan.");
+    }
+  }
 </script>
 
 <section class="space-y-6">
-  <header class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+  <header
+    class="flex flex-col md:flex-row md:items-end md:justify-between gap-4"
+  >
     <div>
-      <p class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1">
+      <p
+        class="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-[0.18em] mb-1"
+      >
         Pengguna
       </p>
       <h1 class="text-2xl md:text-3xl font-black text-white leading-snug">
         Manajemen Pengguna
       </h1>
       <p class="text-xs md:text-sm text-white/50 mt-1 max-w-xl">
-        Lihat daftar user yang terdaftar, role, provider login, dan aktivitas dasarnya.
+        Lihat daftar user yang terdaftar, role, provider login, aktivitas dasar,
+        serta saldo & point mereka.
       </p>
     </div>
     <div class="text-xs text-white/50">
-      Total user: <span class="text-white font-semibold">{meta.total ?? 0}</span>
+      Total user: <span class="text-white font-semibold">{meta.total ?? 0}</span
+      >
     </div>
   </header>
 
@@ -111,13 +176,17 @@
             <th class="px-3 py-2 font-semibold text-white/60">Provider</th>
             <th class="px-3 py-2 font-semibold text-white/60">Verifikasi</th>
             <th class="px-3 py-2 font-semibold text-white/60">Aktivitas</th>
+            <th class="px-3 py-2 font-semibold text-white/60">
+              Saldo & Poin
+            </th>
             <th class="px-3 py-2 font-semibold text-white/60">Dibuat</th>
+            <th class="px-3 py-2 font-semibold text-white/60">Aksi</th>
           </tr>
         </thead>
         <tbody>
           {#if !users.length}
             <tr>
-              <td colspan="6" class="px-3 py-6 text-center text-white/40">
+              <td colspan="8" class="px-3 py-6 text-center text-white/40">
                 Belum ada data pengguna.
               </td>
             </tr>
@@ -130,7 +199,9 @@
                       {user.displayName || "Tanpa nama"}
                     </p>
                     <p class="text-white/70">{user.email}</p>
-                    <p class="text-[11px] text-white/35 break-all">ID: {user.id}</p>
+                    <p class="text-[11px] text-white/35 break-all">
+                      ID: {user.id}
+                    </p>
                   </div>
                 </td>
                 <td class="px-3 py-3 align-top text-white/80 uppercase">
@@ -141,12 +212,16 @@
                 </td>
                 <td class="px-3 py-3 align-top">
                   <div class="flex flex-col gap-1 text-[11px]">
-                    <span class="rounded-full px-2 py-1 border border-white/10 bg-black/30 text-white/70 w-fit">
+                    <span
+                      class="rounded-full px-2 py-1 border border-white/10 bg-black/30 text-white/70 w-fit"
+                    >
                       Email: {user.emailVerified ? "Verified" : "Belum"}
                     </span>
-                    <span class="rounded-full px-2 py-1 border border-white/10 bg-black/30 text-white/70 w-fit">
+                    <!-- <span
+                      class="rounded-full px-2 py-1 border border-white/10 bg-black/30 text-white/70 w-fit"
+                    >
                       Seller: {user.isSellerVerified ? "Verified" : "Belum"}
-                    </span>
+                    </span> -->
                   </div>
                 </td>
                 <td class="px-3 py-3 align-top text-white/70">
@@ -154,8 +229,38 @@
                   <p>Transaksi: {user._count?.transactions ?? 0}</p>
                   <p>Mata uang: {user.currency ?? "IDR"}</p>
                 </td>
+
+                <!-- saldo & poin -->
+                <td class="px-3 py-3 align-top text-white/70">
+                  <div class="flex flex-col gap-1 text-[11px]">
+                    <span
+                      class="rounded-full px-2 py-1 border border-white/10 bg-black/20 text-white/80 w-fit"
+                    >
+                      Saldo: Rp{" "}
+                      {formatAmount(getBalance(user, "WALLET"), "0")}
+                    </span>
+                    <span
+                      class="rounded-full px-2 py-1 border border-white/10 bg-black/20 text-white/80 w-fit"
+                    >
+                      Poin: {formatAmount(getBalance(user, "POINTS"), "0")}
+                    </span>
+                  </div>
+                </td>
+
                 <td class="px-3 py-3 align-top text-white/60">
                   {formatDate(user.createdAt)}
+                </td>
+
+                <td class="px-3 py-3 align-top">
+                  <div class="flex flex-col items-start md:items-end gap-2">
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 text-[11px] font-semibold text-white/80 hover:bg-white/10"
+                      onclick={() => initUserBalances(user.id)}
+                    >
+                      Init saldo & poin
+                    </button>
+                  </div>
                 </td>
               </tr>
             {/each}
@@ -164,10 +269,13 @@
       </table>
     </div>
 
-    <div class="flex items-center justify-between gap-3 pt-2 text-xs text-white/50">
+    <div
+      class="flex items-center justify-between gap-3 pt-2 text-xs text-white/50"
+    >
       <p>
         Halaman <span class="text-white font-semibold">{meta.page ?? 1}</span>
-        dari <span class="text-white font-semibold">{meta.totalPages ?? 1}</span>
+        dari
+        <span class="text-white font-semibold">{meta.totalPages ?? 1}</span>
       </p>
       <div class="flex items-center gap-2">
         <button
@@ -190,4 +298,3 @@
     </div>
   </div>
 </section>
-

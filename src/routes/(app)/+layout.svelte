@@ -16,8 +16,17 @@
   import SeoHead from "$lib/components/SeoHead.svelte";
   import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
   import { goto } from "$app/navigation";
+  import Index from "$lib/components/Toast/index.svelte";
 
   let { children, data } = $props();
+
+  // user dari load (sudah include balances)
+  type BalanceItem = {
+    type: "WALLET" | "POINTS";
+    amount: string; // BigInt as string
+  };
+
+  let userData = $state<any>(data.user ?? null);
 
   let siteConfig = data?.siteConfig ?? {};
   const primaryColor = siteConfig?.primaryColor ?? "#f5c518";
@@ -28,8 +37,8 @@
   let searchQuery = $state("");
 
   // state lokal auth
-  let isLoggedIn = $state(false);
-  let displayName = $state<string | null>(null);
+  let isLoggedIn = $state(data.token !== null);
+  let displayName = $state<string | null>(data?.user?.displayName);
 
   setContext("sch_query", {
     get value() {
@@ -81,7 +90,7 @@
 
   // sinkronkan dengan auth (sesuaikan dengan struktur auth-mu)
   $effect(() => {
-    isLoggedIn = auth.isLoggedIn ?? false;
+    isLoggedIn = auth.isLoggedIn ?? data.token != null;
     displayName = auth.user?.displayName ?? auth.user?.email ?? null;
   });
 
@@ -89,10 +98,32 @@
     auth.logout?.();
     goto("/");
   }
+
+  // ----- helper saldo & poin dari data.user -----
+  function getBalance(type: "WALLET" | "POINTS") {
+    const bal = userData?.userBalances?.find(
+      (b: BalanceItem) => b.type === type,
+    );
+    return bal?.amount ?? "0";
+  }
+
+  function formatWallet() {
+    const s = getBalance("WALLET");
+    const n = Number(s);
+    if (!Number.isFinite(n)) return "Rp 0";
+    return "Rp " + n.toLocaleString("id-ID");
+  }
+
+  function formatPoints() {
+    const s = getBalance("POINTS");
+    const n = Number(s);
+    if (!Number.isFinite(n)) return "0";
+    return n.toLocaleString("id-ID");
+  }
 </script>
 
 <SeoHead {siteConfig} />
-
+<Index />
 <div
   style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};"
   class="min-h-screen bg-[#1a1a1a] text-white font-sans flex flex-col"
@@ -147,7 +178,7 @@
         />
       </div>
 
-      <!-- Auth Buttons (desktop) -->
+      <!-- Auth & Wallet (desktop) -->
       <div class="hidden md:flex items-center gap-3 flex-shrink-0">
         {#if !isLoggedIn}
           <a
@@ -166,6 +197,32 @@
             Daftar
           </a>
         {:else}
+          <!-- SALDO + POIN MINI, hanya kalau userData sudah ada balances -->
+          {#if userData?.userBalances}
+            <div class="flex flex-col items-end mr-1">
+              <div class="flex items-center gap-2">
+                <span
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-semibold text-white/80"
+                >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]"
+                  ></span>
+                  <span>Saldo</span>
+                  <span class="text-[var(--color-primary)]">
+                    {formatWallet()}
+                  </span>
+                </span>
+                <span
+                  class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/40 text-[10px] font-semibold text-yellow-300"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-yellow-300"></span>
+                  <span>Poin</span>
+                  <span>{formatPoints()}</span>
+                </span>
+              </div>
+            </div>
+          {/if}
+
           <button
             type="button"
             class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10
@@ -279,6 +336,24 @@
             Daftar Gratis
           </a>
         {:else}
+          <!-- mobile user + saldo/point -->
+          {#if userData?.userBalances}
+            <div class="flex items-center justify-between mb-2">
+              <span
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-semibold text-white/80"
+              >
+                Saldo: <span class="text-[var(--color-primary)]">
+                  {formatWallet()}
+                </span>
+              </span>
+              <span
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/40 text-[10px] font-semibold text-yellow-300"
+              >
+                Poin: {formatPoints()}
+              </span>
+            </div>
+          {/if}
+
           <button
             type="button"
             onclick={() => {

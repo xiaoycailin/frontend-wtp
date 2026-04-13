@@ -3,8 +3,26 @@
   import { goto } from "$app/navigation";
   import { auth } from "$lib/auth";
   import { setupFetchInterceptor } from "$lib/setup/interceptor";
+  import { fmt } from "$lib/components/sections/topup-components/utils";
 
-  let user = $state<any>(null);
+  const { data } = $props();
+
+  type BalanceItem = {
+    type: "WALLET" | "POINTS";
+    amount: string; // BigInt dari backend biasanya dikirim sebagai string
+  };
+
+  type SelfUser = {
+    id: string;
+    email: string;
+    displayName?: string | null;
+    role?: string | null;
+    createdAt: string;
+    userBalances?: BalanceItem[];
+    // field lain kalau ada
+  };
+
+  let user = $state<SelfUser | any>(data.user);
   let transactions = $state<any[]>([]);
   let loading = $state(true);
   let error = $state<string | null>(null);
@@ -27,10 +45,10 @@
 
   async function loadUser() {
     try {
-      const res = await fetch("/api/v1/users/self");
-      if (!res.ok) throw new Error("Failed to load user");
-      const json = await res.json();
-      user = json.data;
+      if (!user) {
+        const u = await auth.fetchSelf();
+        if (u) user = u;
+      }
     } catch (e) {
       console.error(e);
       error = "Gagal memuat data pengguna";
@@ -58,14 +76,6 @@
     }
   }
 
-  function formatCurrency(amount: number) {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount);
-  }
-
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString("id-ID", {
       day: "numeric",
@@ -88,10 +98,29 @@
         return "bg-white/5 text-white/60 border-white/10";
     }
   }
+
+  function getBalance(type: "WALLET" | "POINTS") {
+    const bal = user?.userBalances?.find((b: BalanceItem) => b.type === type);
+    return bal?.amount ?? "0";
+  }
+
+  function formatWallet() {
+    const amountStr = getBalance("WALLET");
+    const n = Number(amountStr);
+    if (!Number.isFinite(n)) return "Rp 0";
+    return n.toLocaleString("id-ID");
+  }
+
+  function formatPoints() {
+    const amountStr = getBalance("POINTS");
+    const n = Number(amountStr);
+    if (!Number.isFinite(n)) return "0";
+    return n.toLocaleString("id-ID");
+  }
 </script>
 
 <svelte:head>
-  <title>Akun Saya - WTPANJAY</title>
+  <title>Akun Saya - {data?.siteConfig?.siteName}</title>
 </svelte:head>
 
 <div class="min-h-screen bg-[#050505] text-white py-8 px-4 md:px-6">
@@ -111,11 +140,11 @@
             Profil & Riwayat Order
           </h1>
           <p class="text-xs md:text-sm text-white/50 mt-1">
-            Kelola informasi akun dan lihat riwayat transaksi Anda.
+            Kelola informasi akun, lihat saldo & point, serta riwayat transaksi
+            Anda.
           </p>
         </div>
         <div class="flex items-center gap-2 text-xs">
-          <!-- TAMBAH: tombol admin jika role admin -->
           {#if user?.role === "admin"}
             <a
               href="/admin"
@@ -142,9 +171,10 @@
       </div>
     {/if}
 
-    <!-- User Profile Card -->
+    <!-- User Profile + Stats -->
     {#if user}
       <div class="mb-8 grid md:grid-cols-3 gap-6">
+        <!-- Profil -->
         <div
           class="md:col-span-2 bg-[#0c0c0c] border border-white/5 rounded-2xl p-5"
         >
@@ -156,7 +186,7 @@
             </div>
             <div>
               <p class="text-white/50 text-xs mb-1">Email</p>
-              <p class="font-semibold">{user.email}</p>
+              <p class="font-semibold break-all">{user.email}</p>
             </div>
             <div>
               <p class="text-white/50 text-xs mb-1">Role</p>
@@ -170,18 +200,134 @@
             </div>
           </div>
         </div>
-        <div class="bg-[#0c0c0c] border border-white/5 rounded-2xl p-5">
-          <h2 class="text-lg font-bold text-white mb-4">Statistik</h2>
-          <div class="space-y-3">
-            <div>
-              <p class="text-white/50 text-xs mb-1">Total Transaksi</p>
-              <p class="text-2xl font-black text-[var(--color-primary)]">
-                {total}
-              </p>
+
+        <!-- Statistik / T-Coins & T-Points -->
+        <div
+          class="relative overflow-hidden bg-[#0c0c0c] border border-white/5 rounded-2xl p-5"
+        >
+          <div
+            class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,197,24,0.08),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.04),transparent_30%)] pointer-events-none"
+          ></div>
+
+          <div class="relative">
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <h2 class="text-lg font-bold text-white">T-Coins & T-Points</h2>
+                <p class="text-[11px] text-white/45 mt-1">
+                  Asset akun untuk pembayaran cepat dan reward loyalitas.
+                </p>
+              </div>
+
+              <div
+                class="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 px-3 py-1"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]"
+                ></span>
+                <span
+                  class="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-primary)]"
+                >
+                  Assets
+                </span>
+              </div>
             </div>
-            <div>
-              <p class="text-white/50 text-xs mb-1">Saldo (jika ada)</p>
-              <p class="text-xl font-semibold text-white">-</p>
+
+            <div class="space-y-3">
+              <!-- T-Coins -->
+              <div
+                class="rounded-2xl border border-[var(--color-primary)]/15 bg-[var(--color-primary)]/[0.06] p-4"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p
+                      class="text-[11px] uppercase tracking-[0.18em] text-[var(--color-primary)]/80 font-semibold"
+                    >
+                      T-Coins
+                    </p>
+                    <p
+                      class="mt-2 text-2xl md:text-[1.7rem] leading-none font-black text-[var(--color-primary)]"
+                    >
+                      {formatWallet()}
+                    </p>
+                    <p class="mt-2 text-[11px] text-white/45">
+                      Gunakan T-Coins untuk pembayaran instan dan transaksi
+                      lebih cepat.
+                    </p>
+                  </div>
+
+                  <div
+                    class="shrink-0 w-11 h-11 rounded-2xl border border-[var(--color-primary)]/20 bg-black/20 flex items-center justify-center shadow-[0_0_0_1px_rgba(245,197,24,0.06)]"
+                  >
+                    <svg
+                      class="w-5 h-5 text-[var(--color-primary)]"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8c-2.21 0-4 .895-4 2s1.79 2 4 2 4 .895 4 2-1.79 2-4 2m0-8c1.687 0 3.13.52 3.732 1.25M12 8V6m0 10v2m-3.732-1.25C8.87 16.48 10.313 17 12 17"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- T-Points -->
+              <div
+                class="rounded-2xl border border-yellow-400/15 bg-yellow-400/[0.06] p-4"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p
+                      class="text-[11px] uppercase tracking-[0.18em] text-yellow-300/90 font-semibold"
+                    >
+                      T-Points
+                    </p>
+                    <p
+                      class="mt-2 text-2xl md:text-[1.7rem] leading-none font-black text-white"
+                    >
+                      {formatPoints()}
+                      <span
+                        class="ml-1 text-xs font-semibold text-yellow-300/80"
+                      >
+                        pts
+                      </span>
+                    </p>
+                    <p class="mt-2 text-[11px] text-white/45">
+                      Kumpulkan T-Points dari aktivitas dan tukarkan ke benefit
+                      tertentu.
+                    </p>
+                  </div>
+
+                  <div
+                    class="shrink-0 w-11 h-11 rounded-2xl border border-yellow-400/20 bg-black/20 flex items-center justify-center shadow-[0_0_0_1px_rgba(250,204,21,0.06)]"
+                  >
+                    <svg
+                      class="w-5 h-5 text-yellow-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.889a1 1 0 00-.364 1.118l1.519 4.674c.3.921-.755 1.688-1.538 1.118l-3.976-2.889a1 1 0 00-1.176 0l-3.976 2.889c-.783.57-1.838-.197-1.539-1.118l1.52-4.674a1 1 0 00-.364-1.118L2.176 10.1c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.52-4.674z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-white/5">
+              <p class="text-[11px] leading-relaxed text-white/40">
+                T-Coins dipakai sebagai saldo utama akun, sedangkan T-Points
+                adalah reward loyalitas yang bisa dikumpulkan dari aktivitas
+                tertentu.
+              </p>
             </div>
           </div>
         </div>
@@ -234,21 +380,21 @@
           <table class="min-w-full text-left text-sm">
             <thead class="bg-white/5">
               <tr>
-                <th class="px-4 py-3 font-semibold text-white/60"
-                  >ID Transaksi</th
-                >
+                <th class="px-4 py-3 font-semibold text-white/60">
+                  ID Transaksi
+                </th>
                 <th class="px-4 py-3 font-semibold text-white/60">Produk</th>
                 <th class="px-4 py-3 font-semibold text-white/60">Total</th>
-                <th class="px-4 py-3 font-semibold text-white/60"
-                  >Status Pembayaran</th
-                >
-                <th class="px-4 py-3 font-semibold text-white/60"
-                  >Status Order</th
-                >
+                <th class="px-4 py-3 font-semibold text-white/60">
+                  Status Pembayaran
+                </th>
+                <th class="px-4 py-3 font-semibold text-white/60">
+                  Status Order
+                </th>
                 <th class="px-4 py-3 font-semibold text-white/60">Tanggal</th>
-                <th class="px-4 py-3 font-semibold text-white/60 text-right"
-                  >Aksi</th
-                >
+                <th class="px-4 py-3 font-semibold text-white/60 text-right">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -277,18 +423,22 @@
                     </div>
                   </td>
                   <td class="px-4 py-3 align-top font-semibold text-white">
-                    {formatCurrency(tx.price)}
+                    {fmt(tx.price)}
                   </td>
                   <td class="px-4 py-3 align-top">
                     <span
-                      class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(tx.paymentStatus)}`}
+                      class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(
+                        tx.paymentStatus,
+                      )}`}
                     >
                       {tx.paymentStatus}
                     </span>
                   </td>
                   <td class="px-4 py-3 align-top">
                     <span
-                      class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(tx.orderStatus)}`}
+                      class={`inline-block px-2 py-1 rounded-full text-xs font-semibold border ${statusColor(
+                        tx.orderStatus,
+                      )}`}
                     >
                       {tx.orderStatus}
                     </span>
@@ -310,7 +460,6 @@
           </table>
         </div>
 
-        <!-- Pagination -->
         {#if totalPages > 1}
           <div
             class="px-5 py-4 border-t border-white/5 flex items-center justify-between text-sm"
@@ -330,7 +479,11 @@
                 {@const p = i + 1}
                 <button
                   on:click={() => loadTransactions(p)}
-                  class={`px-3 py-1.5 rounded-lg border ${p === page ? "bg-[var(--color-primary)] text-black border-[var(--color-primary)]" : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10"}`}
+                  class={`px-3 py-1.5 rounded-lg border ${
+                    p === page
+                      ? "bg-[var(--color-primary)] text-black border-[var(--color-primary)]"
+                      : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10"
+                  }`}
                 >
                   {p}
                 </button>

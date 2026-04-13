@@ -8,8 +8,8 @@
   } from "./types";
   import { goto } from "$app/navigation";
   import { fmt } from "./utils";
-  import { teleport } from "$lib/utils";
-  import { getContext } from "svelte";
+  import type { SiteConfig } from "../../../../app";
+  import { toastStore } from "$lib/components/Toast/state";
 
   let {
     selected = $bindable<Product | null>(null),
@@ -28,8 +28,10 @@
     gameConfig = null,
     zoneInputMode = "text",
     gameConfigLoading = false,
+    siteConfig,
   }: {
     selected: Product | null;
+    siteConfig: SiteConfig;
     canOrder: boolean;
     basePrice: number;
     discountAmount: number;
@@ -159,13 +161,9 @@
 
   // ── Toast ──
   type ToastType = "error" | "success" | "info";
-  let toast = $state<{ message: string; type: ToastType } | null>(null);
-  let toastTimer: ReturnType<typeof setTimeout>;
 
   function showToast(message: string, type: ToastType = "error") {
-    clearTimeout(toastTimer);
-    toast = { message, type };
-    toastTimer = setTimeout(() => (toast = null), 4000);
+    toastStore.show(message, type, 3000);
   }
 
   const purchaseItem = async () => {
@@ -257,83 +255,6 @@
   onCancel={() => (showConfirmModal = false)}
 />
 
-<!-- Toast -->
-{#if toast}
-  <div
-    use:teleport
-    class="toast"
-    class:toast-error={toast.type === "error"}
-    class:toast-success={toast.type === "success"}
-    class:toast-info={toast.type === "info"}
-    role="alert"
-    aria-live="assertive"
-  >
-    {#if toast.type === "error"}
-      <svg
-        class="toast-icon"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2.5"
-          d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-        />
-      </svg>
-    {:else if toast.type === "success"}
-      <svg
-        class="toast-icon"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2.5"
-          d="M5 13l4 4L19 7"
-        />
-      </svg>
-    {:else}
-      <svg
-        class="toast-icon"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2.5"
-          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-    {/if}
-    <span class="toast-msg">{toast.message}</span>
-    <button
-      class="toast-close"
-      onclick={() => (toast = null)}
-      aria-label="Tutup"
-    >
-      <svg
-        class="w-3.5 h-3.5"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M6 18L18 6M6 6l12 12"
-        />
-      </svg>
-    </button>
-  </div>
-{/if}
-
 <!-- Rating -->
 <div
   class="relative rounded-2xl overflow-hidden border border-white/[0.07] bg-[#111111] p-5"
@@ -380,7 +301,7 @@
     <p class="text-[11px] text-white/40">Hubungi admin kami sekarang.</p>
   </div>
   <button
-    // onclick={}
+    onclick={() => window.open(siteConfig.supportWhatsapp ?? "", "_blank")}
     class="ml-auto flex-shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold
            bg-white/5 border border-white/10 text-white/60
            hover:border-[var(--color-primary)]/40 hover:text-[var(--color-primary)] transition-all duration-200"
@@ -760,67 +681,6 @@
     100% {
       transform: translateX(100%);
     }
-  }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    top: 1.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.875rem;
-    border: 1px solid;
-    backdrop-filter: blur(12px);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    max-width: calc(100vw - 2rem);
-    white-space: normal;
-    animation: toastIn 280ms cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  }
-  .toast-error {
-    background: rgba(248, 113, 113, 0.12);
-    border-color: rgba(248, 113, 113, 0.3);
-    color: #fca5a5;
-  }
-  .toast-success {
-    background: rgba(52, 211, 153, 0.12);
-    border-color: rgba(52, 211, 153, 0.3);
-    color: #6ee7b7;
-  }
-  .toast-info {
-    background: rgba(245, 197, 24, 0.1);
-    border-color: rgba(245, 197, 24, 0.25);
-    color: white;
-  }
-
-  .toast-icon {
-    width: 1.125rem;
-    height: 1.125rem;
-    flex-shrink: 0;
-  }
-  .toast-msg {
-    flex: 1;
-    line-height: 1.4;
-  }
-  .toast-close {
-    flex-shrink: 0;
-    margin-left: 0.25rem;
-    opacity: 0.5;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: inherit;
-    padding: 0.125rem;
-    transition: opacity 150ms;
-  }
-  .toast-close:hover {
-    opacity: 1;
   }
 
   @keyframes toastIn {

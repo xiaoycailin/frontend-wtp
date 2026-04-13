@@ -150,6 +150,32 @@ async function fetchSelf(): Promise<User | null> {
   }
 }
 
+async function verifySelf(token: string): Promise<User | null> {
+  _loading = true;
+  try {
+    const res = await fetch("/api/v1/users/self", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (!res.ok) return null;
+
+    const json = await res.json();
+    // Support format: { data: { ...user } } atau { data: { user: {...} } }
+    const user: User = json?.data?.user ?? json?.data ?? null;
+
+    if (user) {
+      _user = user;
+      if (token) _saveStorage(token, user);
+    }
+
+    return user;
+  } catch {
+    return null;
+  } finally {
+    _loading = false;
+  }
+}
+
 /**
  * Simpan token & user setelah login berhasil.
  * Dipanggil dari handleLogin di +page.svelte.
@@ -238,6 +264,8 @@ export const auth = {
   logout,
   requireAuth,
   redirectIfLoggedIn,
+
+  verifySelf,
 
   // JWT utils (re-export untuk kenyamanan)
   decodeJwt,

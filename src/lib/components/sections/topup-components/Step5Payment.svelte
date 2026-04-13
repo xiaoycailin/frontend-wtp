@@ -3,16 +3,24 @@
   import { directMethods } from "./paymentConstants";
   import { fmt } from "./utils";
   import { onMount } from "svelte";
+  import { auth, type User } from "$lib/auth";
+  import { toastStore } from "$lib/components/Toast/state";
+
+  // const toast = getToastState();
 
   // â”€â”€ Props (hanya yang benar-benar dari parent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let {
     selectedPay = $bindable(null),
     basePrice,
     selected,
+    token,
+    user,
   }: {
     selectedPay: any;
     basePrice: number;
     selected: Product | null;
+    token: string;
+    user: User;
   } = $props();
 
   // â”€â”€ Local state (HARUS $state agar reaktif) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -26,8 +34,20 @@
   let vaOpen = $state(false);
   let getPricesLoading = $state(false);
 
+  let isValidLogin = $state(false);
+
+  const initAuth = async () => {
+    const newUser = await auth.verifySelf(token);
+    if (newUser) {
+      auth.setAuth(token, newUser);
+      isValidLogin = true;
+    }
+  };
+
   // â”€â”€ Fetch payment methods saat mount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   onMount(async () => {
+    auth.init();
+    initAuth();
     try {
       const res = await fetch("/api/v1/payments/available");
       if (!res.ok) return;
@@ -154,7 +174,15 @@
       {#each directMethods as m}
         {@const isSelected = selectedPay.id === m.id}
         <button
-          onclick={() => (selectedPay = m)}
+          onclick={() => {
+            if (isValidLogin || !m.requiredLogin) {
+              selectedPay = m;
+            } else {
+              toastStore.show(
+                "Silahkan login untuk menggunakan fitur " + m.name,
+              );
+            }
+          }}
           class="relative flex items-center gap-4 p-3.5 rounded-xl border
                  text-left transition-all duration-200 overflow-hidden"
           style="
@@ -203,6 +231,7 @@
                 style="background:var(--color-primary);color:#000;"
               >
                 {m.tag}
+                <!-- {isValidLogin} -->
               </div>
             </div>
           {/if}
@@ -211,290 +240,297 @@
     </div>
 
     <!-- QRIS accordion -->
-    <div class="rounded-xl border border-white/[0.07] overflow-hidden mb-2">
-      <button
-        onclick={() => (qrisGroupOpen = !qrisGroupOpen)}
-        class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
-      >
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-bold text-white">QRIS (All Payment)</span>
-          <span
-            class="text-[10px] text-white/30 px-2 py-0.5 rounded-full bg-white/[0.05]"
-          >
-            {paymentQris.length} pilihan
-          </span>
-        </div>
-        <svg
-          class="w-4 h-4 text-white/40 transition-transform duration-300 {qrisGroupOpen
-            ? 'rotate-180'
-            : ''}"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+    {#if paymentQris.length != 0}
+      <div class="rounded-xl border border-white/[0.07] overflow-hidden mb-2">
+        <button
+          onclick={() => (qrisGroupOpen = !qrisGroupOpen)}
+          class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-      {#if qrisGroupOpen}
-        <div
-          class="px-3 pb-3 pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-white/[0.05]"
-        >
-          {#each paymentQris as m}
-            {@const isSelected = selectedPay.id === m.id}
-            <button
-              onclick={() => (selectedPay = m)}
-              class="relative flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-200"
-              style="
-                background:   {isSelected
-                ? 'rgba(245,197,24,0.07)'
-                : 'rgba(255,255,255,0.03)'};
-                border-color: {isSelected
-                ? 'var(--color-primary)'
-                : 'rgba(255,255,255,0.07)'};
-                box-shadow:   {isSelected
-                ? '0 0 14px rgba(245,197,24,0.15)'
-                : 'none'};
-              "
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-white">QRIS (All Payment)</span>
+            <span
+              class="text-[10px] text-white/30 px-2 py-0.5 rounded-full bg-white/[0.05]"
             >
-              {#if m.logo}
-                <img
-                  src={m.logo}
-                  alt={m.name}
-                  class="h-7 object-contain object-left"
-                />
-              {:else}
-                <span class="text-xs font-bold text-white">{m.name}</span>
-              {/if}
-              <div>
-                {#if selected}
-                  {#if getPricesLoading}
-                    <div
-                      class="h-3.5 w-16 rounded bg-white/10 animate-pulse"
-                    ></div>
-                  {:else}
-                    <p class="text-xs font-black text-white">
-                      {fmt(methodPrice(m))}
-                    </p>
+              {paymentQris.length} pilihan
+            </span>
+          </div>
+          <svg
+            class="w-4 h-4 text-white/40 transition-transform duration-300 {qrisGroupOpen
+              ? 'rotate-180'
+              : ''}"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        {#if qrisGroupOpen}
+          <div
+            class="px-3 pb-3 pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-white/[0.05]"
+          >
+            {#each paymentQris as m}
+              {@const isSelected = selectedPay.id === m.id}
+              <button
+                onclick={() => (selectedPay = m)}
+                class="relative flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-200"
+                style="
+                background:   {isSelected
+                  ? 'rgba(245,197,24,0.07)'
+                  : 'rgba(255,255,255,0.03)'};
+                border-color: {isSelected
+                  ? 'var(--color-primary)'
+                  : 'rgba(255,255,255,0.07)'};
+                box-shadow:   {isSelected
+                  ? '0 0 14px rgba(245,197,24,0.15)'
+                  : 'none'};
+              "
+              >
+                {#if m.logo}
+                  <img
+                    src={m.logo}
+                    alt={m.name}
+                    class="h-7 object-contain object-left"
+                  />
+                {:else}
+                  <span class="text-xs font-bold text-white">{m.name}</span>
+                {/if}
+                <div>
+                  {#if selected}
+                    {#if getPricesLoading}
+                      <div
+                        class="h-3.5 w-16 rounded bg-white/10 animate-pulse"
+                      ></div>
+                    {:else}
+                      <p class="text-xs font-black text-white">
+                        {fmt(methodPrice(m))}
+                      </p>
+                    {/if}
                   {/if}
-                {/if}
-                {#if m.autoCheck}
-                  <p class="text-[9px] text-emerald-400/70">Dicek Otomatis</p>
-                {/if}
-              </div>
-              {#if isSelected}
-                <div
-                  class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center"
-                >
-                  <svg
-                    class="w-2.5 h-2.5 text-black"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="3"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
+                  {#if m.autoCheck}
+                    <p class="text-[9px] text-emerald-400/70">Dicek Otomatis</p>
+                  {/if}
                 </div>
-              {/if}
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </div>
+                {#if isSelected}
+                  <div
+                    class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-2.5 h-2.5 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="3"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
 
     <!-- E-Wallet accordion -->
-    <div class="rounded-xl border border-white/[0.07] overflow-hidden mb-2">
-      <button
-        onclick={() => (ewalletOpen = !ewalletOpen)}
-        class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
-      >
-        <div class="flex items-center gap-2">
-          <span>ðŸ“±</span>
-          <span class="text-sm font-bold text-white">E-Wallet</span>
-          <span
-            class="text-[10px] text-white/30 px-2 py-0.5 rounded-full bg-white/[0.05]"
-          >
-            {paymentEwallet.length} pilihan
-          </span>
-        </div>
-        <svg
-          class="w-4 h-4 text-white/40 transition-transform duration-300 {ewalletOpen
-            ? 'rotate-180'
-            : ''}"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
+    {#if paymentEwallet.length != 0}
+      <div class="rounded-xl border border-white/[0.07] overflow-hidden mb-2">
+        <button
+          onclick={() => (ewalletOpen = !ewalletOpen)}
+          class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-      {#if ewalletOpen}
-        <div
-          class="px-3 pb-3 pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-white/[0.05]"
-        >
-          {#each paymentEwallet as m}
-            {@const isSelected = selectedPay.id === m.id}
-            <button
-              onclick={() => (selectedPay = m)}
-              class="relative flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-200"
-              style="
-                background:   {isSelected
-                ? 'rgba(245,197,24,0.07)'
-                : 'rgba(255,255,255,0.03)'};
-                border-color: {isSelected
-                ? 'var(--color-primary)'
-                : 'rgba(255,255,255,0.07)'};
-                box-shadow:   {isSelected
-                ? '0 0 14px rgba(245,197,24,0.15)'
-                : 'none'};
-              "
+          <div class="flex items-center gap-2">
+            <!-- <span>ðŸ“±</span> -->
+            <span class="text-sm font-bold text-white">E-Wallet</span>
+            <span
+              class="text-[10px] text-white/30 px-2 py-0.5 rounded-full bg-white/[0.05]"
             >
-              {#if m.logo}
-                <img
-                  src={m.logo}
-                  alt={m.name}
-                  class="h-5 object-contain object-left"
-                />
-              {:else}
-                <span class="text-xs font-bold text-white">{m.name}</span>
-              {/if}
-              <div>
+              {paymentEwallet.length} pilihan
+            </span>
+          </div>
+          <svg
+            class="w-4 h-4 text-white/40 transition-transform duration-300 {ewalletOpen
+              ? 'rotate-180'
+              : ''}"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        {#if ewalletOpen}
+          <div
+            class="px-3 pb-3 pt-2 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-white/[0.05]"
+          >
+            {#each paymentEwallet as m}
+              {@const isSelected = selectedPay.id === m.id}
+              <button
+                onclick={() => (selectedPay = m)}
+                class="relative flex flex-col gap-2 p-3 rounded-xl border text-left transition-all duration-200"
+                style="
+                background:   {isSelected
+                  ? 'rgba(245,197,24,0.07)'
+                  : 'rgba(255,255,255,0.03)'};
+                border-color: {isSelected
+                  ? 'var(--color-primary)'
+                  : 'rgba(255,255,255,0.07)'};
+                box-shadow:   {isSelected
+                  ? '0 0 14px rgba(245,197,24,0.15)'
+                  : 'none'};
+              "
+              >
+                {#if m.logo}
+                  <img
+                    src={m.logo}
+                    alt={m.name}
+                    class="h-5 object-contain object-left"
+                  />
+                {:else}
+                  <span class="text-xs font-bold text-white">{m.name}</span>
+                {/if}
+                <div>
+                  {#if selected}
+                    {#if getPricesLoading}
+                      <div
+                        class="h-3.5 w-16 rounded bg-white/10 animate-pulse"
+                      ></div>
+                    {:else}
+                      <p class="text-xs font-black text-white">
+                        {fmt(methodPrice(m))}
+                      </p>
+                    {/if}
+                  {/if}
+                  {#if m.autoCheck}
+                    <p class="text-[9px] text-emerald-400/70">Dicek Otomatis</p>
+                  {/if}
+                </div>
+                {#if isSelected}
+                  <div
+                    class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-2.5 h-2.5 text-black"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="3"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                {/if}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
+
+    <!-- Virtual Account accordion -->
+    {#if paymentVa.length != 0}
+      <div class="rounded-xl border border-white/[0.07] overflow-hidden">
+        <button
+          onclick={() => (vaOpen = !vaOpen)}
+          class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
+        >
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-white">Virtual Account</span>
+            <span
+              class="text-[10px] text-white/30 px-2 py-0.5 rounded-full bg-white/[0.05]"
+            >
+              {paymentVa.length} pilihan
+            </span>
+          </div>
+          <svg
+            class="w-4 h-4 text-white/40 transition-transform duration-300 {vaOpen
+              ? 'rotate-180'
+              : ''}"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        {#if vaOpen}
+          <div
+            class="px-3 pb-3 pt-2 flex flex-col gap-2 border-t border-white/[0.05]"
+          >
+            {#each paymentVa as m}
+              {@const isSelected = selectedPay.id === m.id}
+              <button
+                onclick={() => (selectedPay = m)}
+                class="relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200"
+                style="
+                background:   {isSelected
+                  ? 'rgba(245,197,24,0.07)'
+                  : 'rgba(255,255,255,0.03)'};
+                border-color: {isSelected
+                  ? 'var(--color-primary)'
+                  : 'rgba(255,255,255,0.07)'};
+              "
+              >
+                <div
+                  class="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
+                  style="border-color:{isSelected
+                    ? 'var(--color-primary)'
+                    : 'rgba(255,255,255,0.2)'};"
+                >
+                  {#if isSelected}<div
+                      class="w-2 h-2 rounded-full bg-[var(--color-primary)]"
+                    ></div>{/if}
+                </div>
+                {#if m.logo}
+                  <img
+                    src={m.logo}
+                    alt={m.name}
+                    class="h-5 object-contain flex-shrink-0"
+                  />
+                {/if}
+                <span class="text-xs font-bold text-white flex-1">{m.name}</span
+                >
                 {#if selected}
                   {#if getPricesLoading}
                     <div
                       class="h-3.5 w-16 rounded bg-white/10 animate-pulse"
                     ></div>
                   {:else}
-                    <p class="text-xs font-black text-white">
-                      {fmt(methodPrice(m))}
-                    </p>
+                    <span class="text-xs font-black text-white/80"
+                      >{fmt(methodPrice(m))}</span
+                    >
                   {/if}
                 {/if}
-                {#if m.autoCheck}
-                  <p class="text-[9px] text-emerald-400/70">Dicek Otomatis</p>
-                {/if}
-              </div>
-              {#if isSelected}
-                <div
-                  class="absolute top-2 right-2 w-4 h-4 rounded-full bg-[var(--color-primary)] flex items-center justify-center"
-                >
-                  <svg
-                    class="w-2.5 h-2.5 text-black"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="3"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-              {/if}
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </div>
-
-    <!-- Virtual Account accordion -->
-    <div class="rounded-xl border border-white/[0.07] overflow-hidden">
-      <button
-        onclick={() => (vaOpen = !vaOpen)}
-        class="w-full flex items-center justify-between px-4 py-3 hover:bg-white/[0.03] transition-colors"
-      >
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-bold text-white">Virtual Account</span>
-          <span
-            class="text-[10px] text-white/30 px-2 py-0.5 rounded-full bg-white/[0.05]"
-          >
-            {paymentVa.length} pilihan
-          </span>
-        </div>
-        <svg
-          class="w-4 h-4 text-white/40 transition-transform duration-300 {vaOpen
-            ? 'rotate-180'
-            : ''}"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-      {#if vaOpen}
-        <div
-          class="px-3 pb-3 pt-2 flex flex-col gap-2 border-t border-white/[0.05]"
-        >
-          {#each paymentVa as m}
-            {@const isSelected = selectedPay.id === m.id}
-            <button
-              onclick={() => (selectedPay = m)}
-              class="relative flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200"
-              style="
-                background:   {isSelected
-                ? 'rgba(245,197,24,0.07)'
-                : 'rgba(255,255,255,0.03)'};
-                border-color: {isSelected
-                ? 'var(--color-primary)'
-                : 'rgba(255,255,255,0.07)'};
-              "
-            >
-              <div
-                class="w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
-                style="border-color:{isSelected
-                  ? 'var(--color-primary)'
-                  : 'rgba(255,255,255,0.2)'};"
-              >
-                {#if isSelected}<div
-                    class="w-2 h-2 rounded-full bg-[var(--color-primary)]"
-                  ></div>{/if}
-              </div>
-              {#if m.logo}
-                <img
-                  src={m.logo}
-                  alt={m.name}
-                  class="h-5 object-contain flex-shrink-0"
-                />
-              {/if}
-              <span class="text-xs font-bold text-white flex-1">{m.name}</span>
-              {#if selected}
-                {#if getPricesLoading}
-                  <div
-                    class="h-3.5 w-16 rounded bg-white/10 animate-pulse"
-                  ></div>
-                {:else}
-                  <span class="text-xs font-black text-white/80"
-                    >{fmt(methodPrice(m))}</span
-                  >
-                {/if}
-              {/if}
-            </button>
-          {/each}
-        </div>
-      {/if}
-    </div>
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
+    {/if}
   </div>
 </div>
 

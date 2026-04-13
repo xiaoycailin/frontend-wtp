@@ -16,7 +16,8 @@
   import { onMount } from "svelte";
   import { auth } from "$lib/auth";
 
-  let { products, productDetail, productPath } = $props();
+  let { products, productDetail, productPath, siteConfig, user, token } =
+    $props();
 
   let userId = $state("");
   let serverId = $state("");
@@ -30,7 +31,7 @@
 
   onMount(() => {
     auth.init();
-    email = auth.user?.email ?? "";
+    email = user?.email ?? auth.user?.email ?? "";
   });
 
   let supportedGames = $state<SupportedGameConfig[]>([]);
@@ -103,6 +104,7 @@
       serverId = "";
     }
   });
+  // console.log(productDetail);
 </script>
 
 <svelte:head>
@@ -121,7 +123,7 @@
 
     <Step4Promo bind:promoApplied />
 
-    <Step5Payment bind:selectedPay {basePrice} {selected} />
+    <Step5Payment bind:selectedPay {basePrice} {selected} {token} {user} />
 
     <Step6Contact bind:phone bind:email />
   </div>
@@ -129,6 +131,7 @@
   <div class="flex flex-col gap-4 xl:sticky xl:top-[115px]">
     <OrderSidebar
       bind:selected
+      {siteConfig}
       {canOrder}
       {basePrice}
       {discountAmount}

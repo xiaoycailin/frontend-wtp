@@ -1,8 +1,0 @@
-import type { LayoutLoad } from './$types';
-
-export const load: LayoutLoad = async ({ data }) => {
-  // Just pass through the data from server load
-  return {
-    siteConfig: data?.siteConfig ?? null
-  };
-};

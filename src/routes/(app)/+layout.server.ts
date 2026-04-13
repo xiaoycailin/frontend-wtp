@@ -23,15 +23,15 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
       }).catch(() => ({ ok: false })),
     ]);
 
-    // console.log("Cookie RES",cookies.get("wtpanjay_token"));
+    console.log("Site RES", siteRes.ok);
 
     const siteJson = siteRes.ok ? await siteRes.json().catch(() => ({})) : {};
     const userJson = userRes.ok ? await userRes.json().catch(() => ({})) : {};
 
     // If user is not admin, redirect
-    if (!userRes.ok || userJson?.data?.role === "buyer") {
-      redirect(302, "/");
-    }
+    // if (!userRes.ok || userJson?.data?.role === "buyer") {
+    //   redirect(302, "/");
+    // }
 
     return {
       siteConfig: siteJson?.data ?? null,
