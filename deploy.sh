@@ -7,4 +7,5 @@ git fetch origin
 git reset --hard origin/master
 npm ci
 npm run build
-pm2 restart frontendwtp || pm2 start frontendwtp
+echo "Restarting service..."
+pm2 restart frontendwtp || pm2 start node --name "frontendwtp" -- build/index.js
