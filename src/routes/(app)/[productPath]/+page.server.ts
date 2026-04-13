@@ -1,13 +1,13 @@
 // since there's no dynamic data here, we can prerender
 
 import { redirect } from "@sveltejs/kit";
-import type { PageLoad } from "./$types";
+import type { PageServerLoad } from "./$types";
 import { building } from "$app/environment";
 
 // it so that it gets served as a static asset in production
 // export const prerender = true;
 
-export const load: PageLoad = async ({ params, fetch }) => {
+export const load: PageServerLoad = async ({ params, fetch }) => {
   // Skip fetch during prerender/building to avoid 404 errors
   if (building) {
     return {

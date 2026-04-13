@@ -1,20 +1,21 @@
 // since there's no dynamic data here, we can prerender
 
-import type { PageLoad } from "./$types";
+import type { PageServerLoad } from "./$types";
 import { building } from "$app/environment";
+import config from "../../config";
 
 // it so that it gets served as a static asset in production
 // export const prerender = true;
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async ({ fetch }) => {
   if (building) {
     return { category: [], banners: [] };
   }
 
   try {
     const [categoryRes, bannerRes] = await Promise.all([
-      fetch("/api/v1/category?productInclude=true"),
-      fetch("/api/v1/banners?type=banner"),
+      fetch(config.API_BASE_URL + "/category?productInclude=true"),
+      fetch(config.API_BASE_URL + "/banners?type=banner"),
     ]);
 
     let category = [];
