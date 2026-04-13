@@ -23,7 +23,7 @@ function verifySignature(
 }
 
 export async function POST({ request }) {
-  const secret = env.GITHUB_WEBHOOK_SECRET;
+  const secret = "Fr_Event";
   if (!secret) {
     return json({ error: "Missing webhook secret" }, { status: 500 });
   }
