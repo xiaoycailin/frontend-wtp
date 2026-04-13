@@ -50,7 +50,7 @@ export async function POST({ request }) {
     return json({ ok: true, ignored: true, reason: "Repo mismatch" });
   }
 
-  if (branch !== "refs/heads/main") {
+  if (branch !== "refs/heads/master") {
     return json({ ok: true, ignored: true, reason: "Branch mismatch" });
   }
 
