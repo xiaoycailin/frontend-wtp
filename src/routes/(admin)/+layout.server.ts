@@ -1,10 +1,9 @@
-import { redirect } from "@sveltejs/kit";
+import { redirect, error } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
 import { building } from "$app/environment";
 import config from "../../config";
 
 export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
-  // Skip fetch during prerender/building to avoid 404 errors
   if (building) {
     return {
       siteConfig: null,
@@ -15,23 +14,25 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
 
   try {
     const [siteRes, userRes] = await Promise.all([
-      fetch(config.API_BASE_URL+"/site-config").catch(() => ({ ok: false })),
-      fetch(config.API_BASE_URL+"/users/self", {
+      fetch(config.API_BASE_URL + "/site-config").catch(() => ({ ok: false })),
+      fetch(config.API_BASE_URL + "/users/self", {
         headers: {
           Authorization: "Bearer " + cookies.get("wtpanjay_token"),
         },
       }).catch(() => ({ ok: false })),
     ]);
 
-    // console.log("Cookie RES",cookies.get("wtpanjay_token"));
-    
-
     const siteJson = siteRes.ok ? await siteRes.json().catch(() => ({})) : {};
     const userJson = userRes.ok ? await userRes.json().catch(() => ({})) : {};
 
-    // If user is not admin, redirect
-    if (!userRes.ok || userJson?.data?.role === "buyer") {
-      redirect(302, "/");
+    // ❌ kalau user request gagal → 404
+    if (!userRes.ok) {
+      throw error(404, "User not found");
+    }
+
+    // ❌ kalau role buyer → 404
+    if (userJson?.data?.role === "buyer") {
+      throw error(404, "Page not found");
     }
 
     return {
@@ -39,12 +40,7 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
       user: userJson.data ?? null,
       token: cookies.get("wtpanjay_token"),
     };
-  } catch (error) {
-    // If any error, still return safe fallback (no redirect during build)
-    return {
-      siteConfig: null,
-      user: null,
-      token: null,
-    };
+  } catch (err) {
+    throw error(404, "Page not found");
   }
 };

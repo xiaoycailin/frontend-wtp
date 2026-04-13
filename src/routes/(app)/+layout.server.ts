@@ -23,7 +23,7 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
       }).catch(() => ({ ok: false })),
     ]);
 
-    console.log("Site RES", siteRes.ok);
+    // console.log("Site RES", siteRes.ok);
 
     const siteJson = siteRes.ok ? await siteRes.json().catch(() => ({})) : {};
     const userJson = userRes.ok ? await userRes.json().catch(() => ({})) : {};
