@@ -4,7 +4,7 @@ set -e
 cd /home/www/frontend-wtp
 
 git fetch origin
-git reset --hard origin/main
+git reset --hard origin/master
 npm ci
 npm run build
 pm2 restart frontendwtp || pm2 start frontendwtp
