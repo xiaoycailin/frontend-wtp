@@ -8,4 +8,4 @@ git reset --hard origin/master
 npm ci
 npm run build
 echo "Restarting service..."
-pm2 restart frontendwtp || pm2 start node --name "frontendwtp" -- build/index.js
+pm2 restart frontendwtp || pm2 start node --name "frontendwtp" -- PORT=4173 build/index.js
