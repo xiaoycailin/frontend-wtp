@@ -402,6 +402,18 @@
                 <tr class="border-t border-white/5 hover:bg-white/[0.03]">
                   <td class="px-4 py-3 align-top">
                     <p class="font-mono text-xs text-white/80">{tx.trxId}</p>
+                    {#if tx.promo?.promotionCode}
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--color-primary)]/20 text-[var(--color-primary)] border border-[var(--color-primary)]/30">
+                          🏷️ {tx.promo.promotionCode}
+                        </span>
+                        {#if tx.promo.promotionDiscount}
+                          <span class="text-[9px] text-emerald-400 font-semibold">
+                            -{fmt(tx.promo.promotionDiscount)}
+                          </span>
+                        {/if}
+                      </div>
+                    {/if}
                   </td>
                   <td class="px-4 py-3 align-top">
                     <div class="flex items-center gap-2">
