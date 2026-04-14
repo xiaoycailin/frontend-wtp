@@ -26,6 +26,13 @@
     fee: number;
     price: string;
     totalPrice: string;
+    promo?: {
+      promotionId?: number;
+      promotionCode?: string;
+      promotionDiscount?: number;
+      flashDiscount?: number;
+      promotionUsageRestored?: boolean;
+    } | null;
   };
 
   type Meta = {
@@ -392,6 +399,18 @@
                     <p class="text-[10px] text-white/40 break-all">
                       ID: {trx.id}
                     </p>
+                    {#if trx.promo?.promotionCode}
+                      <div class="flex items-center gap-1 mt-1">
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--color-primary)]/20 text-[var(--color-primary)] border border-[var(--color-primary)]/30">
+                          🏷️ {trx.promo.promotionCode}
+                        </span>
+                        {#if trx.promo.promotionDiscount}
+                          <span class="text-[9px] text-emerald-400 font-semibold">
+                            -{formatCurrency(trx.promo.promotionDiscount)}
+                          </span>
+                        {/if}
+                      </div>
+                    {/if}
                   </div>
                 </td>
 
