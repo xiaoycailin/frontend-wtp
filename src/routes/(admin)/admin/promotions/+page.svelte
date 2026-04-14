@@ -1,5 +1,6 @@
 <script lang="ts">
   type PromotionDiscType = "flat" | "percent";
+  type PickerType = "product" | "user";
 
   type PromotionItem = {
     id: number;
@@ -31,6 +32,19 @@
     }[];
   };
 
+  type ProductOption = {
+    id: string;
+    title: string;
+    skuCode?: string | null;
+  };
+
+  type UserOption = {
+    id: string;
+    displayName?: string | null;
+    email: string;
+    role?: string | null;
+  };
+
   type FormState = {
     code: string;
     title: string;
@@ -58,6 +72,15 @@
 
   let showModal = $state(false);
   let editingPromotion = $state<PromotionItem | null>(null);
+
+  let pickerOpen = $state(false);
+  let pickerType = $state<PickerType>("product");
+  let pickerSearch = $state("");
+  let pickerLoading = $state(false);
+  let pickerError = $state<string | null>(null);
+  let productOptions = $state<ProductOption[]>([]);
+  let userOptions = $state<UserOption[]>([]);
+
   let form = $state<FormState>({
     code: "",
     title: "",
@@ -86,6 +109,14 @@
       : availableSubCategories,
   );
 
+  const selectedProduct = $derived(
+    productOptions.find((item) => item.id === form.productId) ?? null,
+  );
+
+  const selectedUser = $derived(
+    userOptions.find((item) => item.id === form.userId) ?? null,
+  );
+
   function resetForm() {
     form.code = "";
     form.title = "";
@@ -110,7 +141,7 @@
     showModal = true;
   }
 
-  function openEditModal(item: PromotionItem) {
+  async function openEditModal(item: PromotionItem) {
     editingPromotion = item;
     form.code = item.code ?? "";
     form.title = item.title ?? "";
@@ -128,6 +159,14 @@
     form.userId = item.userId ?? "";
     form.expiredDate = item.expiredDate ? String(item.expiredDate).slice(0, 16) : "";
     showModal = true;
+
+    if (item.productId) {
+      await fetchProducts(item.productId);
+    }
+
+    if (item.userId) {
+      await fetchUsers(item.userId);
+    }
   }
 
   function normalizePayload() {
@@ -177,6 +216,87 @@
     } catch (e) {
       console.error(e);
     }
+  }
+
+  async function fetchProducts(search = "") {
+    pickerLoading = true;
+    pickerError = null;
+    try {
+      const params = new URLSearchParams();
+      params.set("limit", "20");
+      if (search.trim()) params.set("q", search.trim());
+
+      const res = await fetch(`/api/v1/products/list?${params.toString()}`);
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(json?.data?.message ?? json?.message ?? "Gagal memuat produk");
+      }
+      productOptions = json?.data?.items ?? [];
+    } catch (e: any) {
+      pickerError = e?.message ?? "Gagal memuat produk";
+    } finally {
+      pickerLoading = false;
+    }
+  }
+
+  async function fetchUsers(search = "") {
+    pickerLoading = true;
+    pickerError = null;
+    try {
+      const params = new URLSearchParams();
+      params.set("limit", "20");
+      if (search.trim()) params.set("q", search.trim());
+
+      const res = await fetch(`/api/v1/users?${params.toString()}`, {
+        credentials: "include",
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(json?.data?.message ?? json?.message ?? "Gagal memuat user");
+      }
+      userOptions = json?.data?.items ?? json?.items ?? [];
+    } catch (e: any) {
+      pickerError = e?.message ?? "Gagal memuat user";
+    } finally {
+      pickerLoading = false;
+    }
+  }
+
+  async function openPicker(type: PickerType) {
+    pickerType = type;
+    pickerSearch = "";
+    pickerError = null;
+    pickerOpen = true;
+
+    if (type === "product") {
+      await fetchProducts();
+    } else {
+      await fetchUsers();
+    }
+  }
+
+  async function handlePickerSearch() {
+    if (pickerType === "product") {
+      await fetchProducts(pickerSearch);
+    } else {
+      await fetchUsers(pickerSearch);
+    }
+  }
+
+  function pickProduct(item: ProductOption) {
+    form.productId = item.id;
+    if (!productOptions.some((product) => product.id === item.id)) {
+      productOptions = [item, ...productOptions];
+    }
+    pickerOpen = false;
+  }
+
+  function pickUser(item: UserOption) {
+    form.userId = item.id;
+    if (!userOptions.some((user) => user.id === item.id)) {
+      userOptions = [item, ...userOptions];
+    }
+    pickerOpen = false;
   }
 
   async function submitPromotion() {
@@ -478,7 +598,7 @@
           <input
             type="number"
             min="0"
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+            class="px-3 py-2 rounded-lg bg-black/40 border border:white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
             bind:value={form.used}
           />
         </label>
@@ -503,14 +623,37 @@
           />
         </label>
 
-        <label class="flex flex-col gap-1 md:col-span-2">
+        <div class="flex flex-col gap-1 md:col-span-2">
           <span class="text-white/70">Product ID (opsional)</span>
-          <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
-            bind:value={form.productId}
-            placeholder="Isi kalau promo khusus product tertentu"
-          />
-        </label>
+          <div class="flex gap-2">
+            <input
+              class="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+              bind:value={form.productId}
+              placeholder="Isi kalau promo khusus product tertentu"
+            />
+            <button
+              type="button"
+              class="px-3 py-2 rounded-lg text-xs font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
+              onclick={() => openPicker("product")}
+            >
+              Pick Produk
+            </button>
+            {#if form.productId}
+              <button
+                type="button"
+                class="px-3 py-2 rounded-lg text-xs font-semibold bg-red-500/10 text-red-300 border border-red-500/40 hover:bg-red-500/20"
+                onclick={() => (form.productId = "")}
+              >
+                Clear
+              </button>
+            {/if}
+          </div>
+          {#if selectedProduct}
+            <p class="text-[11px] text-white/45">
+              Terpilih: <span class="text-white/70">{selectedProduct.title}</span> ({selectedProduct.id})
+            </p>
+          {/if}
+        </div>
 
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Kategori (opsional)</span>
@@ -544,14 +687,28 @@
           </select>
         </label>
 
-        <label class="flex flex-col gap-1">
+        <div class="flex flex-col gap-1">
           <span class="text-white/70">User ID (opsional)</span>
-          <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
-            bind:value={form.userId}
-            placeholder="Kosongkan kalau semua user bisa pakai"
-          />
-        </label>
+          <div class="flex gap-2">
+            <input
+              class="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+              bind:value={form.userId}
+              placeholder="Kosongkan kalau semua user bisa pakai"
+            />
+            <button
+              type="button"
+              class="px-3 py-2 rounded-lg text-xs font-semibold bg-white/5 text-white/80 border border-white/10 hover:bg-white/10"
+              onclick={() => openPicker("user")}
+            >
+              Pick User
+            </button>
+          </div>
+          {#if selectedUser}
+            <p class="text-[11px] text-white/45">
+              Terpilih: <span class="text-white/70">{selectedUser.displayName || selectedUser.email}</span> ({selectedUser.id})
+            </p>
+          {/if}
+        </div>
 
         <label class="flex flex-col gap-1">
           <span class="text-white/70">Expired Date (opsional)</span>
@@ -589,6 +746,112 @@
         >
           {saving ? "Menyimpan..." : "Simpan"}
         </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+{#if pickerOpen}
+  <div class="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="rounded-2xl bg-[#111111] border border-white/10 p-4 space-y-4 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-sm font-semibold text-white">
+            {pickerType === "product" ? "Pick Produk" : "Pick User"}
+          </h3>
+          <p class="text-[11px] text-white/40">
+            Cari lalu pilih {pickerType === "product" ? "produk" : "user"} yang mau dipakai.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="text-xs text-white/50 hover:text-white"
+          onclick={() => (pickerOpen = false)}
+        >
+          Tutup
+        </button>
+      </div>
+
+      <div class="flex gap-2">
+        <input
+          class="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+          bind:value={pickerSearch}
+          placeholder={pickerType === "product" ? "Cari nama produk / SKU / ID" : "Cari nama user / email / ID"}
+          onkeydown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handlePickerSearch();
+            }
+          }}
+        />
+        <button
+          type="button"
+          class="px-3 py-2 rounded-lg text-xs font-semibold bg-[var(--color-primary)] text-black hover:bg-[#ffd740]"
+          onclick={handlePickerSearch}
+        >
+          Cari
+        </button>
+      </div>
+
+      {#if pickerError}
+        <div class="text-xs text-red-300 bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2">
+          {pickerError}
+        </div>
+      {/if}
+
+      <div class="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
+        {#if pickerLoading}
+          <div class="rounded-xl border border-white/10 bg-black/20 px-3 py-4 text-xs text-white/45 text-center">
+            Memuat data...
+          </div>
+        {:else if pickerType === "product"}
+          {#if !productOptions.length}
+            <div class="rounded-xl border border-white/10 bg-black/20 px-3 py-4 text-xs text-white/45 text-center">
+              Produk tidak ditemukan.
+            </div>
+          {:else}
+            {#each productOptions as item}
+              <button
+                type="button"
+                class="w-full text-left rounded-xl border border-white/10 bg-black/20 px-3 py-3 hover:bg-white/5"
+                onclick={() => pickProduct(item)}
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-xs font-semibold text-white">{item.title}</p>
+                    <p class="text-[11px] text-white/45">ID: {item.id}</p>
+                    <p class="text-[11px] text-white/45">SKU: {item.skuCode || "-"}</p>
+                  </div>
+                  <span class="text-[11px] font-semibold text-[var(--color-primary)]">Pilih</span>
+                </div>
+              </button>
+            {/each}
+          {/if}
+        {:else}
+          {#if !userOptions.length}
+            <div class="rounded-xl border border-white/10 bg-black/20 px-3 py-4 text-xs text-white/45 text-center">
+              User tidak ditemukan.
+            </div>
+          {:else}
+            {#each userOptions as item}
+              <button
+                type="button"
+                class="w-full text-left rounded-xl border border-white/10 bg-black/20 px-3 py-3 hover:bg-white/5"
+                onclick={() => pickUser(item)}
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-xs font-semibold text-white">{item.displayName || "Tanpa nama"}</p>
+                    <p class="text-[11px] text-white/45">Email: {item.email}</p>
+                    <p class="text-[11px] text-white/45">ID: {item.id}</p>
+                    <p class="text-[11px] text-white/45">Role: {item.role || "-"}</p>
+                  </div>
+                  <span class="text-[11px] font-semibold text-[var(--color-primary)]">Pilih</span>
+                </div>
+              </button>
+            {/each}
+          {/if}
+        {/if}
       </div>
     </div>
   </div>
