@@ -64,6 +64,8 @@
   const fee = Math.round(transaction.fee);
   const totalPrice = Number(transaction.totalPrice);
   const isFlashSale = !!transaction.flashSaleId;
+  const promoDiscount = transaction.promo?.promotionDiscount ?? 0;
+  const promoCode = transaction.promo?.promotionCode;
 
   // ── Deteksi tipe pembayaran ──────────────────────────────────────
   const hasQris = !!transaction.paymentDetails?.qrString;
@@ -274,6 +276,15 @@
                 Diskon Flash Sale
               </span>
               <span>-{formatRp(discount)}</span>
+            </div>
+          {/if}
+          {#if promoDiscount > 0}
+            <div class="price-row discount">
+              <span class="flex-row">
+                <span class="badge promo sm">🏷️ PROMO</span>
+                {promoCode ? `Diskon Promo (${promoCode})` : 'Diskon Promo'}
+              </span>
+              <span>-{formatRp(promoDiscount)}</span>
             </div>
           {/if}
           {#if fee > 0}
