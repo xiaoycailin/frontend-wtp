@@ -1,10 +1,13 @@
 import type { RequestHandler } from "./$types";
+import config from "../../config";
 
-const BASE_URL = "https://wtpanjay.com";
+let BASE_URL = "https://topupin.store";
 
 export const GET: RequestHandler = async ({ fetch }) => {
   const staticPages = [
     "",
+    "/auth/login",
+    "/auth/register",
     "/products",
     "/about",
     "/terms",
@@ -17,10 +20,23 @@ export const GET: RequestHandler = async ({ fetch }) => {
   let productSlugs: string[] = [];
   try {
     // Try to fetch product slugs from API
-    const res = await fetch("/api/v1/products/list?limit=100&fields=slug");
+    const res = await fetch(config.API_BASE_URL + "/category");
     if (res.ok) {
       const json = await res.json();
-      productSlugs = json.items?.map((p: any) => p.slug).filter(Boolean) || [];
+      // console.log(json.data);
+      const slugs: any[] = [];
+      json.data?.map((c: any) => {
+        c.subCategories?.map((sub: any) => {
+          slugs.push(sub.slug);
+        });
+      });
+      productSlugs = slugs?.filter(Boolean);
+    }
+    const res2 = await fetch(config.API_BASE_URL + "/site-config");
+    if (res2.ok) {
+      const json2 = await res2.json();
+      // console.log(json2.data);
+      BASE_URL = json2?.data?.siteUrl ?? "https://topupin.store";
     }
   } catch {
     // ignore, fallback to static only
@@ -50,7 +66,7 @@ ${pages
     <lastmod>${page.lastmod}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
-  </url>`
+  </url>`,
   )
   .join("\n")}
 </urlset>`;
