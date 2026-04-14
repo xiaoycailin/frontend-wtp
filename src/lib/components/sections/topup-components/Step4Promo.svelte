@@ -34,10 +34,14 @@
         params.set("flashId", String(selected.id));
       }
 
-      const res = await fetch(`/api/v1/promotions/available?${params.toString()}`);
+      const res = await fetch(
+        `/api/v1/promotions/available?${params.toString()}`,
+      );
       const json = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(json?.data?.message ?? json?.message ?? "Gagal memuat promo");
+        throw new Error(
+          json?.data?.message ?? json?.message ?? "Gagal memuat promo",
+        );
       }
       promos = json?.data ?? [];
     } catch (e: any) {
@@ -48,12 +52,32 @@
     }
   }
 
-  function applyFoundPromo(found: AvailablePromo) {
+  async function applyFoundPromo(found: AvailablePromo) {
     if (!found.valid) {
       promoApplied = null;
-      promoError = found.reason ?? "Kode promo tidak bisa dipakai untuk item ini.";
+      promoError =
+        found.reason ?? "Kode promo tidak bisa dipakai untuk item ini.";
       toastStore.show(promoError, "error", 3500);
       return;
+    }
+
+    const req = await fetch("/api/v1/promotions/apply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: found.id,
+        itemId: selected?.id,
+        flashId: selected?.productFlashId,
+      }),
+    });
+
+    if (!req.ok) {
+      const data = await req.json();
+      promoError =
+        data.data?.message ?? "Ërror saat menggunakan promo, coba lagi nanti.";
+      return toastStore.show(promoError);
     }
 
     promoApplied = {
@@ -169,14 +193,19 @@
     {:else}
       <div class="flex gap-2 mb-3">
         <div class="relative flex-1">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none">🏷️</span>
+          <span
+            class="absolute left-3 top-1/2 -translate-y-1/2 text-sm pointer-events-none"
+            >🏷️</span
+          >
           <input
             type="text"
             bind:value={promoCode}
             placeholder="Ketik Kode Promo Kamu"
             onkeydown={(e) => e.key === "Enter" && applyPromo()}
             class="w-full bg-white/[0.04] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-white/20 outline-none transition-all duration-200 focus:bg-white/[0.07] focus:shadow-[0_0_0_3px_rgba(245,197,24,0.08)] border"
-            style="border-color:{promoError ? 'rgba(239,68,68,0.5)' : 'rgba(255,255,255,0.1)'};"
+            style="border-color:{promoError
+              ? 'rgba(239,68,68,0.5)'
+              : 'rgba(255,255,255,0.1)'};"
           />
         </div>
         <button
@@ -184,9 +213,13 @@
           disabled={!promoCode.trim()}
           class="px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex-shrink-0"
           style="
-            background: {promoCode.trim() ? 'var(--color-primary)' : 'rgba(255,255,255,0.05)'};
+            background: {promoCode.trim()
+            ? 'var(--color-primary)'
+            : 'rgba(255,255,255,0.05)'};
             color:      {promoCode.trim() ? '#000' : 'rgba(255,255,255,0.2)'};
-            box-shadow: {promoCode.trim() ? '0 0 16px rgba(245,197,24,0.3)' : 'none'};
+            box-shadow: {promoCode.trim()
+            ? '0 0 16px rgba(245,197,24,0.3)'
+            : 'none'};
             cursor:     {promoCode.trim() ? 'pointer' : 'not-allowed'};
           "
         >
@@ -196,7 +229,11 @@
 
       {#if promoError}
         <p class="text-[11px] text-red-400 mb-3 flex items-center gap-1">
-          <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <svg
+            class="w-3 h-3 flex-shrink-0"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
             <path
               fill-rule="evenodd"
               d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
@@ -215,19 +252,32 @@
       }}
       class="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all duration-200 w-full sm:w-auto"
       style="
-        background:   {showPromos ? 'rgba(245,197,24,0.1)' : 'rgba(255,255,255,0.03)'};
-        border-color: {showPromos ? 'rgba(245,197,24,0.3)' : 'rgba(255,255,255,0.08)'};
-        color:        {showPromos ? 'var(--color-primary)' : 'rgba(255,255,255,0.5)'};
+        background:   {showPromos
+        ? 'rgba(245,197,24,0.1)'
+        : 'rgba(255,255,255,0.03)'};
+        border-color: {showPromos
+        ? 'rgba(245,197,24,0.3)'
+        : 'rgba(255,255,255,0.08)'};
+        color:        {showPromos
+        ? 'var(--color-primary)'
+        : 'rgba(255,255,255,0.5)'};
       "
     >
       <span>🎁</span> Promo Yang Tersedia
       <svg
-        class="w-3 h-3 ml-auto transition-transform duration-200 {showPromos ? 'rotate-180' : ''}"
+        class="w-3 h-3 ml-auto transition-transform duration-200 {showPromos
+          ? 'rotate-180'
+          : ''}"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
       >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M19 9l-7 7-7-7"
+        />
       </svg>
     </button>
 
@@ -236,23 +286,35 @@
         {#if loading}
           <div class="text-[11px] text-white/40">Memuat promo...</div>
         {:else if !promos.length}
-          <div class="text-[11px] text-white/40">Belum ada promo tersedia untuk item ini.</div>
+          <div class="text-[11px] text-white/40">
+            Belum ada promo tersedia untuk item ini.
+          </div>
         {:else}
           {#each promos as promo}
             <button
               onclick={() => usePromo(promo)}
               class="flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200 group"
-              style="border-color:{promo.valid ? 'rgba(255,255,255,0.07)' : 'rgba(239,68,68,0.2)'}; background:{promo.valid ? 'rgba(255,255,255,0.03)' : 'rgba(127,29,29,0.15)'};"
+              style="border-color:{promo.valid
+                ? 'rgba(255,255,255,0.07)'
+                : 'rgba(239,68,68,0.2)'}; background:{promo.valid
+                ? 'rgba(255,255,255,0.03)'
+                : 'rgba(127,29,29,0.15)'};"
             >
-              <div class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0">
+              <div
+                class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 flex items-center justify-center flex-shrink-0"
+              >
                 ⭐
               </div>
               <div class="flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <p class="text-xs font-bold text-white group-hover:text-[var(--color-primary)] transition-colors">
+                  <p
+                    class="text-xs font-bold text-white group-hover:text-[var(--color-primary)] transition-colors"
+                  >
                     {promo.title}
                   </p>
-                  <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-[var(--color-primary)]/15 text-[var(--color-primary)]">
+                  <span
+                    class="text-[9px] font-black px-1.5 py-0.5 rounded bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
+                  >
                     {promo.code}
                   </span>
                 </div>
@@ -261,15 +323,21 @@
                     ? `Diskon ${promo.value}%`
                     : `Diskon Rp ${promo.value.toLocaleString("id-ID")}`}
                   {#if promo.previewDiscount > 0}
-                    • hemat sekitar Rp {promo.previewDiscount.toLocaleString("id-ID")}
+                    • hemat sekitar Rp {promo.previewDiscount.toLocaleString(
+                      "id-ID",
+                    )}
                   {/if}
                 </p>
                 {#if promo.reason}
                   <p class="text-[10px] text-red-400 mt-0.5">{promo.reason}</p>
                 {/if}
               </div>
-              <span class="text-[10px] font-bold {promo.valid ? 'text-[var(--color-primary)]' : 'text-red-400'}">
-                {promo.valid ? 'Pakai →' : 'Tidak cocok'}
+              <span
+                class="text-[10px] font-bold {promo.valid
+                  ? 'text-[var(--color-primary)]'
+                  : 'text-red-400'}"
+              >
+                {promo.valid ? "Pakai →" : "Tidak cocok"}
               </span>
             </button>
           {/each}

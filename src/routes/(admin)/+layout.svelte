@@ -13,7 +13,8 @@
     Receipt,
     User,
     Bolt,
-    PurchaseTag,
+    Discount,
+    // PurchaseTag,
   } from "@boxicons/svelte";
   import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
 
@@ -30,7 +31,7 @@
     { label: "Transaksi", href: "/admin/transactions", icon: Receipt },
     { label: "Produk", href: "/admin/products", icon: ProductHunt },
     { label: "Flash Sale", href: "/admin/flash-sale", icon: Bolt },
-    { label: "Promotion", href: "/admin/promotions", icon: PurchaseTag },
+    { label: "Promotion", href: "/admin/promotions", icon: Discount },
     { label: "Kategori", href: "/admin/category", icon: Categories },
     { label: "Banners", href: "/admin/banners", icon: CaretDownSquare },
     { label: "Badge Library", href: "/admin/badges", icon: CaretDownSquare },
