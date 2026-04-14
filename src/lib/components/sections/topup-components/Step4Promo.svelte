@@ -105,13 +105,34 @@
     applyFoundPromo(promo);
   }
 
+  let lastFetchKey = $state("");
+
   $effect(() => {
-    fetchPromos();
-    if (promoApplied && promoCode) {
-      const refreshed = promos.find((promo) => promo.code === promoCode.trim().toUpperCase());
-      if (refreshed && !refreshed.valid) {
-        promoApplied = null;
-      }
+    const fetchKey = selected
+      ? `${selected.id}-${selected.productFlashId ?? "regular"}-${quantity}`
+      : "";
+
+    if (!fetchKey) {
+      promos = [];
+      lastFetchKey = "";
+      return;
+    }
+
+    if (fetchKey !== lastFetchKey) {
+      lastFetchKey = fetchKey;
+      fetchPromos();
+    }
+  });
+
+  $effect(() => {
+    if (!promoApplied || !promoCode) return;
+
+    const refreshed = promos.find(
+      (promo) => promo.code === promoCode.trim().toUpperCase(),
+    );
+
+    if (refreshed && !refreshed.valid) {
+      promoApplied = null;
     }
   });
 </script>
