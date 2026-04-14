@@ -98,9 +98,13 @@
     { ok: !!email.trim(), label: "Email" },
   ]);
 
+  let lastReviewKey = $state("");
+
   $effect(() => {
     if (!selected || !selectedPay?.id) {
       reviewData = null;
+      purchaseData = null;
+      lastReviewKey = "";
       return;
     }
 
@@ -120,6 +124,13 @@
       ...(promoApplied?.code ? { promoCode: promoApplied.code } : {}),
       isFlashSale,
     };
+
+    const reviewKey = JSON.stringify(body);
+    if (reviewKey === lastReviewKey) {
+      return;
+    }
+
+    lastReviewKey = reviewKey;
 
     const controller = new AbortController();
     purchaseReview(body, controller.signal);
