@@ -117,6 +117,7 @@
           ? { server_id: serverId }
           : {}),
       },
+      ...(promoApplied?.code ? { promoCode: promoApplied.code } : {}),
       isFlashSale,
     };
 
@@ -150,6 +151,19 @@
 
       const json = await res.json();
       reviewData = json.data ?? null;
+      if (reviewData?.promotion) {
+        promoApplied = {
+          ...promoApplied,
+          code: reviewData.promotion.code,
+          title: reviewData.promotion.title,
+          desc:
+            reviewData.promotion.discType === "percent"
+              ? `Potongan ${reviewData.promotion.value}%`
+              : `Potongan Rp ${Number(reviewData.promotion.value).toLocaleString("id-ID")}`,
+          discount: reviewData.promotion.discount,
+          previewDiscount: reviewData.promotion.discount,
+        };
+      }
       purchaseData = body;
     } catch (err: any) {
       if (err.name !== "AbortError")
@@ -176,7 +190,11 @@
     try {
       const res = await fetch("/api/v1/payments/purchase", {
         method: "POST",
-        body: JSON.stringify({ ...purchaseData, email: email.trim() }),
+        body: JSON.stringify({
+          ...purchaseData,
+          email: email.trim(),
+          ...(promoApplied?.code ? { promoCode: promoApplied.code } : {}),
+        }),
         headers: { "Content-Type": "application/json" },
       });
 

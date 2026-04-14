@@ -1,5 +1,5 @@
 ﻿<script lang="ts">
-  import type { Product, PaymentMethod } from "./types";
+  import type { Product, PaymentMethod, PromoApplied } from "./types";
   import { directMethods } from "./paymentConstants";
   import { fmt } from "./utils";
   import { onMount } from "svelte";
@@ -15,12 +15,14 @@
     selected,
     token,
     user,
+    promoApplied = null,
   }: {
     selectedPay: any;
     basePrice: number;
     selected: Product | null;
     token: string;
     user: User;
+    promoApplied?: PromoApplied | null;
   } = $props();
 
   // â”€â”€ Local state (HARUS $state agar reaktif) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -115,6 +117,7 @@
           itemId,
           qty: 1,
           ...(flashId ? { flashId } : {}),
+          ...(promoApplied?.code ? { promoCode: promoApplied.code } : {}),
         }),
         signal,
       });

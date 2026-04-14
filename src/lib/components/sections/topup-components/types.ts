@@ -24,9 +24,33 @@ export interface PaymentMethod {
 }
 
 export interface PromoApplied {
+  id?: number;
   code: string;
+  title?: string;
   desc: string;
   discount: number;
+  discType?: "flat" | "percent";
+  valid?: boolean;
+  reason?: string | null;
+  previewDiscount?: number;
+  minTrx?: number | null;
+  maxDiscount?: number | null;
+}
+
+export interface AvailablePromo {
+  id: number;
+  code: string;
+  title: string;
+  discType: "flat" | "percent";
+  value: number;
+  minTrx?: number | null;
+  maxDiscount?: number | null;
+  valid: boolean;
+  reason?: string | null;
+  allowFlashSale: boolean;
+  previewDiscount: number;
+  remainingUse: number;
+  expiredDate?: string | null;
 }
 
 export interface SupportedGameConfig {

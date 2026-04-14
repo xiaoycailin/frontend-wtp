@@ -48,13 +48,9 @@
 
   const basePrice = $derived(selected?.price ?? 0);
 
-  const discountAmount = $derived(
-    promoApplied
-      ? Math.min(Math.round(basePrice * promoApplied.discount), 15_000)
-      : 0,
-  );
+  const discountAmount = $derived(promoApplied?.previewDiscount ?? 0);
 
-  const totalPrice = $derived((basePrice - discountAmount) * quantity);
+  const totalPrice = $derived(Math.max(basePrice - discountAmount, 0) * quantity);
 
   const requiresServerInput = $derived(zoneInputMode !== "none");
 
@@ -121,9 +117,9 @@
 
     <Step3Quantity bind:quantity {selected} {basePrice} />
 
-    <Step4Promo bind:promoApplied />
+    <Step4Promo bind:promoApplied {selected} {quantity} />
 
-    <Step5Payment bind:selectedPay {basePrice} {selected} {token} {user} />
+    <Step5Payment bind:selectedPay {basePrice} {selected} {token} {user} {promoApplied} />
 
     <Step6Contact bind:phone bind:email />
   </div>
