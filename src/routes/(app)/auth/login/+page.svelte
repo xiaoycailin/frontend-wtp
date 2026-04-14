@@ -11,6 +11,8 @@
   let showPassword = $state(false);
   let touched = $state({ email: false, password: false });
 
+  const { data } = $props();
+
   const emailValid = $derived(
     email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
   );
@@ -96,10 +98,12 @@
           font-family="'Rajdhani',sans-serif"
           font-weight="700"
           font-size="14"
-          fill="var(--color-primary)">W</text
+          fill="var(--color-primary)">TS</text
         >
       </svg>
-      <span class="logo-text">WTPANJAY</span>
+      <span class="logo-text"
+        >{data?.siteConfig?.siteName ?? "Topupin Store"}</span
+      >
     </a>
 
     <!-- Card -->

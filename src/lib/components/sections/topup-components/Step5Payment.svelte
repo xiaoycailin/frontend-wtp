@@ -37,10 +37,12 @@
   let isValidLogin = $state(false);
 
   const initAuth = async () => {
-    const newUser = await auth.verifySelf(token);
-    if (newUser) {
-      auth.setAuth(token, newUser);
-      isValidLogin = true;
+    if (user) {
+      const newUser = await auth.verifySelf(token);
+      if (newUser) {
+        auth.setAuth(token, newUser);
+        isValidLogin = true;
+      }
     }
   };
 

@@ -1,7 +1,14 @@
 ﻿<script lang="ts">
+  import type { SiteConfig } from "../../../app.js";
   import "./page.css";
 
   const lastUpdated = "1 April 2026";
+
+  const { data } = $props();
+
+  const siteConfig: SiteConfig = data.siteConfig;
+
+  // console.log(siteConfig);
 
   const sections = [
     {
@@ -13,7 +20,7 @@
           items: [
             "Nama tampilan (display name) saat mendaftar.",
             "Alamat email yang digunakan untuk membuat akun.",
-            "Password yang disimpan dalam bentuk terenkripsi (hashed) â€” kami tidak pernah menyimpan password dalam bentuk teks biasa.",
+            "Password yang disimpan dalam bentuk terenkripsi (hashed) — kami tidak pernah menyimpan password dalam bentuk teks biasa.",
             "ID game dan server yang kamu masukkan saat melakukan top-up.",
             "Informasi yang kamu berikan saat menghubungi layanan pelanggan.",
           ],
@@ -56,7 +63,7 @@
       id: "berbagi",
       title: "4. Berbagi Data dengan Pihak Ketiga",
       items: [
-        "WTPANJAY tidak menjual atau menyewakan data pribadimu kepada pihak ketiga manapun.",
+        `${siteConfig?.siteName ?? "Topupin Store"} tidak menjual atau menyewakan data pribadimu kepada pihak ketiga manapun.`,
         "Data transaksi dibagikan kepada penyedia layanan pembayaran (payment gateway) hanya untuk keperluan verifikasi dan pemrosesan transaksi.",
         "Data ID game dibagikan kepada publisher atau penyedia layanan top-up yang bersangkutan semata-mata untuk memproses pengiriman item.",
         "Kami dapat menggunakan layanan pihak ketiga seperti analitik dan pemantauan performa yang hanya menerima data dalam bentuk agregat dan anonim.",
@@ -67,7 +74,7 @@
       id: "cookie",
       title: "5. Cookie & Teknologi Pelacakan",
       items: [
-        "WTPANJAY menggunakan cookie esensial untuk menjaga sesi login dan preferensi pengguna agar tetap aktif selama kunjungan.",
+        `${siteConfig?.siteName ?? "Topupin Store"} menggunakan cookie esensial untuk menjaga sesi login dan preferensi pengguna agar tetap aktif selama kunjungan.`,
         "Cookie analitik digunakan untuk memahami bagaimana pengguna berinteraksi dengan Platform guna meningkatkan kualitas layanan.",
         "Kamu dapat mengelola atau menonaktifkan cookie melalui pengaturan browser. Namun, menonaktifkan cookie esensial dapat mengganggu fungsi login dan transaksi.",
         "Kami tidak menggunakan cookie pelacak iklan (advertising tracker) pihak ketiga.",
@@ -77,11 +84,11 @@
       id: "hak",
       title: "6. Hak-hak Kamu sebagai Pengguna",
       items: [
-        "Hak Akses â€” Kamu berhak meminta salinan data pribadi yang kami simpan tentangmu kapan saja.",
-        "Hak Koreksi â€” Kamu dapat memperbarui informasi akunmu yang tidak akurat langsung melalui halaman pengaturan akun.",
-        "Hak Penghapusan â€” Kamu dapat meminta penghapusan data pribadimu. Permintaan akan diproses dalam 30 hari kerja, kecuali data tersebut diperlukan untuk keperluan hukum.",
-        "Hak Portabilitas â€” Kamu berhak mendapatkan data pribadimu dalam format yang dapat dibaca mesin untuk dipindahkan ke layanan lain.",
-        "Hak Keberatan â€” Kamu dapat mengajukan keberatan atas pemrosesan data untuk keperluan tertentu, seperti pemasaran langsung.",
+        "Hak Akses — Kamu berhak meminta salinan data pribadi yang kami simpan tentangmu kapan saja.",
+        "Hak Koreksi — Kamu dapat memperbarui informasi akunmu yang tidak akurat langsung melalui halaman pengaturan akun.",
+        "Hak Penghapusan — Kamu dapat meminta penghapusan data pribadimu. Permintaan akan diproses dalam 30 hari kerja, kecuali data tersebut diperlukan untuk keperluan hukum.",
+        "Hak Portabilitas — Kamu berhak mendapatkan data pribadimu dalam format yang dapat dibaca mesin untuk dipindahkan ke layanan lain.",
+        "Hak Keberatan — Kamu dapat mengajukan keberatan atas pemrosesan data untuk keperluan tertentu, seperti pemasaran langsung.",
         "Untuk menggunakan hak-hak di atas, kirimkan permintaan ke privacy@wtpanjay.com beserta verifikasi identitasmu.",
       ],
     },
@@ -89,8 +96,8 @@
       id: "anak",
       title: "7. Perlindungan Data Anak",
       items: [
-        "Layanan WTPANJAY tidak ditujukan untuk anak-anak di bawah usia 13 tahun. Kami tidak dengan sengaja mengumpulkan data dari anak-anak di bawah usia tersebut.",
-        "Bagi pengguna berusia 13â€“17 tahun, penggunaan layanan harus dengan sepengetahuan dan pengawasan orang tua atau wali.",
+        `Layanan ${siteConfig?.siteName ?? "Topupin Store"} tidak ditujukan untuk anak-anak di bawah usia 13 tahun. Kami tidak dengan sengaja mengumpulkan data dari anak-anak di bawah usia tersebut.`,
+        "Bagi pengguna berusia 13–17 tahun, penggunaan layanan harus dengan sepengetahuan dan pengawasan orang tua atau wali.",
         "Jika kami mengetahui bahwa data dari anak di bawah 13 tahun telah dikumpulkan tanpa persetujuan orang tua, kami akan segera menghapus data tersebut.",
         "Orang tua atau wali yang memiliki kekhawatiran terkait data anak dapat menghubungi kami di privacy@wtpanjay.com.",
       ],
@@ -108,7 +115,7 @@
       id: "perubahan",
       title: "9. Perubahan Kebijakan Privasi",
       items: [
-        "WTPANJAY dapat memperbarui kebijakan privasi ini dari waktu ke waktu untuk mencerminkan perubahan layanan, regulasi, atau praktik privasi kami.",
+        `${siteConfig?.siteName ?? "Topupin Store"} dapat memperbarui kebijakan privasi ini dari waktu ke waktu untuk mencerminkan perubahan layanan, regulasi, atau praktik privasi kami.`,
         "Perubahan material akan diberitahukan melalui email terdaftar atau notifikasi yang terlihat jelas di Platform minimal 7 hari sebelum berlaku.",
         "Versi terbaru kebijakan privasi selalu tersedia di halaman ini dengan tanggal pembaruan yang dicantumkan di bagian atas dokumen.",
         "Melanjutkan penggunaan layanan setelah perubahan berlaku dianggap sebagai penerimaan terhadap kebijakan privasi yang diperbarui.",
@@ -119,9 +126,9 @@
       title: "10. Hubungi Tim Privasi Kami",
       items: [
         "Untuk pertanyaan, permintaan, atau keluhan terkait privasi dan perlindungan data pribadimu, hubungi kami melalui:",
-        "Email Privasi: privacy@wtpanjay.com",
-        "Email Dukungan Umum: support@wtpanjay.com",
-        "Jam Operasional: Senin â€“ Minggu, 08.00 â€“ 22.00 WIB",
+        `Email Privasi: ${siteConfig?.contactEmail ?? ""}`,
+        `Email Dukungan Umum: ${siteConfig?.supportEmail ?? ""}`,
+        "Jam Operasional: Senin – Minggu, 08.00 – 22.00 WIB",
         "Kami berkomitmen merespons setiap permintaan terkait privasi dalam waktu 3 hari kerja.",
       ],
     },
@@ -138,10 +145,10 @@
 </script>
 
 <svelte:head>
-  <title>Kebijakan Privasi â€” WTPANJAY</title>
+  <title>Kebijakan Privasi — {siteConfig?.siteName ?? "Topupin Store"}</title>
   <meta
     name="description"
-    content="Pelajari bagaimana WTPANJAY mengumpulkan, menggunakan, dan melindungi data pribadimu."
+    content={`Pelajari bagaimana ${siteConfig?.siteName ?? "Topupin Store"} mengumpulkan, menggunakan, dan melindungi data pribadimu.`}
   />
 </svelte:head>
 
@@ -181,7 +188,7 @@
             fill="var(--color-primary)">W</text
           >
         </svg>
-        <span class="logo-text">WTPANJAY</span>
+        <span class="logo-text">{siteConfig?.siteName ?? "Topupin Store"}</span>
       </a>
       <a href="/" class="back-link">
         <svg
@@ -193,9 +200,8 @@
           stroke-width="2"
           aria-hidden="true"
         >
-          <line x1="19" y1="12" x2="5" y2="12" /><polyline
-            points="12 19 5 12 12 5"
-          />
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
         </svg>
         Kembali
       </a>
@@ -245,8 +251,9 @@
         <h1 class="pp-title">Kebijakan Privasi</h1>
         <p class="pp-subtitle">
           Privasi dan keamanan datamu adalah prioritas kami. Halaman ini
-          menjelaskan secara transparan bagaimana WTPANJAY mengumpulkan,
-          menggunakan, dan melindungi informasi pribadimu.
+          menjelaskan secara transparan bagaimana
+          {siteConfig?.siteName ?? "Topupin Store"} mengumpulkan, menggunakan, dan
+          melindungi informasi pribadimu.
         </p>
         <p class="pp-updated">
           Terakhir diperbarui: <strong>{lastUpdated}</strong>
@@ -300,11 +307,8 @@
             stroke-width="2"
             aria-hidden="true"
           >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle
-              cx="12"
-              cy="7"
-              r="4"
-            />
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
           </svg>
           <span class="highlight-title">Hak Pengguna</span>
           <span class="highlight-desc"
@@ -369,11 +373,10 @@
             pribadimu.
           </p>
         </div>
-        <a href="mailto:privacy@wtpanjay.com" class="btn-contact"
+        <a href="mailto:{siteConfig?.supportEmail ?? ''}" class="btn-contact"
           >Hubungi Kami</a
         >
       </div>
     </main>
   </div>
 </div>
-

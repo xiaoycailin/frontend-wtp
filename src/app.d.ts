@@ -58,6 +58,7 @@ interface SiteConfig {
 
   // Kontak (untuk schema.org)
   contactEmail?: string | null;
+  supportEmail?: string | null;
   supportWhatsapp?: string | null;
 
   // Sosial

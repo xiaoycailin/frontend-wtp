@@ -7,7 +7,10 @@
     Globe,
     Group,
   } from "@boxicons/svelte";
+  import type { SiteConfig } from "../../../app.js";
 
+  const { data } = $props();
+  const siteConfig: SiteConfig = data?.siteConfig;
   const stats = [
     { value: "2Jt+", label: "Transaksi Berhasil" },
     { value: "500rb+", label: "Pengguna Aktif" },
@@ -55,7 +58,7 @@
   ];
 
   const storyParagraphs = [
-    "WTPANJAY dimulai pada 2023 oleh sekelompok gamer yang lelah dengan proses top-up yang lambat, mahal, dan tidak transparan. Kami percaya bahwa mengisi saldo game seharusnya semudah memesan makanan online.",
+    `${siteConfig?.siteName ?? "Topupin Store"} dimulai pada 2023 oleh sekelompok gamer yang lelah dengan proses top-up yang lambat, mahal, dan tidak transparan. Kami percaya bahwa mengisi saldo game seharusnya semudah memesan makanan online.`,
     "Dalam waktu satu tahun, kami telah memproses lebih dari dua juta transaksi dan melayani ratusan ribu gamer dari Sabang sampai Merauke. Setiap transaksi diproses secara otomatis dalam hitungan detik tanpa perlu konfirmasi manual.",
     "Kami terus berinovasi dengan menghadirkan fitur-fitur baru seperti Leaderboard komunitas, Kalkulator konversi diamond, dan program loyalitas untuk pengguna setia.",
   ];
@@ -68,10 +71,11 @@
 </script>
 
 <svelte:head>
-  <title>Tentang Kami â€” WTPANJAY</title>
+  <title>Tentang Kami - {siteConfig?.siteName ?? "Topupin Store"}</title>
   <meta
     name="description"
-    content="Kenalan dengan WTPANJAY, platform top-up game terpercaya di Indonesia."
+    content="Kenalan dengan {siteConfig?.siteName ??
+      'Topupin Store'}, platform top-up game terpercaya di Indonesia."
   />
 </svelte:head>
 
@@ -121,9 +125,9 @@
     <p
       style="font-size:1rem; color:rgba(255,255,255,0.5); line-height:1.75; max-width:42rem; margin:0 auto;"
     >
-      WTPANJAY adalah platform top-up game online yang memungkinkan jutaan gamer
-      Indonesia mengisi diamond, kredit, dan voucher game favorit mereka dengan
-      cepat, aman, dan terjangkau.
+      {siteConfig?.siteName ?? "Topupin Store"} adalah platform top-up game online
+      yang memungkinkan jutaan gamer Indonesia mengisi diamond, kredit, dan voucher
+      game favorit mereka dengan cepat, aman, dan terjangkau.
     </p>
   </div>
 </section>
@@ -217,13 +221,15 @@
           </svg>
         </div>
         <div style="text-align:center;">
-          <p style="font-size:1.25rem; font-weight:900; color:var(--color-primary);">
-            WTPANJAY
+          <p
+            style="font-size:1.25rem; font-weight:900; color:var(--color-primary);"
+          >
+            {siteConfig?.siteName ?? "Topupin Store"}
           </p>
           <p
             style="font-size:0.7rem; color:rgba(255,255,255,0.35); margin-top:0.25rem;"
           >
-            Est. 2023 Â· Indonesia
+            Est. 2023 · Indonesia
           </p>
         </div>
         <div
@@ -232,7 +238,9 @@
         >
           {#each cardHighlights as [k, v]}
             <div>
-              <p style="font-size:0.625rem; color:var(--color-primary); font-weight:700;">
+              <p
+                style="font-size:0.625rem; color:var(--color-primary); font-weight:700;"
+              >
                 {k}
               </p>
               <p
@@ -258,7 +266,7 @@
       Nilai Kami
     </p>
     <h2 style="font-size:clamp(1.5rem,3vw,2rem); font-weight:900; color:#fff;">
-      Kenapa pilih WTPANJAY?
+      Kenapa pilih {siteConfig?.siteName ?? "Topupin Store"}?
     </h2>
   </div>
 
@@ -404,7 +412,8 @@
                 max-width:32rem; margin-left:auto; margin-right:auto; line-height:1.7;"
       >
         Bergabung dengan jutaan gamer yang sudah mempercayakan top-up mereka ke
-        WTPANJAY. Daftar gratis dan nikmati promo pertama kamu.
+        {siteConfig?.siteName ?? "Topupin Store"}. Daftar gratis dan nikmati
+        promo pertama kamu.
       </p>
       <div
         style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:0.75rem;"
@@ -419,7 +428,8 @@
           onmouseenter={(e) =>
             ((e.currentTarget as HTMLElement).style.background = "#ffd740")}
           onmouseleave={(e) =>
-            ((e.currentTarget as HTMLElement).style.background = "var(--color-primary)")}
+            ((e.currentTarget as HTMLElement).style.background =
+              "var(--color-primary)")}
         >
           Daftar Gratis
         </a>
@@ -443,4 +453,3 @@
     </div>
   </div>
 </section>
-
