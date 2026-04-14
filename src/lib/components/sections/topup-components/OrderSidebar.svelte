@@ -99,12 +99,17 @@
   ]);
 
   let lastReviewKey = $state("");
+  let reviewRequestTimer: ReturnType<typeof setTimeout> | null = null;
+  let activeReviewController: AbortController | null = null;
 
   $effect(() => {
     if (!selected || !selectedPay?.id) {
       reviewData = null;
       purchaseData = null;
       lastReviewKey = "";
+      if (reviewRequestTimer) clearTimeout(reviewRequestTimer);
+      activeReviewController?.abort();
+      activeReviewController = null;
       return;
     }
 
@@ -132,9 +137,13 @@
 
     lastReviewKey = reviewKey;
 
-    const controller = new AbortController();
-    purchaseReview(body, controller.signal);
-    return () => controller.abort();
+    if (reviewRequestTimer) clearTimeout(reviewRequestTimer);
+
+    reviewRequestTimer = setTimeout(() => {
+      activeReviewController?.abort();
+      activeReviewController = new AbortController();
+      purchaseReview(body, activeReviewController.signal);
+    }, 120);
   });
 
   async function purchaseReview(body: any, signal?: AbortSignal) {
