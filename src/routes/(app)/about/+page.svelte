@@ -11,6 +11,8 @@
 
   const { data } = $props();
   const siteConfig: SiteConfig = data?.siteConfig;
+  
+
   const stats = [
     { value: "2Jt+", label: "Transaksi Berhasil" },
     { value: "500rb+", label: "Pengguna Aktif" },

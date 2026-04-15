@@ -65,6 +65,7 @@ interface SiteConfig {
   facebookUrl?: string | null;
   instagramUrl?: string | null;
   twitterUrl?: string | null;
+  telegramUrl?: string | null;
 }
 
 interface Props {
