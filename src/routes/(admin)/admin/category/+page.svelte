@@ -56,6 +56,18 @@
   let editingInputType = $state<any | null>(null);
   let activeTab = $state<'info' | 'inputs'>('info');
 
+  // Input Types form state (for create)
+  let newInputName = $state('');
+  let newInputLabel = $state('');
+  let newInputType = $state('text');
+  let newInputModel = $state('input');
+  let newInputPlaceholder = $state('');
+  let newInputIcon = $state('');
+  let newInputOptionLabel = $state('');
+  let newInputOptionValue = $state('');
+  let newInputOptionsList = $state<{label: string, value: string}[]>([]);
+  let newInputMasking = $state(false);
+
   const catForm = $state({ title: "" });
   const subForm = $state({
     title: "",
@@ -489,15 +501,13 @@
         icon: editingInputType ? editingInputType.icon : newInputIcon.trim() || null,
         maskingForView: editingInputType ? editingInputType.maskingForView : newInputMasking,
       };
-      // Parse options JSON if select model
+      // Options handling for select model
       let options = null;
-      const optionsStr = editingInputType ? JSON.stringify(editingInputType.options) : newInputOptions;
-      if (optionsStr.trim()) {
-        try {
-          options = JSON.parse(optionsStr);
-        } catch (e) {
-          alert('Options must be valid JSON');
-          return;
+      if (data.model === 'select') {
+        // Use existing options if editing, otherwise use newInputOptionsList
+        options = editingInputType ? editingInputType.options : newInputOptionsList;
+        if (!options || !Array.isArray(options) || options.length === 0) {
+          options = null;
         }
       }
       data.options = options;
@@ -512,12 +522,30 @@
         newInputModel = 'input';
         newInputPlaceholder = '';
         newInputIcon = '';
-        newInputOptions = '';
+        newInputOptionLabel = '';
+        newInputOptionValue = '';
+        newInputOptionsList = [];
         newInputMasking = false;
       }
     } catch (e) {
       alert(e?.message ?? 'Failed to save input type');
     }
+  }
+
+  function addOptionToList() {
+    if (!newInputOptionLabel.trim() || !newInputOptionValue.trim()) {
+      alert('Label dan Value harus diisi');
+      return;
+    }
+    const newOption = { label: newInputOptionLabel.trim(), value: newInputOptionValue.trim() };
+    if (editingInputType) {
+      if (!editingInputType.options) editingInputType.options = [];
+      editingInputType.options = [...editingInputType.options, newOption];
+    } else {
+      newInputOptionsList = [...newInputOptionsList, newOption];
+    }
+    newInputOptionLabel = '';
+    newInputOptionValue = '';
   }
 
   async function handleDeleteCategory(cat: Category) {
@@ -1227,7 +1255,14 @@
                 <div class="flex items-center gap-1">
                   <button
                     class="px-2 py-1 text-xs bg-white/5 text-white/70 border border-white/10 rounded hover:bg-white/10"
-                    onclick={() => editingInputType = input}
+                    onclick={() => { 
+                      editingInputType = input; 
+                      if (editingInputType.options === null || editingInputType.options === undefined) {
+                        editingInputType.options = [];
+                      }
+                      newInputOptionLabel = '';
+                      newInputOptionValue = '';
+                    }}
                   >
                     Edit
                   </button>
@@ -1312,14 +1347,74 @@
                   placeholder="mdi:server"
                 />
               </label>
-              <label class="flex flex-col gap-1">
-                <span class="text-white/70">Options (JSON, untuk select)</span>
-                <textarea
-                  class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)] min-h-[60px] resize-y font-mono text-[10px]"
-                  bind:value={editingInputType ? JSON.stringify(editingInputType.options, null, 2) : newInputOptions}
-                  placeholder="[{\"label\":\"Option 1\",\"value\":\"1\"}]"
-                />
-              </label>
+              {#if (editingInputType ? editingInputType.model : newInputModel) === 'select'}
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-white/70">Options (untuk select)</span>
+                    <span class="text-[10px] text-white/40">Tambah pasangan label & value</span>
+                  </div>
+                  
+                  <!-- List options -->
+                  <div class="space-y-1 max-h-40 overflow-y-auto border border-white/10 rounded-lg p-2">
+                    {#each (editingInputType ? editingInputType.options : newInputOptionsList) as opt, i}
+                      <div class="flex items-center gap-2 p-2 bg-white/5 rounded">
+                        <div class="flex-1 grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            class="px-2 py-1 text-xs bg-black/40 border border-white/10 text-white rounded"
+                            bind:value={opt.label}
+                            placeholder="Label"
+                          />
+                          <input
+                            type="text"
+                            class="px-2 py-1 text-xs bg-black/40 border border-white/10 text-white rounded"
+                            bind:value={opt.value}
+                            placeholder="Value"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          class="px-2 py-1 text-xs bg-red-500/10 text-red-300 border border-red-500/20 rounded hover:bg-red-500/20"
+                          onclick={() => {
+                            if (editingInputType) {
+                              editingInputType.options = editingInputType.options.filter((_, idx) => idx !== i);
+                            } else {
+                              newInputOptionsList = newInputOptionsList.filter((_, idx) => idx !== i);
+                            }
+                          }}
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    {:else}
+                      <div class="text-center text-white/40 text-xs py-4">Belum ada options.</div>
+                    {/each}
+                  </div>
+                  
+                  <!-- Add new option -->
+                  <div class="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+                      bind:value={newInputOptionLabel}
+                      placeholder="Label"
+                    />
+                    <input
+                      type="text"
+                      class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+                      bind:value={newInputOptionValue}
+                      placeholder="Value"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    class="w-full px-3 py-2 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 text-xs"
+                    onclick={addOptionToList}
+                  >
+                    + Tambah Option
+                  </button>
+                </div>
+              {/if}
               <label class="flex items-center gap-2">
                 <input
                   type="checkbox"
