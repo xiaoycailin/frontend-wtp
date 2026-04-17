@@ -1292,7 +1292,11 @@
                   <span class="text-white/70">Name *</span>
                   <input
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    bind:value={editingInputType ? editingInputType.name : newInputName}
+                    value={editingInputType ? editingInputType.name : newInputName}
+                    on:input={(e) => {
+                      if (editingInputType) editingInputType.name = e.currentTarget.value;
+                      else newInputName = e.currentTarget.value;
+                    }}
                     placeholder="server_id"
                   />
                 </label>
@@ -1300,7 +1304,11 @@
                   <span class="text-white/70">Label *</span>
                   <input
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    bind:value={editingInputType ? editingInputType.label : newInputLabel}
+                    value={editingInputType ? editingInputType.label : newInputLabel}
+                    on:input={(e) => {
+                      if (editingInputType) editingInputType.label = e.currentTarget.value;
+                      else newInputLabel = e.currentTarget.value;
+                    }}
                     placeholder="Server ID"
                   />
                 </label>
@@ -1310,7 +1318,11 @@
                   <span class="text-white/70">Type</span>
                   <select
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    bind:value={editingInputType ? editingInputType.type : newInputType}
+                    value={editingInputType ? editingInputType.type : newInputType}
+                    on:input={(e) => {
+                      if (editingInputType) editingInputType.type = e.currentTarget.value;
+                      else newInputType = e.currentTarget.value;
+                    }}
                   >
                     <option value="text">Text</option>
                     <option value="number">Number</option>
@@ -1323,7 +1335,11 @@
                   <span class="text-white/70">Model</span>
                   <select
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    bind:value={editingInputType ? editingInputType.model : newInputModel}
+                    value={editingInputType ? editingInputType.model : newInputModel}
+                    on:input={(e) => {
+                      if (editingInputType) editingInputType.model = e.currentTarget.value;
+                      else newInputModel = e.currentTarget.value;
+                    }}
                   >
                     <option value="input">Input</option>
                     <option value="textarea">Textarea</option>
@@ -1335,7 +1351,11 @@
                 <span class="text-white/70">Placeholder</span>
                 <input
                   class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                  bind:value={editingInputType ? editingInputType.placeholder : newInputPlaceholder}
+                  value={editingInputType ? editingInputType.placeholder : newInputPlaceholder}
+                  on:input={(e) => {
+                    if (editingInputType) editingInputType.placeholder = e.currentTarget.value;
+                    else newInputPlaceholder = e.currentTarget.value;
+                  }}
                   placeholder="Masukkan server ID"
                 />
               </label>
@@ -1343,7 +1363,11 @@
                 <span class="text-white/70">Icon (optional)</span>
                 <input
                   class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                  bind:value={editingInputType ? editingInputType.icon : newInputIcon}
+                  value={editingInputType ? editingInputType.icon : newInputIcon}
+                  on:input={(e) => {
+                    if (editingInputType) editingInputType.icon = e.currentTarget.value;
+                    else newInputIcon = e.currentTarget.value;
+                  }}
                   placeholder="mdi:server"
                 />
               </label>
@@ -1362,13 +1386,15 @@
                           <input
                             type="text"
                             class="px-2 py-1 text-xs bg-black/40 border border-white/10 text-white rounded"
-                            bind:value={opt.label}
+                            value={opt.label}
+                            on:input={(e) => opt.label = e.currentTarget.value}
                             placeholder="Label"
                           />
                           <input
                             type="text"
                             class="px-2 py-1 text-xs bg-black/40 border border-white/10 text-white rounded"
-                            bind:value={opt.value}
+                            value={opt.value}
+                            on:input={(e) => opt.value = e.currentTarget.value}
                             placeholder="Value"
                           />
                         </div>
@@ -1396,13 +1422,15 @@
                     <input
                       type="text"
                       class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
-                      bind:value={newInputOptionLabel}
+                      value={newInputOptionLabel}
+                      on:input={(e) => newInputOptionLabel = e.currentTarget.value}
                       placeholder="Label"
                     />
                     <input
                       type="text"
                       class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
-                      bind:value={newInputOptionValue}
+                      value={newInputOptionValue}
+                      on:input={(e) => newInputOptionValue = e.currentTarget.value}
                       placeholder="Value"
                     />
                   </div>
@@ -1419,7 +1447,11 @@
                 <input
                   type="checkbox"
                   class="rounded border-white/10 bg-black/40"
-                  bind:checked={editingInputType ? editingInputType.maskingForView : newInputMasking}
+                  checked={editingInputType ? editingInputType.maskingForView : newInputMasking}
+                  on:change={(e) => {
+                    if (editingInputType) editingInputType.maskingForView = e.currentTarget.checked;
+                    else newInputMasking = e.currentTarget.checked;
+                  }}
                 />
                 <span class="text-white/70">Masking for view (tampilkan sebagai ***)</span>
               </label>
