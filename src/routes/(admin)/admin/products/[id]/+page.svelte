@@ -27,6 +27,7 @@
   let stock = $state<string | number>(product.stock ?? 0);
   let thumbnails = $state(product.thumbnails ?? "");
   let conditionNotes = $state(product.conditionNotes ?? "");
+  let provider = $state(product.provider ?? "digiflazz");
 
   let loading = $state(false);
   let error = $state<string | null>(null);
@@ -61,6 +62,7 @@
       if (thumbnails !== product.thumbnails) body.thumbnails = thumbnails;
       if (conditionNotes !== product.conditionNotes)
         body.conditionNotes = conditionNotes;
+      if (provider !== product.provider) body.provider = provider;
 
       const res = await fetch(`/api/v1/products/${product.id}`, {
         method: "PUT",
@@ -126,6 +128,17 @@
           {#each availableSubCategories as sub}
             <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
           {/each}
+        </select>
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-xs text-white/70">Provider</label>
+        <select
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[#f5c518]/70"
+          bind:value={provider}
+        >
+          <option value="digiflazz">Digiflazz</option>
+          <option value="manual">Manual</option>
         </select>
       </div>
     </div>

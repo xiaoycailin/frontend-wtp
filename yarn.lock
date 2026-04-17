@@ -47,6 +47,18 @@
   resolved "https://registry.npmjs.org/@fontsource/poppins/-/poppins-5.2.7.tgz"
   integrity sha512-6uQyPmseo4FgI97WIhA4yWRlNaoLk4vSDK/PyRwdqqZb5zAEuc+Kunt8JTMcsHYUEGYBtN15SNkMajMdqUSUmg==
 
+"@iconify/svelte@^5.2.1":
+  version "5.2.1"
+  resolved "https://registry.npmjs.org/@iconify/svelte/-/svelte-5.2.1.tgz"
+  integrity sha512-zHmsIPmnIhGd5gc95bNN5FL+GifwMZv7M2rlZEpa7IXYGFJm/XGHdWf6PWQa6OBoC+R69WyiPO9NAj5wjfjbow==
+  dependencies:
+    "@iconify/types" "^2.0.0"
+
+"@iconify/types@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/@iconify/types/-/types-2.0.0.tgz"
+  integrity sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==
+
 "@internationalized/date@^3.12.0", "@internationalized/date@^3.8.1":
   version "3.12.0"
   resolved "https://registry.npmjs.org/@internationalized/date/-/date-3.12.0.tgz"
@@ -714,7 +726,7 @@ svelte-toolbelt@^0.10.6:
     runed "^0.35.1"
     style-to-object "^1.0.8"
 
-"svelte@^3.0.0 || ^4.0.0 || ^5.0.0", "svelte@^4.0.0 || ^5.0.0-next.0", svelte@^5, svelte@^5.0.0, svelte@^5.30.2, svelte@^5.33.0, svelte@^5.54.0, svelte@^5.7.0, svelte@>=4.0.0:
+"svelte@^3.0.0 || ^4.0.0 || ^5.0.0", "svelte@^4.0.0 || ^5.0.0-next.0", svelte@^5, svelte@^5.0.0, svelte@^5.30.2, svelte@^5.33.0, svelte@^5.54.0, svelte@^5.7.0, svelte@>=4.0.0, svelte@>5.0.0:
   version "5.55.1"
   resolved "https://registry.npmjs.org/svelte/-/svelte-5.55.1.tgz"
   integrity sha512-QjvU7EFemf6mRzdMGlAFttMWtAAVXrax61SZYHdkD6yoVGQ89VeyKfZD4H1JrV1WLmJBxWhFch9H6ig/87VGjw==

@@ -26,6 +26,7 @@
   let thumbnails = $state("");
   let conditionNotes = $state("Brand new. Warranty 1 year.");
   let special = $state(false);
+  let provider = $state("digiflazz"); // default
 
   let loading = $state(false);
   let error = $state<string | null>(null);
@@ -62,6 +63,7 @@
         thumbnails: thumbnails || undefined,
         conditionNotes: conditionNotes || undefined,
         special,
+        provider,
       };
 
       const res = await fetch("/api/v1/products", {
@@ -141,6 +143,17 @@
           {#each availableSubCategories as sub}
             <option value={sub.id}>{sub.categoryTitle} - {sub.title}</option>
           {/each}
+        </select>
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-xs text-white/70">Provider</label>
+        <select
+          class="w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-xs text-white
+                 focus:outline-none focus:border-[var(--color-primary)]/70"
+          bind:value={provider}
+        >
+          <option value="digiflazz">Digiflazz</option>
+          <option value="manual">Manual</option>
         </select>
       </div>
     </div>

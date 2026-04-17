@@ -15,12 +15,14 @@
   import OrderSidebar from "./OrderSidebar.svelte";
   import { onMount } from "svelte";
   import { auth } from "$lib/auth";
+  import Step1AccountCustom from "./Step1AccountCustom.svelte";
 
   let { products, productDetail, productPath, siteConfig, user, token } =
     $props();
 
   let userId = $state("");
   let serverId = $state("");
+  let userCustomInput = $state({});
 
   let selected = $state<Product | null>(null);
   let quantity = $state(1);
@@ -52,7 +54,9 @@
 
   const discountAmount = $derived(promoApplied?.previewDiscount ?? 0);
 
-  const totalPrice = $derived(Math.max(basePrice - discountAmount, 0) * quantity);
+  const totalPrice = $derived(
+    Math.max(basePrice - discountAmount, 0) * quantity,
+  );
 
   const requiresServerInput = $derived(zoneInputMode !== "none");
 
@@ -67,30 +71,6 @@
   async function fetchInputConfig() {
     gameConfigLoading = true;
     try {
-      // First try to fetch input types for this subcategory
-      const subCategorySlug = productDetail?.subCategory?.slug;
-      if (subCategorySlug) {
-        const res = await fetch(`/api/v1/input-types/subcategory-slug/${subCategorySlug}`);
-        if (res.ok) {
-          const json = await res.json();
-          inputTypes = json.data || [];
-          if (inputTypes.length > 0) {
-            // Transform input types to SupportedGameConfig
-            // For now, take the first input as zone config
-            const first = inputTypes[0];
-            const servers = first.model === 'select' && first.options ? first.options.map((opt: any) => opt.value) : [];
-            customGameConfig = {
-              code: subCategorySlug,
-              label: productDetail.subCategory?.title || subCategorySlug,
-              requiresZone: true,
-              autoZone: false,
-              servers: servers.length > 0 ? servers : undefined,
-            };
-            gameConfig = customGameConfig;
-            return; // Stop here, don't fetch games/supported
-          }
-        }
-      }
       // Fallback to games/supported
       const res = await fetch("/api/v1/games/supported");
       const json = await res.json();
@@ -100,7 +80,8 @@
         return;
       }
       supportedGames = json?.data ?? [];
-      gameConfig = supportedGames.find((item) => item.code === productPath) ?? null;
+      gameConfig =
+        supportedGames.find((item) => item.code === productPath) ?? null;
     } catch (error) {
       console.error("Failed to load input config", error);
       supportedGames = [];
@@ -112,9 +93,17 @@
     }
   }
 
+  // console.log(productDetail);
+
   $effect(() => {
     fetchInputConfig();
   });
+
+  // $effect(() => {
+  //   setInterval(() => {
+  //     console.log("DATA => ", userCustomInput);
+  //   }, 1000);
+  // });
 
   $effect(() => {
     if (zoneInputMode === "none") {
@@ -127,7 +116,6 @@
       serverId = "";
     }
   });
-  // console.log(productDetail);
 </script>
 
 <svelte:head>
@@ -138,7 +126,11 @@
   class="w-full mt-6 grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-5 items-start"
 >
   <div class="flex flex-col gap-4">
-    <Step1Account bind:userId bind:serverId {gameConfig} {zoneInputMode} />
+    {#if productDetail?.inputs && productDetail?.inputs?.length > 0}
+      <Step1AccountCustom bind:userCustomInput inputs={productDetail.inputs} />
+    {:else}
+      <Step1Account bind:userId bind:serverId {gameConfig} {zoneInputMode} />
+    {/if}
 
     <Step2Nominal {products} bind:selected />
 
@@ -146,7 +138,14 @@
 
     <Step4Promo bind:promoApplied {selected} {quantity} />
 
-    <Step5Payment bind:selectedPay {basePrice} {selected} {token} {user} {promoApplied} />
+    <Step5Payment
+      bind:selectedPay
+      {basePrice}
+      {selected}
+      {token}
+      {user}
+      {promoApplied}
+    />
 
     <Step6Contact bind:phone bind:email />
   </div>
@@ -169,6 +168,8 @@
       {gameConfig}
       {zoneInputMode}
       {gameConfigLoading}
+      {userCustomInput}
+      inputs={productDetail.inputs}
     />
   </div>
 </section>

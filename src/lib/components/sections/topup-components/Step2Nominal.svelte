@@ -11,11 +11,13 @@
   let flashSale = $state<Product[]>([]);
   let diamonds = $state<Product[]>([]);
   let specialItems = $state<Product[]>([]);
+  let mounted = $state(false);
+  let hoveredId = $state<string | number | null>(null);
 
-  const allTabs: { key: TabKey; label: string }[] = [
-    { key: "flash", label: "⚡ Flash Sale" },
-    { key: "special", label: "🔥 Special Items" },
-    { key: "diamond", label: "💎 Topup Instant" },
+  const allTabs: { key: TabKey; label: string; icon: string }[] = [
+    { key: "flash", label: "Flash Sale", icon: "⚡" },
+    { key: "special", label: "Special Items", icon: "🔥" },
+    { key: "diamond", label: "Topup Instant", icon: "💎" },
   ];
 
   const tabDataMap: Record<TabKey, () => unknown[]> = {
@@ -24,7 +26,6 @@
     diamond: () => diamonds,
   };
 
-  // tabs yang tampil = hanya yang punya data
   const tabs = $derived(allTabs.filter((t) => tabDataMap[t.key]().length > 0));
 
   onMount(() => {
@@ -33,34 +34,27 @@
     specialItems = [];
 
     products.forEach((p: any) => {
-      // flash sale items (turunan dari product)
-      if (p.flashSales && p.flashSales.length > 0) {
+      if (p.flashSales?.length > 0) {
         p.flashSales.forEach((f: any) => {
           const price = Number(p.price);
           const discount = Number(f.discount);
           const discountValue =
             f.discType === "percent" ? (price * discount) / 100 : discount;
-          const finalPrice = price - discountValue;
-
           flashSale.push({
             label: p.title,
             icon: p.thumbnails,
             id: f.id,
             productFlashId: p.id,
-            price: finalPrice,
+            price: price - discountValue,
             originalPrice: price,
             instant: p.instant,
             tag:
-              f.discType === "percent"
-                ? `Potongan ${discount}%`
-                : `Potongan ${fmt(discount)}`,
+              f.discType === "percent" ? `−${discount}%` : `−${fmt(discount)}`,
             stock: f.sellCount,
             maxStock: f.stock,
           });
         });
       }
-
-      // special vs diamond
       if (p.isSpecial) {
         specialItems.push({
           id: p.id,
@@ -80,37 +74,43 @@
       }
     });
 
-    // PINDAH KE SINI: setelah forEach, baru cek tab pertama yang ada data
-    // juga override query param jika productId ditemukan
-    const searchParams = $page.url.searchParams;
-    const productId = searchParams.get("productId");
-
+    const productId = $page.url.searchParams.get("productId");
     if (productId) {
-      let found = flashSale.find((f) => String(f.id) === productId);
+      let found: Product | undefined;
+
+      found = flashSale.find((f) => String(f.id) === productId);
       if (found) {
         activeTab = "flash";
         selected = found;
-        return;
       }
 
-      found = specialItems.find((s) => String(s.id) === productId);
-      if (found) {
-        activeTab = "special";
-        selected = found;
-        return;
+      if (!found) {
+        found = specialItems.find((s) => String(s.id) === productId);
+        if (found) {
+          activeTab = "special";
+          selected = found;
+        }
       }
 
-      found = diamonds.find((d) => String(d.id) === productId);
-      if (found) {
-        activeTab = "diamond";
-        selected = found;
-        return;
+      if (!found) {
+        found = diamonds.find((d) => String(d.id) === productId);
+        if (found) {
+          activeTab = "diamond";
+          selected = found;
+        }
       }
+
+      // Tidak perlu return — lanjut ke bawah
     }
 
-    // fallback: tab pertama yang punya data
-    const firstAvailable = allTabs.find((t) => tabDataMap[t.key]().length > 0);
-    if (firstAvailable) activeTab = firstAvailable.key;
+    if (!$page.url.searchParams.get("productId")) {
+      const firstAvailable = allTabs.find(
+        (t) => tabDataMap[t.key]().length > 0,
+      );
+      if (firstAvailable) activeTab = firstAvailable.key;
+    }
+
+    setTimeout(() => (mounted = true), 60); // ← Selalu jalan
   });
 
   function toggleSelect(p: Product) {
@@ -119,275 +119,281 @@
 
   const stockPct = (p: Product) =>
     p.maxStock ? Math.round((p.stock! / p.maxStock) * 100) : 0;
+
+  function stockLabel(pct: number) {
+    if (pct > 70) return { text: "Hampir habis", color: "#ef4444" };
+    if (pct > 40) return { text: "Terbatas", color: "#f97316" };
+    return { text: "Tersedia", color: "var(--color-primary)" };
+  }
 </script>
 
-<div class="step-card">
-  <div class="step-accent"></div>
-  <div class="px-5 py-4">
+<div class="step-card" class:mounted>
+  <!-- Left accent bar -->
+  <div class="step-accent" aria-hidden="true"></div>
+
+  <div class="card-inner">
+    <!-- ── Header ── -->
     <div class="step-header">
-      <div class="step-badge">2</div>
-      <h3 class="step-title">Pilih Nominal</h3>
+      <div class="step-badge">
+        <span>2</span>
+      </div>
+      <div>
+        <h3 class="step-title">Pilih Nominal</h3>
+        <p class="step-subtitle">Pilih paket yang sesuai kebutuhanmu</p>
+      </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex gap-2 mb-4 overflow-x-auto pb-1 scrollbar-none">
+    <!-- ── Tabs ── -->
+    <div class="tabs-wrap" role="tablist" aria-label="Kategori produk">
       {#each tabs as tab}
+        {@const isActive = activeTab === tab.key}
         <button
-          on:click={() => (activeTab = tab.key)}
-          class="flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl
-                 text-xs font-bold border transition-all duration-200 whitespace-nowrap"
-          style="
-            background:   {activeTab === tab.key
-            ? 'rgba(245,197,24,0.12)'
-            : 'rgba(255,255,255,0.03)'};
-            border-color: {activeTab === tab.key
-            ? 'rgba(245,197,24,0.5)'
-            : 'rgba(255,255,255,0.07)'};
-            color:        {activeTab === tab.key
-            ? 'var(--color-primary)'
-            : 'rgba(255,255,255,0.4)'};
-            box-shadow:   {activeTab === tab.key
-            ? '0 0 16px rgba(245,197,24,0.15)'
-            : 'none'};
-          "
+          role="tab"
+          aria-selected={isActive}
+          class="tab-btn"
+          class:tab-active={isActive}
+          onclick={() => (activeTab = tab.key)}
         >
-          {tab.label}
+          <span class="tab-icon">{tab.icon}</span>
+          <span class="tab-label">{tab.label}</span>
+          {#if isActive}
+            <span class="tab-count">{tabDataMap[tab.key]().length}</span>
+          {/if}
         </button>
       {/each}
     </div>
 
-    <!-- Flash Sale -->
+    <!-- ── Panel: Flash Sale ── -->
     {#if activeTab === "flash"}
-      <div
-        class="relative rounded-xl overflow-hidden border border-[var(--color-primary)]/30 bg-[#0d0d0d] p-4"
-      >
-        <div class="absolute inset-0 overflow-hidden rounded-xl">
-          <ParticleCanvas
-            maxParticles={30}
-            colors={["var(--color-primary)bb", "#ff6b3566", "#ffffff44"]}
-            lineColor="var(--color-primary)"
-            lineDistance={70}
-            opacity={0.5}
-            blendMode="screen"
-          />
-        </div>
-
-        <div class="relative z-10 flex items-center gap-2 mb-4">
-          <div
-            class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[var(--color-primary)] shadow-lg shadow-yellow-500/30"
-          >
-            <span class="text-sm">⚡</span>
-            <span class="text-black text-xs font-black tracking-widest"
-              >FLASH SALE</span
-            >
+      <div class="flash-panel" role="tabpanel">
+        <!-- Flash header -->
+        <div class="flash-header">
+          <div class="absolute inset-0 overflow-hidden rounded-2xl">
+            <ParticleCanvas
+              maxParticles={25}
+              colors={[
+                "rgba(245,197,24,0.6)",
+                "rgba(255,107,53,0.4)",
+                "rgba(255,255,255,0.2)",
+              ]}
+              lineColor="rgba(245,197,24,0.3)"
+              lineDistance={65}
+              opacity={0.6}
+              blendMode="screen"
+            />
+          </div>
+          <div class="flash-header-content">
+            <div class="flash-badge">
+              <span class="flash-pulse"></span>
+              <span>LIVE</span>
+              <span class="flash-divider"></span>
+              <span>⚡ FLASH SALE</span>
+            </div>
+            <p class="flash-sub">Penawaran terbatas · Harga terendah</p>
           </div>
         </div>
 
-        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Flash cards -->
+        <div class="flash-grid">
           {#each flashSale as p}
             {@const pct = stockPct(p)}
+            {@const sl = stockLabel(pct)}
             {@const isSelected = selected?.id === p.id}
+            {@const isHovered = hoveredId === p.id}
             <button
-              on:click={() => toggleSelect(p)}
-              class="product-card"
-              style="
-                background:   {isSelected
-                ? 'rgba(245,197,24,0.1)'
-                : 'rgba(255,255,255,0.03)'};
-                border-color: {isSelected
-                ? 'var(--color-primary)'
-                : 'rgba(255,255,255,0.08)'};
-                box-shadow:   {isSelected
-                ? '0 0 20px rgba(245,197,24,0.2)'
-                : 'none'};
-              "
+              class="flash-card"
+              class:flash-selected={isSelected}
+              onclick={() => toggleSelect(p)}
+              onmouseenter={() => (hoveredId = p.id)}
+              onmouseleave={() => (hoveredId = null)}
+              aria-pressed={isSelected}
             >
+              <!-- Selection ring -->
               {#if isSelected}
-                <div class="check-badge">
+                <div class="sel-ring" aria-hidden="true"></div>
+              {/if}
+
+              <!-- Check mark -->
+              {#if isSelected}
+                <div class="check-mark" aria-label="Terpilih">
                   <svg
-                    class="w-2.5 h-2.5 text-black"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
+                    width="10"
+                    height="10"
                   >
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      stroke-width="3"
+                      stroke-width="3.5"
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
                 </div>
               {/if}
 
-              <div class="p-3">
-                <div class="flex items-center gap-2 mb-2">
-                  <img src={p.icon} width="25" alt="" />
-                  <div>
-                    <p class="text-[11px] font-bold text-white leading-tight">
-                      {p.label}
-                    </p>
-                    {#if p.sublabel}
-                      <p class="text-[9px] text-white/35">
-                        {p.sublabel}
-                      </p>
-                    {/if}
-                  </div>
+              <!-- Discount ribbon -->
+              {#if p.tag}
+                <div class="flash-ribbon">{p.tag}</div>
+              {/if}
+
+              <!-- Card body -->
+              <div class="flash-card-body">
+                <div class="flash-img-wrap">
+                  <img
+                    src={p.icon}
+                    width="32"
+                    height="32"
+                    loading="lazy"
+                    alt={p.label}
+                  />
+                  {#if p.instant}
+                    <span class="instant-dot" title="Instan"></span>
+                  {/if}
                 </div>
-                <p class="text-base font-black text-[var(--color-primary)]">
-                  {fmt(p.price)}
-                </p>
-                {#if p.originalPrice}
-                  <p class="text-[9px] text-white/30 line-through">
-                    {fmt(p.originalPrice)}
-                  </p>
-                {/if}
+                <p class="flash-label">{p.label}</p>
+                <div class="flash-prices">
+                  <span class="flash-price">{fmt(p.price)}</span>
+                  {#if p.originalPrice}
+                    <span class="flash-orig">{fmt(p.originalPrice)}</span>
+                  {/if}
+                </div>
               </div>
 
-              <div class="px-3 pb-2">
-                <div
-                  class="h-1 w-full bg-white/10 rounded-full overflow-hidden"
-                >
+              <!-- Stock bar -->
+              <div class="flash-stock">
+                <div class="stock-bar-wrap">
                   <div
-                    class="h-full rounded-full transition-all duration-500"
-                    style="width:{pct}%; background:{pct > 50
-                      ? 'var(--color-primary)'
-                      : pct > 20
-                        ? '#ff6b35'
-                        : '#ef4444'};"
+                    class="stock-bar-fill"
+                    style="width:{pct}%; background:{sl.color};"
                   ></div>
                 </div>
-                <p class="text-[9px] text-white/30 mt-1">
-                  {p.stock}/{p.maxStock} terjual
-                </p>
+                <div class="stock-meta">
+                  <span style="color:{sl.color};" class="stock-label"
+                    >{sl.text}</span
+                  >
+                  <span class="stock-nums">{p.stock}/{p.maxStock}</span>
+                </div>
               </div>
 
-              <div
-                class="flex items-center gap-1.5 px-3 py-2 border-t border-white/[0.06]"
-              >
-                {#if p.tag}
-                  <span
-                    class="text-[9px] font-black px-1.5 py-0.5 rounded bg-[var(--color-primary)]/20 text-[var(--color-primary)]"
-                    >{p.tag}</span
-                  >
-                {/if}
-                {#if p.instant}
-                  <span
-                    class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 ml-auto"
-                    >⚡ Instan</span
-                  >
-                {/if}
-              </div>
+              {#if p.instant}
+                <div class="flash-footer">
+                  <span class="instant-badge">⚡ Instan</span>
+                </div>
+              {/if}
             </button>
           {/each}
         </div>
       </div>
+
+      <!-- ── Panel: Special Items ── -->
     {:else if activeTab === "special"}
-      <!-- Special Items -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div class="special-grid" role="tabpanel">
         {#each specialItems as p}
           {@const isSelected = selected?.id === p.id}
           <button
-            on:click={() => toggleSelect(p)}
-            class="group flex items-center gap-3 p-3 rounded-xl border text-left transition-all duration-200"
-            style="
-              background:   {isSelected
-              ? 'rgba(245,197,24,0.08)'
-              : 'rgba(255,255,255,0.03)'};
-              border-color: {isSelected
-              ? 'var(--color-primary)'
-              : 'rgba(255,255,255,0.07)'};
-              box-shadow:   {isSelected
-              ? '0 0 16px rgba(245,197,24,0.15)'
-              : 'none'};
-            "
+            class="special-card"
+            class:special-selected={isSelected}
+            onclick={() => toggleSelect(p)}
+            onmouseenter={() => (hoveredId = p.id)}
+            onmouseleave={() => (hoveredId = null)}
+            aria-pressed={isSelected}
           >
-            <div
-              class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
-              style="background:{isSelected
-                ? 'rgba(245,197,24,0.15)'
-                : 'rgba(255,255,255,0.05)'};"
-            >
-              <img src={p.icon} width="25" alt="" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <p
-                class="text-xs font-bold text-white truncate group-hover:text-[var(--color-primary)] transition-colors"
-              >
-                {p.label}
-              </p>
-              <p class="text-sm font-black text-[var(--color-primary)] mt-0.5">
-                {fmt(p.price)}
-              </p>
-            </div>
             {#if isSelected}
-              <div class="check-badge-sm">
+              <div class="sel-ring" aria-hidden="true"></div>
+            {/if}
+
+            <div
+              class="special-icon-wrap"
+              class:special-icon-active={isSelected}
+            >
+              <img
+                src={p.icon}
+                width="28"
+                height="28"
+                loading="lazy"
+                alt={p.label}
+              />
+            </div>
+
+            <div class="special-info">
+              <p class="special-label">{p.label}</p>
+              <p class="special-price">{fmt(p.price)}</p>
+              {#if p.instant}
+                <span class="special-instant">⚡ Instan</span>
+              {/if}
+            </div>
+
+            <div class="special-check" class:special-check-active={isSelected}>
+              {#if isSelected}
                 <svg
-                  class="w-3 h-3 text-black"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  width="11"
+                  height="11"
                 >
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    stroke-width="3"
+                    stroke-width="3.5"
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
-              </div>
-            {/if}
+              {/if}
+            </div>
           </button>
         {/each}
       </div>
+
+      <!-- ── Panel: Diamonds ── -->
     {:else}
-      <!-- Diamonds -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
+      <div class="diamond-grid" role="tabpanel">
         {#each diamonds as p}
           {@const isSelected = selected?.id === p.id}
           <button
-            on:click={() => toggleSelect(p)}
-            class="relative flex flex-col items-center gap-1.5 p-3 rounded-xl border
-                   transition-all duration-200 text-center"
-            style="
-              background:   {isSelected
-              ? 'rgba(245,197,24,0.08)'
-              : 'rgba(255,255,255,0.03)'};
-              border-color: {isSelected
-              ? 'var(--color-primary)'
-              : 'rgba(255,255,255,0.07)'};
-              box-shadow:   {isSelected
-              ? '0 0 16px rgba(245,197,24,0.15)'
-              : 'none'};
-            "
+            class="diamond-card"
+            class:diamond-selected={isSelected}
+            onclick={() => toggleSelect(p)}
+            onmouseenter={() => (hoveredId = p.id)}
+            onmouseleave={() => (hoveredId = null)}
+            aria-pressed={isSelected}
           >
             {#if isSelected}
-              <div class="check-badge">
+              <div class="check-mark" aria-label="Terpilih">
                 <svg
-                  class="w-2.5 h-2.5 text-black"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  width="10"
+                  height="10"
                 >
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    stroke-width="3"
+                    stroke-width="3.5"
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
               </div>
             {/if}
-            <img src={p.icon} width="30" alt="" />
-            <p class="text-[11px] font-bold text-white leading-tight">
-              {p.label}
-            </p>
+
+            <div class="diamond-img-wrap" class:diamond-img-active={isSelected}>
+              <img
+                src={p.icon}
+                width="34"
+                height="34"
+                loading="lazy"
+                alt={p.label}
+              />
+            </div>
+
+            <p class="diamond-label">{p.label}</p>
             {#if p.sublabel}
-              <p class="text-[9px] text-emerald-400/80">{p.sublabel}</p>
+              <p class="diamond-sub">{p.sublabel}</p>
             {/if}
-            <p class="text-xs font-black text-[var(--color-primary)] mt-0.5">
-              {fmt(p.price)}
-            </p>
+            <p class="diamond-price">{fmt(p.price)}</p>
           </button>
         {/each}
       </div>
@@ -396,90 +402,559 @@
 </div>
 
 <style>
+  /* ── Card shell ── */
   .step-card {
     position: relative;
-    border-radius: 1rem;
-    overflow: hidden;
+    border-radius: 1.25rem;
     border: 1px solid rgba(255, 255, 255, 0.07);
-    background: #111111;
+    background: #0f0f0f;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.35s ease,
+      transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
+  .step-card.mounted {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .step-accent {
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 3px;
+    width: 2px;
     background: linear-gradient(
       to bottom,
       var(--color-primary),
-      rgba(245, 197, 24, 0.3),
+      rgba(245, 197, 24, 0.3) 60%,
       transparent
     );
+    z-index: 1;
   }
+
+  .card-inner {
+    padding: 1.25rem 1.25rem 1.5rem 1.5rem;
+  }
+
+  /* ── Header ── */
   .step-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
   }
   .step-badge {
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 0.5rem;
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 0.625rem;
     background: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 900;
     color: #000;
+    box-shadow: 0 0 16px rgba(245, 197, 24, 0.35);
   }
   .step-title {
-    font-size: 0.875rem;
-    font-weight: 700;
+    font-size: 0.9375rem;
+    font-weight: 800;
     color: #fff;
-    letter-spacing: 0.025em;
-    flex: 1;
+    line-height: 1.2;
   }
-  .product-card {
-    position: relative;
+  .step-subtitle {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 0.1rem;
+  }
+
+  /* ── Tabs ── */
+  .tabs-wrap {
     display: flex;
-    flex-direction: column;
-    border-radius: 0.75rem;
-    border: 1px solid;
-    text-align: left;
-    transition: all 0.2s;
-    overflow: hidden;
+    gap: 0.375rem;
+    margin-bottom: 1.25rem;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding-bottom: 2px;
   }
-  .check-badge {
+  .tabs-wrap::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.4375rem 0.875rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+  }
+  .tab-btn:hover:not(.tab-active) {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  .tab-active {
+    background: rgba(245, 197, 24, 0.1);
+    border-color: rgba(245, 197, 24, 0.4);
+    color: var(--color-primary);
+    box-shadow:
+      0 0 18px rgba(245, 197, 24, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  .tab-icon {
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+  .tab-label {
+    line-height: 1;
+  }
+  .tab-count {
+    background: rgba(245, 197, 24, 0.2);
+    color: var(--color-primary);
+    font-size: 0.625rem;
+    font-weight: 900;
+    padding: 0.1rem 0.35rem;
+    border-radius: 9999px;
+    line-height: 1.4;
+    min-width: 1.25rem;
+    text-align: center;
+  }
+
+  /* ── Shared: selection ring ── */
+  .sel-ring {
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    border: 1.5px solid var(--color-primary);
+    pointer-events: none;
+    z-index: 3;
+    box-shadow:
+      0 0 18px rgba(245, 197, 24, 0.2),
+      inset 0 0 12px rgba(245, 197, 24, 0.04);
+  }
+
+  /* ── Shared: check mark ── */
+  .check-mark {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
     z-index: 10;
-    width: 1rem;
-    height: 1rem;
-    border-radius: 9999px;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
     background: var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 2px 8px rgba(245, 197, 24, 0.45);
+    color: #000;
   }
-  .check-badge-sm {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 9999px;
+
+  /* ─────────────────────────────────────
+     FLASH SALE panel
+  ───────────────────────────────────── */
+  .flash-panel {
+  }
+
+  .flash-header {
+    position: relative;
+    background: linear-gradient(
+      135deg,
+      rgba(245, 197, 24, 0.1),
+      rgba(255, 107, 53, 0.06),
+      rgba(245, 197, 24, 0.04)
+    );
+    border: 1px solid rgba(245, 197, 24, 0.18);
+    border-radius: 1rem;
+    padding: 1rem 1.125rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    min-height: 72px;
+  }
+  .flash-header-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .flash-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     background: var(--color-primary);
+    color: #000;
+    font-size: 0.625rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    padding: 0.3rem 0.75rem;
+    border-radius: 0.5rem;
+    width: fit-content;
+  }
+  .flash-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #000;
+    animation: fpulse 1.4s ease-in-out infinite;
+  }
+  @keyframes fpulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+  .flash-divider {
+    width: 1px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .flash-sub {
+    font-size: 0.6875rem;
+    color: rgba(245, 197, 24, 0.6);
+    font-weight: 600;
+  }
+
+  .flash-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+  @media (min-width: 480px) {
+    .flash-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .flash-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .flash-card:hover:not(.flash-selected) {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.055);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+  .flash-selected {
+    background: rgba(245, 197, 24, 0.07) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .flash-ribbon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--color-primary);
+    color: #000;
+    font-size: 0.5625rem;
+    font-weight: 900;
+    padding: 0.2rem 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    letter-spacing: 0.04em;
+    z-index: 4;
+  }
+
+  .flash-card-body {
+    padding: 0.875rem 0.75rem 0.625rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    flex: 1;
+  }
+  .flash-img-wrap {
+    position: relative;
+    width: fit-content;
+    margin-bottom: 0.125rem;
+  }
+  .instant-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    border: 1.5px solid #0f0f0f;
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.6);
+  }
+  .flash-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+  }
+  .flash-prices {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+  .flash-price {
+    font-size: 0.875rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    letter-spacing: -0.01em;
+  }
+  .flash-orig {
+    font-size: 0.625rem;
+    color: rgba(255, 255, 255, 0.25);
+    text-decoration: line-through;
+  }
+
+  .flash-stock {
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .stock-bar-wrap {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 9999px;
+    overflow: hidden;
+  }
+  .stock-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .stock-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .stock-label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .stock-nums {
+    font-size: 0.5625rem;
+    color: rgba(255, 255, 255, 0.25);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .flash-footer {
+    padding: 0.4rem 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .instant-badge {
+    font-size: 0.5625rem;
+    font-weight: 800;
+    color: #34d399;
+    letter-spacing: 0.04em;
+  }
+
+  /* ─────────────────────────────────────
+     SPECIAL ITEMS panel
+  ───────────────────────────────────── */
+  .special-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  @media (min-width: 480px) {
+    .special-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .special-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.875rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+  }
+  .special-card:hover:not(.special-selected) {
+    border-color: rgba(255, 255, 255, 0.13);
+    background: rgba(255, 255, 255, 0.055);
+    transform: translateX(2px);
+  }
+  .special-selected {
+    background: rgba(245, 197, 24, 0.07) !important;
+  }
+
+  .special-icon-wrap {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    transition: all 0.2s;
   }
-  .scrollbar-none {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  .special-icon-active {
+    background: rgba(245, 197, 24, 0.12);
+    border-color: rgba(245, 197, 24, 0.25);
+    box-shadow: 0 0 12px rgba(245, 197, 24, 0.15);
   }
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
+  .special-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .special-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .special-price {
+    font-size: 0.875rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    margin-top: 0.2rem;
+  }
+  .special-instant {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    color: #34d399;
+    margin-top: 0.2rem;
+    display: block;
+  }
+
+  .special-check {
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .special-check-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #000;
+    box-shadow: 0 2px 8px rgba(245, 197, 24, 0.4);
+  }
+
+  /* ─────────────────────────────────────
+     DIAMONDS panel
+  ───────────────────────────────────── */
+  .diamond-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  @media (min-width: 420px) {
+    .diamond-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  @media (min-width: 640px) {
+    .diamond-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .diamond-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.875rem 0.5rem 0.75rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+  }
+  .diamond-card:hover:not(.diamond-selected) {
+    border-color: rgba(255, 255, 255, 0.13);
+    background: rgba(255, 255, 255, 0.055);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  .diamond-selected {
+    background: rgba(245, 197, 24, 0.07) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .diamond-img-wrap {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-bottom: 0.125rem;
+  }
+  .diamond-img-active {
+    background: rgba(245, 197, 24, 0.1);
+    box-shadow: 0 0 16px rgba(245, 197, 24, 0.2);
+  }
+  .diamond-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.3;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 0.25rem;
+  }
+  .diamond-sub {
+    font-size: 0.5625rem;
+    color: #34d399;
+    font-weight: 600;
+  }
+  .diamond-price {
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: var(--color-primary);
+    letter-spacing: -0.01em;
   }
 </style>

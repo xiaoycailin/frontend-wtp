@@ -17,7 +17,9 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
   }
 
   const category = await fetch(
-    "/api/v1/category/sub/" + params.productPath + "?productInclude=true",
+    "/api/v1/category/sub/" +
+      params.productPath +
+      "?productInclude=true&inputConfig=true",
   );
   const body = await category.json();
 

@@ -148,6 +148,7 @@
         <option value="third_party_error">third_party_error</option>
         <option value="digiflazz_callback">digiflazz_callback</option>
         <option value="duitku_callback">duitku_callback</option>
+        <option value="midtrans_callback">midtrans_callback</option>
       </select>
       <select
         bind:value={provider}
@@ -156,6 +157,7 @@
         <option value="">Semua Provider</option>
         <option value="digiflazz">digiflazz</option>
         <option value="duitku">duitku</option>
+        <option value="midtrans">midtrans</option>
       </select>
       <input
         bind:value={trxId}

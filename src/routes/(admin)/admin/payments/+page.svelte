@@ -10,6 +10,8 @@
     paymentVisibility: "active" | "inactive" | string;
     feeType: "percent" | "flat" | string;
     feeValue: number;
+    minAmount?: number | null;
+    maxAmount?: number | null;
     methodCode: string;
     source: string;
   };
@@ -35,6 +37,8 @@
     methodCode: "",
     feeType: "flat",
     feeValue: 0,
+    minAmount: null,
+    maxAmount: null,
     source: "DUITKU",
     paymentVisibility: "active",
     group: "qris",
@@ -69,6 +73,8 @@
     paymentForm.feeType = "flat";
     paymentForm.feeValue = 0;
     paymentForm.source = "DUITKU";
+    paymentForm.minAmount = null;
+    paymentForm.maxAmount = null;
     paymentForm.paymentVisibility = "active";
     paymentForm.group = "qris";
     showPaymentModal = true;
@@ -82,6 +88,8 @@
     paymentForm.feeType = p.feeType ?? "flat";
     paymentForm.feeValue = p.feeValue ?? 0;
     paymentForm.source = p.source ?? "DUITKU";
+    paymentForm.minAmount = (p.minAmount as any) ?? null;
+    paymentForm.maxAmount = (p.maxAmount as any) ?? null;
     paymentForm.paymentVisibility = p.paymentVisibility ?? "active";
     paymentForm.group = p.group ?? "qris";
     showPaymentModal = true;
@@ -103,6 +111,14 @@
       methodCode: paymentForm.methodCode.trim(),
       feeType: paymentForm.feeType,
       feeValue: Number(paymentForm.feeValue ?? "0"),
+      minAmount:
+        paymentForm.minAmount === null || paymentForm.minAmount === ""
+          ? null
+          : Number(paymentForm.minAmount),
+      maxAmount:
+        paymentForm.maxAmount === null || paymentForm.maxAmount === ""
+          ? null
+          : Number(paymentForm.maxAmount),
       source: paymentForm.source.trim(),
       paymentVisibility:
         paymentForm.paymentVisibility === "inactive"
@@ -187,8 +203,8 @@
     }, {});
   });
   onMount(() => {
-    fetchPayments()
-  })
+    fetchPayments();
+  });
 </script>
 
 <section class="space-y-6">
@@ -433,11 +449,14 @@
         <div class="grid grid-cols-2 gap-2">
           <label class="flex flex-col gap-1 text-xs">
             <span class="text-white/70">Source</span>
-            <input
+            <select
               class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
               bind:value={paymentForm.source}
-              placeholder="DUITKU, XENDIT, dll"
-            />
+            >
+              <option value="BALANCE">BALANCE</option>
+              <option value="DUITKU">DUITKU</option>
+              <option value="MIDTRANS">MIDTRANS</option>
+            </select>
           </label>
 
           <label class="flex flex-col gap-1 text-xs">
@@ -452,12 +471,37 @@
           </label>
         </div>
 
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex flex-col gap-1 text-xs">
+            <span class="text-white/70">Min transaksi (opsional)</span>
+            <input
+              type="number"
+              min="0"
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+              bind:value={paymentForm.minAmount}
+              placeholder="10000"
+            />
+          </label>
+
+          <label class="flex flex-col gap-1 text-xs">
+            <span class="text-white/70">Max transaksi (opsional)</span>
+            <input
+              type="number"
+              min="0"
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+              bind:value={paymentForm.maxAmount}
+              placeholder="5000000"
+            />
+          </label>
+        </div>
+
         <label class="flex flex-col gap-1 text-xs">
           <span class="text-white/70">Group</span>
           <select
             class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
             bind:value={paymentForm.group}
           >
+            <option value="balance">BALANCE</option>
             <option value="qris">QRIS</option>
             <option value="va">Virtual Account</option>
             <option value="ewallet">E-Wallet</option>

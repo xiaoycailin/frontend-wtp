@@ -39,6 +39,7 @@
     { label: "Activity Log", href: "/admin/activity-log", icon: Receipt },
     { label: "System Log", href: "/admin/system-log", icon: Receipt },
     { label: "Pengguna", href: "/admin/users", icon: User },
+    { label: "Topup Balance", href: "/admin/balance-topups", icon: CardViewLarge },
     { label: "Site Config", href: "/admin/site-config", icon: Gear },
   ];
 

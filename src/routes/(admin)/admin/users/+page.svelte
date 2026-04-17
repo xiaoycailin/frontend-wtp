@@ -31,6 +31,11 @@
   let error = $state<string | null>(data.error ?? null);
   let q = $state<string>(data.q ?? "");
   let role = $state<string>(data.role ?? "");
+  let showAdjustModal = $state(false);
+  let selectedUser = $state<UserItem | null>(null);
+  let adjustType = $state<"WALLET" | "POINTS">("WALLET");
+  let adjustAmount = $state(0);
+  let adjustNote = $state("");
 
   function formatDate(value: string) {
     if (!value) return "-";
@@ -70,6 +75,33 @@
     params.set("page", String(safePage));
     params.set("limit", String(meta.limit || 20));
     window.location.href = `/admin/users?${params.toString()}`;
+  }
+
+  function openAdjustModal(user: UserItem) {
+    selectedUser = user;
+    adjustType = "WALLET";
+    adjustAmount = 0;
+    adjustNote = "";
+    showAdjustModal = true;
+  }
+
+  async function submitAdjustBalance() {
+    if (!selectedUser) return;
+    const res = await fetch(`/api/v1/admin/users/${selectedUser.id}/balance-adjust`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: adjustType, amount: Number(adjustAmount), note: adjustNote }),
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok) {
+      alert(json?.message ?? "Gagal adjust balance user");
+      return;
+    }
+    const nextBalances = json?.userBalances ?? json?.userBalances;
+    if (nextBalances) {
+      users = users.map((u) => u.id === selectedUser?.id ? { ...u, userBalances: nextBalances } : u);
+    }
+    showAdjustModal = false;
   }
 
   async function initUserBalances(userId: string) {
@@ -255,6 +287,13 @@
                   <div class="flex flex-col items-start md:items-end gap-2">
                     <button
                       type="button"
+                      class="px-3 py-1.5 rounded-lg border border-[var(--color-primary)]/30 bg-[var(--color-primary)]/10 text-[11px] font-semibold text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20"
+                      onclick={() => openAdjustModal(user)}
+                    >
+                      Edit Balance
+                    </button>
+                    <button
+                      type="button"
                       class="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 text-[11px] font-semibold text-white/80 hover:bg-white/10"
                       onclick={() => initUserBalances(user.id)}
                     >
@@ -298,3 +337,24 @@
     </div>
   </div>
 </section>
+
+{#if showAdjustModal && selectedUser}
+  <div class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-3xl border border-white/10 bg-[#0f0f0f] p-5 space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-black text-white">Edit Balance User</h2>
+          <p class="text-xs text-white/45 mt-1">{selectedUser.displayName || selectedUser.email}</p>
+        </div>
+        <button class="text-white/50 hover:text-white" onclick={() => showAdjustModal = false}>Tutup</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <button class={`rounded-2xl border px-4 py-3 font-semibold ${adjustType === 'WALLET' ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]' : 'border-white/10 bg-white/5 text-white/70'}`} onclick={() => adjustType = 'WALLET'}>T-Gems</button>
+        <button class={`rounded-2xl border px-4 py-3 font-semibold ${adjustType === 'POINTS' ? 'border-sky-400/40 bg-sky-400/10 text-sky-300' : 'border-white/10 bg-white/5 text-white/70'}`} onclick={() => adjustType = 'POINTS'}>T-Points</button>
+      </div>
+      <input type="number" bind:value={adjustAmount} class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none" placeholder="Masukkan nominal, negatif untuk pengurangan" />
+      <textarea bind:value={adjustNote} class="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none min-h-[110px]" placeholder="Catatan adjustment"></textarea>
+      <button class="w-full rounded-2xl bg-[var(--color-primary)] text-black font-black py-3" onclick={submitAdjustBalance}>Simpan Adjustment</button>
+    </div>
+  </div>
+{/if}

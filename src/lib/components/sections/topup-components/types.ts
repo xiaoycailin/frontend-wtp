@@ -21,6 +21,8 @@ export interface PaymentMethod {
   autoCheck?: boolean;
   surcharge?: number;
   requiredLogin?: boolean;
+  valid?: boolean;
+  invalidReason?: string | null;
 }
 
 export interface PromoApplied {

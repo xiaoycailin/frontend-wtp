@@ -35,7 +35,9 @@
       </div>
     </div>
 
-    <div class={`grid grid-cols-1 ${zoneInputMode === "none" ? "" : "sm:grid-cols-2"} gap-3`}>
+    <div
+      class={`grid grid-cols-1 ${zoneInputMode === "none" ? "" : "sm:grid-cols-2"} gap-3`}
+    >
       <div class="field">
         <label class="field-label" for="primary_id">User ID</label>
         <div class="input-wrap">
@@ -72,7 +74,9 @@
                 <span class:placeholder={!serverId}>
                   {serverId ? serverId.toUpperCase() : "Pilih Server"}
                 </span>
-                <span class={`select-chevron ${serverDropdownOpen ? "open" : ""}`}>
+                <span
+                  class={`select-chevron ${serverDropdownOpen ? "open" : ""}`}
+                >
                   <ChevronDown size="sm" />
                 </span>
               </button>

@@ -54,18 +54,18 @@
   // Input Types state
   let inputTypes = $state<any[]>([]);
   let editingInputType = $state<any | null>(null);
-  let activeTab = $state<'info' | 'inputs'>('info');
+  let activeTab = $state<"info" | "inputs">("info");
 
   // Input Types form state (for create)
-  let newInputName = $state('');
-  let newInputLabel = $state('');
-  let newInputType = $state('text');
-  let newInputModel = $state('input');
-  let newInputPlaceholder = $state('');
-  let newInputIcon = $state('');
-  let newInputOptionLabel = $state('');
-  let newInputOptionValue = $state('');
-  let newInputOptionsList = $state<{label: string, value: string}[]>([]);
+  let newInputName = $state("");
+  let newInputLabel = $state("");
+  let newInputType = $state("text");
+  let newInputModel = $state("input");
+  let newInputPlaceholder = $state("");
+  let newInputIcon = $state("");
+  let newInputOptionLabel = $state("");
+  let newInputOptionValue = $state("");
+  let newInputOptionsList = $state<{ label: string; value: string }[]>([]);
   let newInputMasking = $state(false);
 
   const catForm = $state({ title: "" });
@@ -330,7 +330,7 @@
     subForm.banners = "";
     subForm.brand = "";
     subForm.badgeId = "";
-    activeTab = 'info';
+    activeTab = "info";
     inputTypes = [];
     editingInputType = null;
     showSubModal = true;
@@ -345,7 +345,7 @@
     subForm.banners = (sub.banners ?? []).join("\n");
     subForm.brand = sub.brand ?? "";
     subForm.badgeId = sub.badgeId ? String(sub.badgeId) : "";
-    activeTab = 'info';
+    activeTab = "info";
     inputTypes = [];
     editingInputType = null;
     showSubModal = true;
@@ -438,10 +438,13 @@
   // Input Types functions
   async function fetchInputTypes(subCategoryId: string) {
     try {
-      const res = await fetch(`/api/v1/input-types?subCategoryId=${subCategoryId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error('Failed to fetch input types');
+      const res = await fetch(
+        `/api/v1/input-types?subCategoryId=${subCategoryId}`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        },
+      );
+      if (!res.ok) throw new Error("Failed to fetch input types");
       const json = await res.json();
       inputTypes = json.data || [];
     } catch (e) {
@@ -452,41 +455,45 @@
 
   async function saveInputType(data: any) {
     const isEdit = !!editingInputType;
-    const url = isEdit ? `/api/v1/input-types/${editingInputType.id}` : '/api/v1/input-types';
-    const method = isEdit ? 'PUT' : 'POST';
+    const url = isEdit
+      ? `/api/v1/input-types/${editingInputType.id}`
+      : "/api/v1/input-types";
+    const method = isEdit ? "PUT" : "POST";
     try {
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ ...data, subCategoryId: editingSub?.id }),
       });
-      if (!res.ok) throw new Error('Failed to save input type');
+      if (!res.ok) throw new Error("Failed to save input type");
       const json = await res.json();
       if (isEdit) {
-        inputTypes = inputTypes.map(it => it.id === editingInputType.id ? json.data : it);
+        inputTypes = inputTypes.map((it) =>
+          it.id === editingInputType.id ? json.data : it,
+        );
       } else {
         inputTypes = [...inputTypes, json.data];
       }
       editingInputType = null;
-    } catch (e) {
-      alert(e?.message ?? 'Gagal menyimpan input type');
+    } catch (e: any) {
+      alert(e?.message ?? "Gagal menyimpan input type");
     }
   }
 
   async function deleteInputType(id: number) {
-    if (!confirm('Hapus input type?')) return;
+    if (!confirm("Hapus input type?")) return;
     try {
       const res = await fetch(`/api/v1/input-types/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      if (!res.ok) throw new Error('Failed to delete');
-      inputTypes = inputTypes.filter(it => it.id !== id);
-    } catch (e) {
-      alert(e?.message ?? 'Gagal menghapus input type');
+      if (!res.ok) throw new Error("Failed to delete");
+      inputTypes = inputTypes.filter((it) => it.id !== id);
+    } catch (e: any) {
+      alert(e?.message ?? "Gagal menghapus input type");
     }
   }
 
@@ -497,15 +504,23 @@
         label: editingInputType ? editingInputType.label : newInputLabel.trim(),
         type: editingInputType ? editingInputType.type : newInputType,
         model: editingInputType ? editingInputType.model : newInputModel,
-        placeholder: editingInputType ? editingInputType.placeholder : newInputPlaceholder.trim() || null,
-        icon: editingInputType ? editingInputType.icon : newInputIcon.trim() || null,
-        maskingForView: editingInputType ? editingInputType.maskingForView : newInputMasking,
+        placeholder: editingInputType
+          ? editingInputType.placeholder
+          : newInputPlaceholder.trim() || null,
+        icon: editingInputType
+          ? editingInputType.icon
+          : newInputIcon.trim() || null,
+        maskingForView: editingInputType
+          ? editingInputType.maskingForView
+          : newInputMasking,
       };
       // Options handling for select model
       let options = null;
-      if (data.model === 'select') {
+      if (data.model === "select") {
         // Use existing options if editing, otherwise use newInputOptionsList
-        options = editingInputType ? editingInputType.options : newInputOptionsList;
+        options = editingInputType
+          ? editingInputType.options
+          : newInputOptionsList;
         if (!options || !Array.isArray(options) || options.length === 0) {
           options = null;
         }
@@ -516,36 +531,39 @@
 
       // Reset form
       if (!editingInputType) {
-        newInputName = '';
-        newInputLabel = '';
-        newInputType = 'text';
-        newInputModel = 'input';
-        newInputPlaceholder = '';
-        newInputIcon = '';
-        newInputOptionLabel = '';
-        newInputOptionValue = '';
+        newInputName = "";
+        newInputLabel = "";
+        newInputType = "text";
+        newInputModel = "input";
+        newInputPlaceholder = "";
+        newInputIcon = "";
+        newInputOptionLabel = "";
+        newInputOptionValue = "";
         newInputOptionsList = [];
         newInputMasking = false;
       }
-    } catch (e) {
-      alert(e?.message ?? 'Failed to save input type');
+    } catch (e: any) {
+      alert(e?.message ?? "Failed to save input type");
     }
   }
 
   function addOptionToList() {
     if (!newInputOptionLabel.trim() || !newInputOptionValue.trim()) {
-      alert('Label dan Value harus diisi');
+      alert("Label dan Value harus diisi");
       return;
     }
-    const newOption = { label: newInputOptionLabel.trim(), value: newInputOptionValue.trim() };
+    const newOption = {
+      label: newInputOptionLabel.trim(),
+      value: newInputOptionValue.trim(),
+    };
     if (editingInputType) {
       if (!editingInputType.options) editingInputType.options = [];
       editingInputType.options = [...editingInputType.options, newOption];
     } else {
       newInputOptionsList = [...newInputOptionsList, newOption];
     }
-    newInputOptionLabel = '';
-    newInputOptionValue = '';
+    newInputOptionLabel = "";
+    newInputOptionValue = "";
   }
 
   async function handleDeleteCategory(cat: Category) {
@@ -1143,20 +1161,20 @@
       <!-- Tab Navigation -->
       <div class="flex border-b border-white/10 mb-4">
         <button
-          class={`px-4 py-2 text-xs font-medium ${activeTab === 'info' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]' : 'text-white/50 hover:text-white'}`}
-          onclick={() => activeTab = 'info'}
+          class={`px-4 py-2 text-xs font-medium ${activeTab === "info" ? "text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]" : "text-white/50 hover:text-white"}`}
+          onclick={() => (activeTab = "info")}
         >
           Informasi
         </button>
         <button
-          class={`px-4 py-2 text-xs font-medium ${activeTab === 'inputs' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]' : 'text-white/50 hover:text-white'}`}
-          onclick={() => activeTab = 'inputs'}
+          class={`px-4 py-2 text-xs font-medium ${activeTab === "inputs" ? "text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]" : "text-white/50 hover:text-white"}`}
+          onclick={() => (activeTab = "inputs")}
         >
           Input Types
         </button>
       </div>
 
-      {#if activeTab === 'info'}
+      {#if activeTab === "info"}
         <div class="space-y-2 text-xs max-h-[70vh] overflow-y-auto pr-1">
           <label class="flex flex-col gap-1">
             <span class="text-white/70">Nama sub kategori</span>
@@ -1224,44 +1242,70 @@
             {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
-      {:else if activeTab === 'inputs'}
+      {:else if activeTab === "inputs"}
         <div class="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
           <div class="text-xs text-white/50">
-            Konfigurasi input fields yang akan muncul di halaman order untuk sub kategori ini.
-            Jika tidak ada input types, order page akan fallback ke <code class="bg-white/5 px-1 rounded">/api/v1/games/supported</code>.
+            Konfigurasi input fields yang akan muncul di halaman order untuk sub
+            kategori ini. Jika tidak ada input types, order page akan fallback
+            ke <code class="bg-white/5 px-1 rounded"
+              >/api/v1/games/supported</code
+            >.
           </div>
 
           <!-- List Input Types -->
           <div class="space-y-2">
             {#each inputTypes as input}
-              <div class="p-3 rounded-lg bg-white/5 border border-white/10 flex items-start justify-between gap-2">
+              <div
+                class="p-3 rounded-lg bg-white/5 border border-white/10 flex items-start justify-between gap-2"
+              >
                 <div class="flex-1">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-white">{input.label}</span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">{input.name}</span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">{input.type}</span>
-                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">{input.model}</span>
+                    <span class="text-xs font-semibold text-white"
+                      >{input.label}</span
+                    >
+                    <span
+                      class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60"
+                      >{input.name}</span
+                    >
+                    <span
+                      class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60"
+                      >{input.type}</span
+                    >
+                    <span
+                      class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60"
+                      >{input.model}</span
+                    >
                     {#if input.maskingForView}
-                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300">mask</span>
+                      <span
+                        class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300"
+                        >mask</span
+                      >
                     {/if}
                   </div>
                   {#if input.placeholder}
-                    <div class="text-[10px] text-white/40 mt-1">Placeholder: {input.placeholder}</div>
+                    <div class="text-[10px] text-white/40 mt-1">
+                      Placeholder: {input.placeholder}
+                    </div>
                   {/if}
                   {#if input.icon}
-                    <div class="text-[10px] text-white/40 mt-1">Icon: {input.icon}</div>
+                    <div class="text-[10px] text-white/40 mt-1">
+                      Icon: {input.icon}
+                    </div>
                   {/if}
                 </div>
                 <div class="flex items-center gap-1">
                   <button
                     class="px-2 py-1 text-xs bg-white/5 text-white/70 border border-white/10 rounded hover:bg-white/10"
-                    onclick={() => { 
-                      editingInputType = input; 
-                      if (editingInputType.options === null || editingInputType.options === undefined) {
+                    onclick={() => {
+                      editingInputType = input;
+                      if (
+                        editingInputType.options === null ||
+                        editingInputType.options === undefined
+                      ) {
                         editingInputType.options = [];
                       }
-                      newInputOptionLabel = '';
-                      newInputOptionValue = '';
+                      newInputOptionLabel = "";
+                      newInputOptionValue = "";
                     }}
                   >
                     Edit
@@ -1275,7 +1319,9 @@
                 </div>
               </div>
             {:else}
-              <div class="p-4 text-center text-white/40 text-xs border border-dashed border-white/10 rounded-lg">
+              <div
+                class="p-4 text-center text-white/40 text-xs border border-dashed border-white/10 rounded-lg"
+              >
                 Belum ada input types.
               </div>
             {/each}
@@ -1284,7 +1330,7 @@
           <!-- Form Input Type -->
           <div class="pt-4 border-t border-white/10">
             <h3 class="text-xs font-semibold text-white mb-3">
-              {editingInputType ? 'Edit Input Type' : 'Tambah Input Type'}
+              {editingInputType ? "Edit Input Type" : "Tambah Input Type"}
             </h3>
             <div class="space-y-2 text-xs">
               <div class="grid grid-cols-2 gap-2">
@@ -1292,9 +1338,12 @@
                   <span class="text-white/70">Name *</span>
                   <input
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    value={editingInputType ? editingInputType.name : newInputName}
-                    on:input={(e) => {
-                      if (editingInputType) editingInputType.name = e.currentTarget.value;
+                    value={editingInputType
+                      ? editingInputType.name
+                      : newInputName}
+                    oninput={(e) => {
+                      if (editingInputType)
+                        editingInputType.name = e.currentTarget.value;
                       else newInputName = e.currentTarget.value;
                     }}
                     placeholder="server_id"
@@ -1304,9 +1353,12 @@
                   <span class="text-white/70">Label *</span>
                   <input
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    value={editingInputType ? editingInputType.label : newInputLabel}
-                    on:input={(e) => {
-                      if (editingInputType) editingInputType.label = e.currentTarget.value;
+                    value={editingInputType
+                      ? editingInputType.label
+                      : newInputLabel}
+                    oninput={(e) => {
+                      if (editingInputType)
+                        editingInputType.label = e.currentTarget.value;
                       else newInputLabel = e.currentTarget.value;
                     }}
                     placeholder="Server ID"
@@ -1318,9 +1370,12 @@
                   <span class="text-white/70">Type</span>
                   <select
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    value={editingInputType ? editingInputType.type : newInputType}
-                    on:input={(e) => {
-                      if (editingInputType) editingInputType.type = e.currentTarget.value;
+                    value={editingInputType
+                      ? editingInputType.type
+                      : newInputType}
+                    oninput={(e) => {
+                      if (editingInputType)
+                        editingInputType.type = e.currentTarget.value;
                       else newInputType = e.currentTarget.value;
                     }}
                   >
@@ -1335,9 +1390,12 @@
                   <span class="text-white/70">Model</span>
                   <select
                     class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                    value={editingInputType ? editingInputType.model : newInputModel}
-                    on:input={(e) => {
-                      if (editingInputType) editingInputType.model = e.currentTarget.value;
+                    value={editingInputType
+                      ? editingInputType.model
+                      : newInputModel}
+                    oninput={(e) => {
+                      if (editingInputType)
+                        editingInputType.model = e.currentTarget.value;
                       else newInputModel = e.currentTarget.value;
                     }}
                   >
@@ -1351,9 +1409,12 @@
                 <span class="text-white/70">Placeholder</span>
                 <input
                   class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                  value={editingInputType ? editingInputType.placeholder : newInputPlaceholder}
-                  on:input={(e) => {
-                    if (editingInputType) editingInputType.placeholder = e.currentTarget.value;
+                  value={editingInputType
+                    ? editingInputType.placeholder
+                    : newInputPlaceholder}
+                  oninput={(e) => {
+                    if (editingInputType)
+                      editingInputType.placeholder = e.currentTarget.value;
                     else newInputPlaceholder = e.currentTarget.value;
                   }}
                   placeholder="Masukkan server ID"
@@ -1363,38 +1424,47 @@
                 <span class="text-white/70">Icon (optional)</span>
                 <input
                   class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
-                  value={editingInputType ? editingInputType.icon : newInputIcon}
-                  on:input={(e) => {
-                    if (editingInputType) editingInputType.icon = e.currentTarget.value;
+                  value={editingInputType
+                    ? editingInputType.icon
+                    : newInputIcon}
+                  oninput={(e) => {
+                    if (editingInputType)
+                      editingInputType.icon = e.currentTarget.value;
                     else newInputIcon = e.currentTarget.value;
                   }}
                   placeholder="mdi:server"
                 />
               </label>
-              {#if (editingInputType ? editingInputType.model : newInputModel) === 'select'}
+              {#if (editingInputType ? editingInputType.model : newInputModel) === "select"}
                 <div class="space-y-2">
                   <div class="flex items-center justify-between">
                     <span class="text-white/70">Options (untuk select)</span>
-                    <span class="text-[10px] text-white/40">Tambah pasangan label & value</span>
+                    <span class="text-[10px] text-white/40"
+                      >Tambah pasangan label & value</span
+                    >
                   </div>
-                  
+
                   <!-- List options -->
-                  <div class="space-y-1 max-h-40 overflow-y-auto border border-white/10 rounded-lg p-2">
-                    {#each (editingInputType ? editingInputType.options : newInputOptionsList) as opt, i}
-                      <div class="flex items-center gap-2 p-2 bg-white/5 rounded">
+                  <div
+                    class="space-y-1 max-h-40 overflow-y-auto border border-white/10 rounded-lg p-2"
+                  >
+                    {#each editingInputType ? editingInputType.options : newInputOptionsList as opt, i}
+                      <div
+                        class="flex items-center gap-2 p-2 bg-white/5 rounded"
+                      >
                         <div class="flex-1 grid grid-cols-2 gap-2">
                           <input
                             type="text"
                             class="px-2 py-1 text-xs bg-black/40 border border-white/10 text-white rounded"
                             value={opt.label}
-                            on:input={(e) => opt.label = e.currentTarget.value}
+                            oninput={(e) => (opt.label = e.currentTarget.value)}
                             placeholder="Label"
                           />
                           <input
                             type="text"
                             class="px-2 py-1 text-xs bg-black/40 border border-white/10 text-white rounded"
                             value={opt.value}
-                            on:input={(e) => opt.value = e.currentTarget.value}
+                            oninput={(e) => (opt.value = e.currentTarget.value)}
                             placeholder="Value"
                           />
                         </div>
@@ -1403,9 +1473,14 @@
                           class="px-2 py-1 text-xs bg-red-500/10 text-red-300 border border-red-500/20 rounded hover:bg-red-500/20"
                           onclick={() => {
                             if (editingInputType) {
-                              editingInputType.options = editingInputType.options.filter((_, idx) => idx !== i);
+                              editingInputType.options =
+                                editingInputType.options.filter(
+                                  (_: any, idx: any) => idx !== i,
+                                );
                             } else {
-                              newInputOptionsList = newInputOptionsList.filter((_, idx) => idx !== i);
+                              newInputOptionsList = newInputOptionsList.filter(
+                                (_, idx) => idx !== i,
+                              );
                             }
                           }}
                         >
@@ -1413,24 +1488,28 @@
                         </button>
                       </div>
                     {:else}
-                      <div class="text-center text-white/40 text-xs py-4">Belum ada options.</div>
+                      <div class="text-center text-white/40 text-xs py-4">
+                        Belum ada options.
+                      </div>
                     {/each}
                   </div>
-                  
+
                   <!-- Add new option -->
                   <div class="grid grid-cols-2 gap-2">
                     <input
                       type="text"
                       class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
                       value={newInputOptionLabel}
-                      on:input={(e) => newInputOptionLabel = e.currentTarget.value}
+                      oninput={(e) =>
+                        (newInputOptionLabel = e.currentTarget.value)}
                       placeholder="Label"
                     />
                     <input
                       type="text"
                       class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
                       value={newInputOptionValue}
-                      on:input={(e) => newInputOptionValue = e.currentTarget.value}
+                      oninput={(e) =>
+                        (newInputOptionValue = e.currentTarget.value)}
                       placeholder="Value"
                     />
                   </div>
@@ -1447,19 +1526,24 @@
                 <input
                   type="checkbox"
                   class="rounded border-white/10 bg-black/40"
-                  checked={editingInputType ? editingInputType.maskingForView : newInputMasking}
-                  on:change={(e) => {
-                    if (editingInputType) editingInputType.maskingForView = e.currentTarget.checked;
+                  checked={editingInputType
+                    ? editingInputType.maskingForView
+                    : newInputMasking}
+                  onchange={(e) => {
+                    if (editingInputType)
+                      editingInputType.maskingForView = e.currentTarget.checked;
                     else newInputMasking = e.currentTarget.checked;
                   }}
                 />
-                <span class="text-white/70">Masking for view (tampilkan sebagai ***)</span>
+                <span class="text-white/70"
+                  >Masking for view (tampilkan sebagai ***)</span
+                >
               </label>
               <div class="flex justify-end gap-2 pt-2">
                 {#if editingInputType}
                   <button
                     class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
-                    onclick={() => editingInputType = null}
+                    onclick={() => (editingInputType = null)}
                   >
                     Batal Edit
                   </button>
@@ -1468,7 +1552,7 @@
                   class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
                   onclick={saveInputTypeForm}
                 >
-                  {editingInputType ? 'Update' : 'Tambah'}
+                  {editingInputType ? "Update" : "Tambah"}
                 </button>
               </div>
             </div>
