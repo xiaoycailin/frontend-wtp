@@ -37,6 +37,8 @@
   let supportedGames = $state<SupportedGameConfig[]>([]);
   let gameConfig = $state<SupportedGameConfig | null>(null);
   let gameConfigLoading = $state(false);
+  let inputTypes = $state<any[]>([]);
+  let customGameConfig = $state<SupportedGameConfig | null>(null);
 
   const zoneInputMode = $derived<ZoneInputMode>(
     !gameConfig?.requiresZone
@@ -62,9 +64,34 @@
       (!requiresServerInput || !!serverId.trim()),
   );
 
-  async function fetchSupportedGames() {
+  async function fetchInputConfig() {
     gameConfigLoading = true;
     try {
+      // First try to fetch input types for this subcategory
+      const subCategorySlug = productDetail?.subCategory?.slug;
+      if (subCategorySlug) {
+        const res = await fetch(`/api/v1/input-types/subcategory-slug/${subCategorySlug}`);
+        if (res.ok) {
+          const json = await res.json();
+          inputTypes = json.data || [];
+          if (inputTypes.length > 0) {
+            // Transform input types to SupportedGameConfig
+            // For now, take the first input as zone config
+            const first = inputTypes[0];
+            const servers = first.model === 'select' && first.options ? first.options.map((opt: any) => opt.value) : [];
+            customGameConfig = {
+              code: subCategorySlug,
+              label: productDetail.subCategory?.title || subCategorySlug,
+              requiresZone: true,
+              autoZone: false,
+              servers: servers.length > 0 ? servers : undefined,
+            };
+            gameConfig = customGameConfig;
+            return; // Stop here, don't fetch games/supported
+          }
+        }
+      }
+      // Fallback to games/supported
       const res = await fetch("/api/v1/games/supported");
       const json = await res.json();
       if (!res.ok) {
@@ -72,21 +99,21 @@
         gameConfig = null;
         return;
       }
-
       supportedGames = json?.data ?? [];
-      gameConfig =
-        supportedGames.find((item) => item.code === productPath) ?? null;
+      gameConfig = supportedGames.find((item) => item.code === productPath) ?? null;
     } catch (error) {
-      console.error("Failed to load supported games", error);
+      console.error("Failed to load input config", error);
       supportedGames = [];
       gameConfig = null;
+      inputTypes = [];
+      customGameConfig = null;
     } finally {
       gameConfigLoading = false;
     }
   }
 
   $effect(() => {
-    fetchSupportedGames();
+    fetchInputConfig();
   });
 
   $effect(() => {

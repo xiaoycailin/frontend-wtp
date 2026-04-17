@@ -51,6 +51,11 @@
   let editingSub = $state<SubCategory | null>(null);
   let parentCategoryForSub = $state<Category | null>(null);
 
+  // Input Types state
+  let inputTypes = $state<any[]>([]);
+  let editingInputType = $state<any | null>(null);
+  let activeTab = $state<'info' | 'inputs'>('info');
+
   const catForm = $state({ title: "" });
   const subForm = $state({
     title: "",
@@ -313,10 +318,13 @@
     subForm.banners = "";
     subForm.brand = "";
     subForm.badgeId = "";
+    activeTab = 'info';
+    inputTypes = [];
+    editingInputType = null;
     showSubModal = true;
   }
 
-  function openEditSub(cat: Category, sub: SubCategory) {
+  async function openEditSub(cat: Category, sub: SubCategory) {
     editingSub = sub;
     parentCategoryForSub = cat;
     subForm.title = sub.title ?? "";
@@ -325,7 +333,11 @@
     subForm.banners = (sub.banners ?? []).join("\n");
     subForm.brand = sub.brand ?? "";
     subForm.badgeId = sub.badgeId ? String(sub.badgeId) : "";
+    activeTab = 'info';
+    inputTypes = [];
+    editingInputType = null;
     showSubModal = true;
+    await fetchInputTypes(sub.id);
   }
 
   async function submitCategory() {
@@ -408,6 +420,103 @@
       alert(e?.message ?? "Gagal menyimpan sub kategori");
     } finally {
       loading = false;
+    }
+  }
+
+  // Input Types functions
+  async function fetchInputTypes(subCategoryId: string) {
+    try {
+      const res = await fetch(`/api/v1/input-types?subCategoryId=${subCategoryId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Failed to fetch input types');
+      const json = await res.json();
+      inputTypes = json.data || [];
+    } catch (e) {
+      console.error(e);
+      inputTypes = [];
+    }
+  }
+
+  async function saveInputType(data: any) {
+    const isEdit = !!editingInputType;
+    const url = isEdit ? `/api/v1/input-types/${editingInputType.id}` : '/api/v1/input-types';
+    const method = isEdit ? 'PUT' : 'POST';
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ ...data, subCategoryId: editingSub?.id }),
+      });
+      if (!res.ok) throw new Error('Failed to save input type');
+      const json = await res.json();
+      if (isEdit) {
+        inputTypes = inputTypes.map(it => it.id === editingInputType.id ? json.data : it);
+      } else {
+        inputTypes = [...inputTypes, json.data];
+      }
+      editingInputType = null;
+    } catch (e) {
+      alert(e?.message ?? 'Gagal menyimpan input type');
+    }
+  }
+
+  async function deleteInputType(id: number) {
+    if (!confirm('Hapus input type?')) return;
+    try {
+      const res = await fetch(`/api/v1/input-types/${id}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      inputTypes = inputTypes.filter(it => it.id !== id);
+    } catch (e) {
+      alert(e?.message ?? 'Gagal menghapus input type');
+    }
+  }
+
+  async function saveInputTypeForm() {
+    try {
+      const data: any = {
+        name: editingInputType ? editingInputType.name : newInputName.trim(),
+        label: editingInputType ? editingInputType.label : newInputLabel.trim(),
+        type: editingInputType ? editingInputType.type : newInputType,
+        model: editingInputType ? editingInputType.model : newInputModel,
+        placeholder: editingInputType ? editingInputType.placeholder : newInputPlaceholder.trim() || null,
+        icon: editingInputType ? editingInputType.icon : newInputIcon.trim() || null,
+        maskingForView: editingInputType ? editingInputType.maskingForView : newInputMasking,
+      };
+      // Parse options JSON if select model
+      let options = null;
+      const optionsStr = editingInputType ? JSON.stringify(editingInputType.options) : newInputOptions;
+      if (optionsStr.trim()) {
+        try {
+          options = JSON.parse(optionsStr);
+        } catch (e) {
+          alert('Options must be valid JSON');
+          return;
+        }
+      }
+      data.options = options;
+
+      await saveInputType(data);
+
+      // Reset form
+      if (!editingInputType) {
+        newInputName = '';
+        newInputLabel = '';
+        newInputType = 'text';
+        newInputModel = 'input';
+        newInputPlaceholder = '';
+        newInputIcon = '';
+        newInputOptions = '';
+        newInputMasking = false;
+      }
+    } catch (e) {
+      alert(e?.message ?? 'Failed to save input type');
     }
   }
 
@@ -1003,73 +1112,242 @@
           Tutup
         </button>
       </div>
-      <div class="space-y-2 text-xs max-h-[70vh] overflow-y-auto pr-1">
-        <label class="flex flex-col gap-1">
-          <span class="text-white/70">Nama sub kategori</span>
-          <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
-            bind:value={subForm.title}
-            placeholder="Contoh: Voucher Google Play"
+      <!-- Tab Navigation -->
+      <div class="flex border-b border-white/10 mb-4">
+        <button
+          class={`px-4 py-2 text-xs font-medium ${activeTab === 'info' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]' : 'text-white/50 hover:text-white'}`}
+          onclick={() => activeTab = 'info'}
+        >
+          Informasi
+        </button>
+        <button
+          class={`px-4 py-2 text-xs font-medium ${activeTab === 'inputs' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]' : 'text-white/50 hover:text-white'}`}
+          onclick={() => activeTab = 'inputs'}
+        >
+          Input Types
+        </button>
+      </div>
+
+      {#if activeTab === 'info'}
+        <div class="space-y-2 text-xs max-h-[70vh] overflow-y-auto pr-1">
+          <label class="flex flex-col gap-1">
+            <span class="text-white/70">Nama sub kategori</span>
+            <input
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+              bind:value={subForm.title}
+              placeholder="Contoh: Voucher Google Play"
+            />
+          </label>
+          <ImageUrlField
+            label="Thumbnail URL"
+            bind:value={subForm.thumbnail}
+            placeholder="https://..."
+            help="Bisa paste manual atau pilih dari image manager."
           />
-        </label>
-        <ImageUrlField
-          label="Thumbnail URL"
-          bind:value={subForm.thumbnail}
-          placeholder="https://..."
-          help="Bisa paste manual atau pilih dari image manager."
-        />
-        <label class="flex flex-col gap-1">
-          <span class="text-white/70">Brand</span>
-          <input
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
-            bind:value={subForm.brand}
-            placeholder="Contoh: Google, Moonton"
+          <label class="flex flex-col gap-1">
+            <span class="text-white/70">Brand</span>
+            <input
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+              bind:value={subForm.brand}
+              placeholder="Contoh: Google, Moonton"
+            />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-white/70">Badge</span>
+            <select
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
+              bind:value={subForm.badgeId}
+            >
+              <option value="">Tanpa badge</option>
+              {#each badges as badge}
+                <option value={String(badge.id)}>{badge.label}</option>
+              {/each}
+            </select>
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="text-white/70">Deskripsi</span>
+            <textarea
+              class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)] min-h-[80px] resize-y"
+              bind:value={subForm.description}
+              placeholder="Deskripsi singkat sub kategori"
+            />
+          </label>
+          <MultiImageUrlField
+            label="Banner URLs (satu URL per baris)"
+            bind:value={subForm.banners}
+            placeholder="https://...\nhttps://..."
+            help="Pilih beberapa gambar sekaligus, atau paste manual."
           />
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-white/70">Badge</span>
-          <select
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)]"
-            bind:value={subForm.badgeId}
+        </div>
+        <div class="flex justify-end gap-2 pt-2 text-xs">
+          <button
+            class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
+            type="button"
+            onclick={() => (showSubModal = false)}
           >
-            <option value="">Tanpa badge</option>
-            {#each badges as badge}
-              <option value={String(badge.id)}>{badge.label}</option>
+            Batal
+          </button>
+          <button
+            class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
+            type="button"
+            onclick={submitSub}
+            disabled={loading}
+          >
+            {loading ? "Menyimpan..." : "Simpan"}
+          </button>
+        </div>
+      {:else if activeTab === 'inputs'}
+        <div class="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+          <div class="text-xs text-white/50">
+            Konfigurasi input fields yang akan muncul di halaman order untuk sub kategori ini.
+            Jika tidak ada input types, order page akan fallback ke <code class="bg-white/5 px-1 rounded">/api/v1/games/supported</code>.
+          </div>
+
+          <!-- List Input Types -->
+          <div class="space-y-2">
+            {#each inputTypes as input}
+              <div class="p-3 rounded-lg bg-white/5 border border-white/10 flex items-start justify-between gap-2">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-white">{input.label}</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">{input.name}</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">{input.type}</span>
+                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/60">{input.model}</span>
+                    {#if input.maskingForView}
+                      <span class="text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300">mask</span>
+                    {/if}
+                  </div>
+                  {#if input.placeholder}
+                    <div class="text-[10px] text-white/40 mt-1">Placeholder: {input.placeholder}</div>
+                  {/if}
+                  {#if input.icon}
+                    <div class="text-[10px] text-white/40 mt-1">Icon: {input.icon}</div>
+                  {/if}
+                </div>
+                <div class="flex items-center gap-1">
+                  <button
+                    class="px-2 py-1 text-xs bg-white/5 text-white/70 border border-white/10 rounded hover:bg-white/10"
+                    onclick={() => editingInputType = input}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="px-2 py-1 text-xs bg-red-500/10 text-red-300 border border-red-500/20 rounded hover:bg-red-500/20"
+                    onclick={() => deleteInputType(input.id)}
+                  >
+                    Hapus
+                  </button>
+                </div>
+              </div>
+            {:else}
+              <div class="p-4 text-center text-white/40 text-xs border border-dashed border-white/10 rounded-lg">
+                Belum ada input types.
+              </div>
             {/each}
-          </select>
-        </label>
-        <label class="flex flex-col gap-1">
-          <span class="text-white/70">Deskripsi</span>
-          <textarea
-            class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white text-xs outline-none focus:border-[var(--color-primary)] min-h-[80px] resize-y"
-            bind:value={subForm.description}
-            placeholder="Deskripsi singkat sub kategori"
-          />
-        </label>
-        <MultiImageUrlField
-          label="Banner URLs (satu URL per baris)"
-          bind:value={subForm.banners}
-          placeholder="https://...\nhttps://..."
-          help="Pilih beberapa gambar sekaligus, atau paste manual."
-        />
-      </div>
-      <div class="flex justify-end gap-2 pt-2 text-xs">
-        <button
-          class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
-          type="button"
-          onclick={() => (showSubModal = false)}
-        >
-          Batal
-        </button>
-        <button
-          class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
-          type="button"
-          onclick={submitSub}
-          disabled={loading}
-        >
-          {loading ? "Menyimpan..." : "Simpan"}
-        </button>
-      </div>
+          </div>
+
+          <!-- Form Input Type -->
+          <div class="pt-4 border-t border-white/10">
+            <h3 class="text-xs font-semibold text-white mb-3">
+              {editingInputType ? 'Edit Input Type' : 'Tambah Input Type'}
+            </h3>
+            <div class="space-y-2 text-xs">
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex flex-col gap-1">
+                  <span class="text-white/70">Name *</span>
+                  <input
+                    class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+                    bind:value={editingInputType ? editingInputType.name : newInputName}
+                    placeholder="server_id"
+                  />
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-white/70">Label *</span>
+                  <input
+                    class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+                    bind:value={editingInputType ? editingInputType.label : newInputLabel}
+                    placeholder="Server ID"
+                  />
+                </label>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex flex-col gap-1">
+                  <span class="text-white/70">Type</span>
+                  <select
+                    class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+                    bind:value={editingInputType ? editingInputType.type : newInputType}
+                  >
+                    <option value="text">Text</option>
+                    <option value="number">Number</option>
+                    <option value="tel">Telephone</option>
+                    <option value="email">Email</option>
+                    <option value="password">Password</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1">
+                  <span class="text-white/70">Model</span>
+                  <select
+                    class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+                    bind:value={editingInputType ? editingInputType.model : newInputModel}
+                  >
+                    <option value="input">Input</option>
+                    <option value="textarea">Textarea</option>
+                    <option value="select">Select</option>
+                  </select>
+                </label>
+              </div>
+              <label class="flex flex-col gap-1">
+                <span class="text-white/70">Placeholder</span>
+                <input
+                  class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+                  bind:value={editingInputType ? editingInputType.placeholder : newInputPlaceholder}
+                  placeholder="Masukkan server ID"
+                />
+              </label>
+              <label class="flex flex-col gap-1">
+                <span class="text-white/70">Icon (optional)</span>
+                <input
+                  class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)]"
+                  bind:value={editingInputType ? editingInputType.icon : newInputIcon}
+                  placeholder="mdi:server"
+                />
+              </label>
+              <label class="flex flex-col gap-1">
+                <span class="text-white/70">Options (JSON, untuk select)</span>
+                <textarea
+                  class="px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-white outline-none focus:border-[var(--color-primary)] min-h-[60px] resize-y font-mono text-[10px]"
+                  bind:value={editingInputType ? JSON.stringify(editingInputType.options, null, 2) : newInputOptions}
+                  placeholder="[{\"label\":\"Option 1\",\"value\":\"1\"}]"
+                />
+              </label>
+              <label class="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  class="rounded border-white/10 bg-black/40"
+                  bind:checked={editingInputType ? editingInputType.maskingForView : newInputMasking}
+                />
+                <span class="text-white/70">Masking for view (tampilkan sebagai ***)</span>
+              </label>
+              <div class="flex justify-end gap-2 pt-2">
+                {#if editingInputType}
+                  <button
+                    class="px-3 py-1.5 rounded-lg bg-white/5 text-white/70 border border-white/10 hover:bg-white/10"
+                    onclick={() => editingInputType = null}
+                  >
+                    Batal Edit
+                  </button>
+                {/if}
+                <button
+                  class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-black font-semibold hover:bg-[#ffd740]"
+                  onclick={saveInputTypeForm}
+                >
+                  {editingInputType ? 'Update' : 'Tambah'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
