@@ -5,7 +5,7 @@
 
   let loading = false;
   let submitting = false;
-  
+
   // Form state
   let title = "";
   let slug = "";
@@ -17,11 +17,11 @@
   let metaKeywords = "";
   let ogImage = "";
   let status = "DRAFT";
-  
+
   // Fetch categories and tags
-  let categories = [];
+  let categories: any[] = [];
   let selectedCategoryId = "";
-  let tags = [];
+  let tags: any[] = [];
   let selectedTags: string[] = [];
 
   async function fetchCategoriesAndTags() {
@@ -29,7 +29,7 @@
     try {
       const [catRes, tagRes] = await Promise.all([
         fetch("/api/article-categories"),
-        fetch("/api/article-tags")
+        fetch("/api/article-tags"),
       ]);
 
       if (catRes.ok) {
@@ -56,8 +56,8 @@
     // Auto-generate slug from title
     slug = title
       .toLowerCase()
-      .replace(/[^\w\s]/gi, '')
-      .replace(/\s+/g, '-');
+      .replace(/[^\w\s]/gi, "")
+      .replace(/\s+/g, "-");
   }
 
   async function handleSubmit() {
@@ -67,14 +67,14 @@
     }
 
     submitting = true;
-    
+
     try {
       const jwtToken = localStorage.getItem("jwt_token");
-      
+
       const res = await fetch("/api/articles", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${jwtToken}`,
+          Authorization: `Bearer ${jwtToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -111,7 +111,7 @@
 
   function toggleTag(tagId: string) {
     if (selectedTags.includes(tagId)) {
-      selectedTags = selectedTags.filter(id => id !== tagId);
+      selectedTags = selectedTags.filter((id) => id !== tagId);
     } else {
       selectedTags.push(tagId);
     }
@@ -123,9 +123,11 @@
   <div class="flex items-center justify-between">
     <div>
       <h1 class="text-2xl font-bold text-white">Tambah Artikel Baru</h1>
-      <p class="text-sm text-white/50 mt-1">Buat konten artikel atau blog yang menarik</p>
+      <p class="text-sm text-white/50 mt-1">
+        Buat konten artikel atau blog yang menarik
+      </p>
     </div>
-    <button 
+    <button
       onclick={() => goto("/admin/articles")}
       class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
     >
@@ -144,17 +146,21 @@
       <div class="lg:col-span-2 space-y-6">
         <!-- Title & Slug -->
         <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
-          <label class="block text-sm font-medium text-white mb-2">Judul Artikel *</label>
-          <input 
-            type="text" 
+          <label class="block text-sm font-medium text-white mb-2"
+            >Judul Artikel *</label
+          >
+          <input
+            type="text"
             bind:value={title}
             placeholder="Masukkan judul artikel..."
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors"
           />
-          
-          <label class="block text-sm font-medium text-white mb-2 mt-4">Slug (URL)</label>
-          <input 
-            type="text" 
+
+          <label class="block text-sm font-medium text-white mb-2 mt-4"
+            >Slug (URL)</label
+          >
+          <input
+            type="text"
             bind:value={slug}
             placeholder="judul-artikel"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors"
@@ -163,8 +169,10 @@
 
         <!-- Content -->
         <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
-          <label class="block text-sm font-medium text-white mb-2">Konten Artikel *</label>
-          <textarea 
+          <label class="block text-sm font-medium text-white mb-2"
+            >Konten Artikel *</label
+          >
+          <textarea
             bind:value={content}
             rows="15"
             placeholder="Tulis konten artikel Anda di sini..."
@@ -174,15 +182,19 @@
 
         <!-- Excerpt -->
         <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
-          <label class="block text-sm font-medium text-white mb-2">Excerpt (Summary)</label>
-          <textarea 
+          <label class="block text-sm font-medium text-white mb-2"
+            >Excerpt (Summary)</label
+          >
+          <textarea
             bind:value={excerpt}
             rows="3"
             placeholder="Ringkasan singkat artikel untuk preview..."
             maxlength="500"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors resize-none"
           ></textarea>
-          <p class="text-xs text-white/40 mt-1">{excerpt.length}/500 karakter</p>
+          <p class="text-xs text-white/40 mt-1">
+            {excerpt.length}/500 karakter
+          </p>
         </div>
       </div>
 
@@ -191,9 +203,10 @@
         <!-- Publish Settings -->
         <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
           <h3 class="text-sm font-semibold text-white mb-4">Publish</h3>
-          
-          <label class="block text-sm font-medium text-white mb-2">Status</label>
-          <select 
+
+          <label class="block text-sm font-medium text-white mb-2">Status</label
+          >
+          <select
             bind:value={status}
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:border-[#f5c518] focus:outline-none transition-colors"
           >
@@ -206,8 +219,8 @@
         <!-- Category -->
         <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
           <h3 class="text-sm font-semibold text-white mb-4">Kategori</h3>
-          
-          <select 
+
+          <select
             bind:value={selectedCategoryId}
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:border-[#f5c518] focus:outline-none transition-colors"
           >
@@ -221,17 +234,20 @@
         <!-- Tags -->
         <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
           <h3 class="text-sm font-semibold text-white mb-4">Tags</h3>
-          
+
           <div class="space-y-2 max-h-48 overflow-y-auto">
             {#each tags as tag}
               <label class="flex items-center gap-3 cursor-pointer group">
-                <input 
+                <input
                   type="checkbox"
                   checked={selectedTags.includes(tag.id)}
-                  on:change={() => toggleTag(tag.id)}
+                  onchange={() => toggleTag(tag.id)}
                   class="w-4 h-4 rounded border-white/20 bg-white/5 text-[#f5c518] focus:ring-[#f5c518]"
                 />
-                <span class="text-sm text-white/80 group-hover:text-white transition-colors">{tag.name}</span>
+                <span
+                  class="text-sm text-white/80 group-hover:text-white transition-colors"
+                  >{tag.name}</span
+                >
               </label>
             {/each}
           </div>
@@ -240,8 +256,8 @@
         <!-- Thumbnail -->
         <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
           <h3 class="text-sm font-semibold text-white mb-4">Thumbnail</h3>
-          <input 
-            type="text" 
+          <input
+            type="text"
             bind:value={thumbnail}
             placeholder="https://example.com/image.jpg"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors text-sm"
@@ -255,7 +271,7 @@
             onclick={handleSubmit}
             class="flex-1 px-4 py-2.5 bg-[#f5c518] hover:bg-[#dcb015] text-black font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? 'Menyimpan...' : 'Simpan Artikel'}
+            {submitting ? "Menyimpan..." : "Simpan Artikel"}
           </button>
           <button
             onclick={() => handleSubmit()}
@@ -270,33 +286,39 @@
     <!-- SEO Settings -->
     <div class="bg-[#0b0b0b] border border-white/5 rounded-xl p-5">
       <h3 class="text-sm font-semibold text-white mb-4">SEO Settings</h3>
-      
+
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-white mb-2">Meta Title</label>
-          <input 
-            type="text" 
+          <label class="block text-sm font-medium text-white mb-2"
+            >Meta Title</label
+          >
+          <input
+            type="text"
             bind:value={metaTitle}
             placeholder="Custom SEO title"
             maxlength="100"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors"
           />
         </div>
-        
+
         <div>
-          <label class="block text-sm font-medium text-white mb-2">Meta Keywords</label>
-          <input 
-            type="text" 
+          <label class="block text-sm font-medium text-white mb-2"
+            >Meta Keywords</label
+          >
+          <input
+            type="text"
             bind:value={metaKeywords}
             placeholder="keyword1, keyword2, keyword3"
             maxlength="500"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors"
           />
         </div>
-        
+
         <div class="md:col-span-2">
-          <label class="block text-sm font-medium text-white mb-2">Meta Description</label>
-          <textarea 
+          <label class="block text-sm font-medium text-white mb-2"
+            >Meta Description</label
+          >
+          <textarea
             bind:value={metaDescription}
             rows="2"
             placeholder="Custom SEO description..."
@@ -304,11 +326,13 @@
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors resize-none"
           ></textarea>
         </div>
-        
+
         <div>
-          <label class="block text-sm font-medium text-white mb-2">OG Image URL</label>
-          <input 
-            type="text" 
+          <label class="block text-sm font-medium text-white mb-2"
+            >OG Image URL</label
+          >
+          <input
+            type="text"
             bind:value={ogImage}
             placeholder="Social media image URL"
             class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:border-[#f5c518] focus:outline-none transition-colors"

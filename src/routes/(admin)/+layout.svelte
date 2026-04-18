@@ -14,10 +14,9 @@
     User,
     Bolt,
     Discount,
-    // PurchaseTag,
+    EditAlt, // Untuk Artikel
   } from "@boxicons/svelte";
   import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
-  import { BookOpen } from "@boxicons/svelte";
 
   let { data, children } = $props();
 
@@ -47,7 +46,11 @@
     { label: "Activity Log", href: "/admin/activity-log", icon: Receipt },
     { label: "System Log", href: "/admin/system-log", icon: Receipt },
     { label: "Pengguna", href: "/admin/users", icon: User },
-    { label: "Topup Balance", href: "/admin/balance-topups", icon: CardViewLarge },
+    {
+      label: "Topup Balance",
+      href: "/admin/balance-topups",
+      icon: CardViewLarge,
+    },
     { label: "Site Config", href: "/admin/site-config", icon: Gear },
   ];
 
@@ -122,53 +125,71 @@
                  transition-colors duration-150 text-white/60 hover:text-white hover:bg-white/5"
         >
           <div class="flex items-center gap-3">
-            <BookOpen size="sm" />
+            <EditAlt size="sm" />
             <span>Artikel</span>
           </div>
           <svg
-            class={`w-4 h-4 transition-transform duration-200 ${articlesExpanded ? 'rotate-180' : ''}`}
-            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            class="w-4 h-4 transition-transform duration-200"
+            style="transform: ${articlesExpanded
+              ? 'rotate(180deg)'
+              : 'rotate(0deg)'}"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
           </svg>
         </button>
-        
+
         <!-- Submenu -->
         {#if articlesExpanded}
           <div class="ml-4 pl-4 border-l border-white/10 space-y-1 mt-1 mb-2">
             <a
               href="/admin/articles"
               class={`block px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-150
-                     ${isActive('/admin/articles', $page.url.pathname)
-                        ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)]'
-                        : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+                     ${
+                       isActive("/admin/articles", $page.url.pathname)
+                         ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
+                         : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                     }`}
             >
               Semua Artikel
             </a>
             <a
               href="/admin/articles/new"
               class={`block px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-150
-                     ${isActive('/admin/articles/new', $page.url.pathname)
-                        ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)]'
-                        : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+                     ${
+                       isActive("/admin/articles/new", $page.url.pathname)
+                         ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
+                         : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                     }`}
             >
               Tambah Baru
             </a>
             <a
               href="/admin/categories"
               class={`block px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-150
-                     ${isActive('/admin/categories', $page.url.pathname)
-                        ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)]'
-                        : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+                     ${
+                       isActive("/admin/categories", $page.url.pathname)
+                         ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
+                         : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                     }`}
             >
               Kategori Artikel
             </a>
             <a
               href="/admin/tags"
               class={`block px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-150
-                     ${isActive('/admin/tags', $page.url.pathname)
-                        ? 'bg-[var(--color-primary)]/15 text-[var(--color-primary)]'
-                        : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+                     ${
+                       isActive("/admin/tags", $page.url.pathname)
+                         ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
+                         : "text-white/50 hover:text-white/80 hover:bg-white/5"
+                     }`}
             >
               Tag Artikel
             </a>
