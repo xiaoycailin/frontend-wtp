@@ -1,26 +1,19 @@
 import { error } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
+import config from "../../../../config";
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, cookies }) => {
   try {
-    // Check if user is admin
-    if (!locals.user?.id) {
-      throw error(401, "Unauthorized");
-    }
-
-    const jwtToken = locals.auth.jwt;
-    
-    if (!jwtToken) {
-      throw error(401, "No JWT token found");
-    }
-
     // Fetch articles
-    const response = await fetch(`http://192.168.18.217:3000/articles?page=1&limit=50`, {
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${config.API_BASE_URL}/articles?page=1&limit=50`,
+      {
+        headers: {
+          Authorization: `Bearer ${cookies.get("wtpanjay_token")}`,
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       throw error(response.status, "Failed to fetch articles");

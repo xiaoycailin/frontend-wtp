@@ -28,8 +28,8 @@
     loading = true;
     try {
       const [catRes, tagRes] = await Promise.all([
-        fetch("/api/article-categories"),
-        fetch("/api/article-tags"),
+        fetch("/api/v1/article-categories"),
+        fetch("/api/v1/article-tags"),
       ]);
 
       if (catRes.ok) {
@@ -71,7 +71,7 @@
     try {
       const jwtToken = localStorage.getItem("jwt_token");
 
-      const res = await fetch("/api/articles", {
+      const res = await fetch("/api/v1/articles", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${jwtToken}`,

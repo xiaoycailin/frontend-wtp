@@ -27,13 +27,6 @@
     articlesExpanded = !articlesExpanded;
   }
 
-  // Accordion state for articles menu
-  let articlesExpanded = false;
-
-  function toggleArticles() {
-    articlesExpanded = !articlesExpanded;
-  }
-
   const siteConfig = data.siteConfig;
   const primaryColor = siteConfig?.primaryColor ?? "#f5c518";
   const secondaryColor = siteConfig?.secondaryColor ?? "#0e0e0e";
@@ -127,7 +120,8 @@
       <!-- Article Management (Expandable) -->
       <div class="group">
         <button
-          onclick={toggleArticles}
+          type="button"
+          on:click={toggleArticles}
           class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium
                  transition-colors duration-150 text-white/60 hover:text-white hover:bg-white/5"
         >
@@ -136,8 +130,9 @@
             <span>Artikel</span>
           </div>
           <svg
-            class="w-4 h-4 transition-transform duration-200"
-            style="transform: rotate(${articlesExpanded ? 180 : 0}deg)"
+            class="w-4 h-4 transition-transform duration-200 {articlesExpanded
+              ? 'rotate-180'
+              : ''}"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
