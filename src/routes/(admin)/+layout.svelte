@@ -172,10 +172,10 @@
               Tambah Baru
             </a>
             <a
-              href="/admin/categories"
+              href="/admin/articles/categories"
               class={`block px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-150
                      ${
-                       isActive("/admin/categories", $page.url.pathname)
+                       isActive("/admin/articles/categories", $page.url.pathname)
                          ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
                          : "text-white/50 hover:text-white/80 hover:bg-white/5"
                      }`}
@@ -183,10 +183,10 @@
               Kategori Artikel
             </a>
             <a
-              href="/admin/tags"
+              href="/admin/articles/tags"
               class={`block px-3 py-2 rounded-lg text-xs font-medium transition-colors duration-150
                      ${
-                       isActive("/admin/tags", $page.url.pathname)
+                       isActive("/admin/articles/tags", $page.url.pathname)
                          ? "bg-[var(--color-primary)]/15 text-[var(--color-primary)]"
                          : "text-white/50 hover:text-white/80 hover:bg-white/5"
                      }`}
