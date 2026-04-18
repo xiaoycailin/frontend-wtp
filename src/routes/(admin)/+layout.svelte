@@ -27,6 +27,13 @@
     articlesExpanded = !articlesExpanded;
   }
 
+  // Accordion state for articles menu
+  let articlesExpanded = false;
+
+  function toggleArticles() {
+    articlesExpanded = !articlesExpanded;
+  }
+
   const siteConfig = data.siteConfig;
   const primaryColor = siteConfig?.primaryColor ?? "#f5c518";
   const secondaryColor = siteConfig?.secondaryColor ?? "#0e0e0e";
@@ -130,9 +137,7 @@
           </div>
           <svg
             class="w-4 h-4 transition-transform duration-200"
-            style="transform: ${articlesExpanded
-              ? 'rotate(180deg)'
-              : 'rotate(0deg)'}"
+            style="transform: rotate(${articlesExpanded ? 180 : 0}deg)"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
