@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  let tags = [];
-  let loading = true;
-  let submitting = false;
+  let tags: any = $state([]);
+  let loading = $state(false);
+  let submitting = $state(false);
 
   let form = {
     id: "",
@@ -17,7 +17,7 @@
   async function fetchTags() {
     loading = true;
     try {
-      const res = await fetch("http://192.168.18.217:3000/article-tags");
+      const res = await fetch("/api/v1/article-tags");
       const json = await res.json();
       tags = json.data?.data || json.data || [];
     } catch (error) {
@@ -30,7 +30,14 @@
   onMount(fetchTags);
 
   function resetForm() {
-    form = { id: "", name: "", slug: "", description: "", color: "#f5c518", featured: false };
+    form = {
+      id: "",
+      name: "",
+      slug: "",
+      description: "",
+      color: "#f5c518",
+      featured: false,
+    };
   }
 
   function editTag(tag: any) {
@@ -56,13 +63,12 @@
       const jwt = authState ? JSON.parse(authState).jwt : null;
       const method = form.id ? "PUT" : "POST";
       const url = form.id
-        ? `http://192.168.18.217:3000/article-tags/${form.id}`
-        : "http://192.168.18.217:3000/article-tags";
+        ? `/api/v1/article-tags/${form.id}`
+        : "/api/v1/article-tags";
 
       const res = await fetch(url, {
         method,
         headers: {
-          Authorization: `Bearer ${jwt}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -98,36 +104,62 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-1 bg-[#0b0b0b] border border-white/5 rounded-xl p-5 space-y-4">
-      <h2 class="text-lg font-semibold text-white">{form.id ? 'Edit Tag' : 'Tambah Tag'}</h2>
+    <div
+      class="lg:col-span-1 bg-[#0b0b0b] border border-white/5 rounded-xl p-5 space-y-4"
+    >
+      <h2 class="text-lg font-semibold text-white">
+        {form.id ? "Edit Tag" : "Tambah Tag"}
+      </h2>
       <div>
         <label class="block text-sm text-white mb-2">Nama *</label>
-        <input bind:value={form.name} class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white" />
+        <input
+          bind:value={form.name}
+          class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white"
+        />
       </div>
       <div>
         <label class="block text-sm text-white mb-2">Slug *</label>
-        <input bind:value={form.slug} class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white" />
+        <input
+          bind:value={form.slug}
+          class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white"
+        />
       </div>
       <div>
         <label class="block text-sm text-white mb-2">Description</label>
-        <textarea bind:value={form.description} rows="3" class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white resize-none"></textarea>
+        <textarea
+          bind:value={form.description}
+          rows="3"
+          class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white resize-none"
+        ></textarea>
       </div>
       <div>
         <label class="block text-sm text-white mb-2">Color</label>
-        <input type="color" bind:value={form.color} class="w-full h-10 bg-white/5 border border-white/10 rounded-lg" />
+        <input
+          type="color"
+          bind:value={form.color}
+          class="w-full h-10 bg-white/5 border border-white/10 rounded-lg"
+        />
       </div>
       <label class="flex items-center gap-3 text-sm text-white">
         <input type="checkbox" bind:checked={form.featured} /> Featured
       </label>
       <div class="flex gap-3">
-        <button disabled={submitting} onclick={handleSubmit} class="flex-1 px-4 py-2.5 bg-[#f5c518] text-black font-semibold rounded-lg disabled:opacity-50">
-          {form.id ? 'Update' : 'Simpan'}
+        <button
+          disabled={submitting}
+          onclick={handleSubmit}
+          class="flex-1 px-4 py-2.5 bg-[#f5c518] text-black font-semibold rounded-lg disabled:opacity-50"
+        >
+          {form.id ? "Update" : "Simpan"}
         </button>
-        <button onclick={resetForm} class="px-4 py-2.5 bg-white/5 rounded-lg">Reset</button>
+        <button onclick={resetForm} class="px-4 py-2.5 bg-white/5 rounded-lg"
+          >Reset</button
+        >
       </div>
     </div>
 
-    <div class="lg:col-span-2 bg-[#0b0b0b] border border-white/5 rounded-xl overflow-hidden">
+    <div
+      class="lg:col-span-2 bg-[#0b0b0b] border border-white/5 rounded-xl overflow-hidden"
+    >
       <table class="w-full">
         <thead class="bg-white/5">
           <tr>
@@ -140,18 +172,38 @@
         </thead>
         <tbody class="divide-y divide-white/5">
           {#if loading}
-            <tr><td colspan="5" class="px-4 py-8 text-center text-white/40">Loading...</td></tr>
+            <tr
+              ><td colspan="5" class="px-4 py-8 text-center text-white/40"
+                >Loading...</td
+              ></tr
+            >
           {:else if tags.length === 0}
-            <tr><td colspan="5" class="px-4 py-8 text-center text-white/40">Belum ada tag</td></tr>
+            <tr
+              ><td colspan="5" class="px-4 py-8 text-center text-white/40"
+                >Belum ada tag</td
+              ></tr
+            >
           {:else}
             {#each tags as tag}
               <tr class="hover:bg-white/5">
                 <td class="px-4 py-4 text-white">{tag.name}</td>
                 <td class="px-4 py-4 text-white/70">{tag.slug}</td>
-                <td class="px-4 py-4"><span class="inline-flex items-center gap-2 text-white/70"><span class="w-4 h-4 rounded-full border border-white/20" style="background:{tag.color || '#f5c518'}"></span>{tag.color || '-'}</span></td>
-                <td class="px-4 py-4 text-white/70">{tag.featured ? 'Ya' : 'Tidak'}</td>
+                <td class="px-4 py-4"
+                  ><span class="inline-flex items-center gap-2 text-white/70"
+                    ><span
+                      class="w-4 h-4 rounded-full border border-white/20"
+                      style="background:{tag.color || '#f5c518'}"
+                    ></span>{tag.color || "-"}</span
+                  ></td
+                >
+                <td class="px-4 py-4 text-white/70"
+                  >{tag.featured ? "Ya" : "Tidak"}</td
+                >
                 <td class="px-4 py-4 text-right">
-                  <button onclick={() => editTag(tag)} class="text-xs text-[#f5c518]">Edit</button>
+                  <button
+                    onclick={() => editTag(tag)}
+                    class="text-xs text-[#f5c518]">Edit</button
+                  >
                 </td>
               </tr>
             {/each}
