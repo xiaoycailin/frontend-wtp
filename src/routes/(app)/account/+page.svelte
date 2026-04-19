@@ -4,6 +4,8 @@
   import { auth } from "$lib/auth";
   import { setupFetchInterceptor } from "$lib/setup/interceptor";
   import { fmt } from "$lib/components/sections/topup-components/utils";
+  import { navState } from "$lib/stores/navigation";
+  import BottomNavigation from "$lib/components/BottomNavigation.svelte";
 
   const { data } = $props();
 
@@ -217,6 +219,28 @@
     if (email) return email.slice(0, 2).toUpperCase();
     return "??";
   }
+
+  function scrollToElement(id: string, offset: number = 80) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: "smooth" });
+  }
+  navState.subscribe((value) => {
+    if (value.from == "wallet" || value.from == "navbottom") {
+      if (value.data.tab == "history") {
+        setTimeout(() => {
+          scrollToElement("history-section", 80);
+        }, 100); // delay kecil biar DOM sudah render
+      }
+      if (value.data.tab == "transactions") {
+        setTimeout(() => {
+          scrollToElement("transactions", 80);
+        }, 100); // delay kecil biar DOM sudah render
+      }
+    }
+  });
 </script>
 
 <svelte:head>
@@ -506,7 +530,7 @@
     {/if}
 
     <!-- ── HISTORY: Topup & Balance (tabbed on mobile, side-by-side on desktop) ── -->
-    <div class="mb-6">
+    <div id="history-section" class="mb-6">
       <!-- Mobile tab switcher -->
       <div
         class="flex sm:hidden items-center gap-0 mb-4 rounded-2xl bg-white/[0.04] border border-white/[0.07] p-1"
@@ -876,6 +900,7 @@
 
     <!-- ── RIWAYAT TRANSAKSI ── -->
     <section
+      id="transactions"
       class="rounded-3xl border border-white/[0.07] bg-[#0d0d0d] overflow-hidden"
     >
       <div
@@ -1195,3 +1220,5 @@
     </section>
   </div>
 </div>
+
+<BottomNavigation />

@@ -24,3 +24,14 @@ export const teleport = (node: HTMLElement) => {
     },
   };
 };
+
+export const isPWA = (): boolean => {
+  if (typeof window === "undefined") return false; // ← SSR fallback
+
+  // return true;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone === true ||
+    document.referrer.includes("android-app://")
+  );
+};

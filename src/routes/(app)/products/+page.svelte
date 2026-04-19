@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BottomNavigation from "$lib/components/BottomNavigation.svelte";
   import { onMount } from "svelte";
 
   let { data } = $props();
@@ -621,6 +622,8 @@
     </div>
   </div>
 </div>
+
+<BottomNavigation />
 
 <style>
   /* ══════════════════════════

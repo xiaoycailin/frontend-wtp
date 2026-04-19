@@ -17,6 +17,7 @@
   import { setupFetchInterceptor } from "$lib/setup/interceptor.js";
   import { goto } from "$app/navigation";
   import Index from "$lib/components/Toast/index.svelte";
+  import UpdatePrompt from "$lib/components/UpdatePrompt.svelte";
 
   let { children, data } = $props();
 
@@ -71,6 +72,19 @@
     return pathname === href || pathname.startsWith(href + "/");
   }
 
+  const registerPWA = async () => {
+    if ("serviceWorker" in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js", {
+          scope: "/",
+        });
+        console.log("SW registered:", reg);
+      } catch (err) {
+        console.error("SW registration failed:", err);
+      }
+    }
+  };
+
   onMount(() => {
     auth.init();
     setupFetchInterceptor();
@@ -85,6 +99,8 @@
       if (!target.closest("[data-user-menu]")) userMenuOpen = false;
     };
     document.addEventListener("click", closeUserMenu);
+
+    registerPWA();
 
     return () => {
       window.removeEventListener("scroll", onScroll);
@@ -131,6 +147,7 @@
 <SeoHead {siteConfig} />
 <Index />
 
+<UpdatePrompt />
 <div
   style="--color-primary: {primaryColor}; --color-secondary: {secondaryColor}; --color-accent: {accentColor};"
   class="min-h-screen bg-[#080808] text-white font-sans flex flex-col"
@@ -361,7 +378,7 @@
                           d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"
                         />
                       </svg>
-                      Dashboard Admin
+                      Dashboard Admin Panel
                     </a>
                   {/if}
                 </div>
